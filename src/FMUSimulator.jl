@@ -4,7 +4,6 @@ FMI 2.0 for Model Exchange Standard
 """
 
 using Libdl         # For using dlopen, dlclose and so on
-using InfoZIP       # For unzipping FMU
 using LightXML      # For parsing XML files
 
 include("FMIWrapper.jl")
@@ -200,7 +199,7 @@ mutable struct FMU
     instanceName::String
     FMUPath::String       # ToDo: find better type for path
     fmuResourceLocation::String
-    fmuGUUID::String
+    fmuGUID::String
 
     modelDescription::ModelDescription
 
@@ -209,6 +208,13 @@ mutable struct FMU
     experimentData::ExperimentData
 
     status
+
+    # Other stuff
+    libHandle::Ptr{Nothing}
+    tmpFolder::String
+
+    # Constructor
+    FMU() = new()
 end
 
 
@@ -219,14 +225,19 @@ function readModelDescription(pathToModelDescription::String)
 
     md = ModelDescription()
 
+    if !isfile(pathToModelDescription)
+        error("File $pathToModelDescription does not exist.")
+    elseif last(split(pathToModelDescription, "\\")) != "modelDescription.xml"
+        error("File name is not equal to \"modelDescription.xml\" but $(last(split(pathToModelDescription, "\\")))" )
+    end
+
     # Parse modelDescription
     xdoc = parse_file(pathToModelDescription)
 
     # Check root tag
     xroot = root(xdoc)
     if name(xroot)!="fmiModelDescription"
-        error("While parsing modelDescription:
-            modelDescription-XML not correct.")
+        error("modelDescription.xml root is not \"fmiModelDescription\".")
     end
 
     # Get attributes of tag <fmiModelDescription>
@@ -351,15 +362,15 @@ function readModelDescription(pathToModelDescription::String)
 
         # Get attributes of tag ModelVariables
         elementModelVariables = find_element(xroot, "ModelVariables")
-        if ModelVariables == nothing
+        if elementModelVariables == nothing
             error("modelDescription.xml is missing ModelVariables tag")
         end
 
         numberOfVariables = 0
-        for element in child_nodes(x)
+        for element in child_nodes(elementModelVariables)
             numberOfVariables += 1
         end
-        md.modelVariables
+        #md.modelVariables
 
         # Get attributes of tag ModelStructure
 
@@ -378,15 +389,13 @@ function readModelDescription(pathToModelDescription::String)
     return md
 end
 
-
+"""
+Load DLL containing FMU functions and return handle to DLL
+"""
 function loadFMU(pathToFMU::String)
     loadFMU(pathToFMU, false, true)
 end
 
-
-"""
-Load DLL containing FMU functions and return handle to DLL
-"""
 function loadFMU(pathToFMU::String, useTemp::Bool, overWriteTemp::Bool)
 
     # Split path
@@ -403,12 +412,10 @@ function loadFMU(pathToFMU::String, useTemp::Bool, overWriteTemp::Bool)
             error("Folder $tmpFolder already exists but overwriting of temp
             folder is prohibited.")
         end
-    else
-        mkdir(tmpFolder)
     end
 
     # unzip FMU to tmp folder
-    InfoZIP.unzip("helloWorldOMSI.fmu", tmpFolder)
+    my_unzip(pathToFMU, tmpFolder)
 
     # parse modelDescription.xml
     md = readModelDescription(string(tmpFolder, "modelDescription.xml"))
@@ -430,7 +437,7 @@ function loadFMU(pathToFMU::String, useTemp::Bool, overWriteTemp::Bool)
     # load dynamic library
     libHandle = dlopen(pathToDLL)
 
-    return(libHandle, tmpFolder)
+    return(libHandle, md, tmpFolder)
 end
 
 
@@ -438,30 +445,69 @@ end
 """
 Unload dynamic library and remove tmp files
 """
-function unloadFMU(libHandle::Ptr{Nothing}, tmpFolder::String)
+function unloadFMU(libHandle::Ptr{Nothing}, tmpFolder::String,
+    deleteTmpFolder=true::Bool)
 
     # unload dynamic library
     dlclose(libHandle)
 
     # delete tmp folder
-    rm(tmpFolder, recursive=true);
+    if deleteTmpFolder
+        rm(tmpFolder, recursive=true);
+    end
 end
 
+
+"""
+Helper function to unzip file using installed tools.
+Overwrites `destiantionDir`
+"""
+function my_unzip(target::String, destinationDir::String)
+
+    if !isfile(target)
+        error("Could not find file \"$target\"")
+    end
+
+    try
+        #use unzip
+        run(Cmd(`unzip -qo $target`, dir = destinationDir))
+    catch
+        try
+            #use 7-zip
+            run(Cmd(`"C:\\Program Files\\7-Zip\\7z.exe" x $target -aoa -o$destinationDir`));
+            println("Extracted FMU to $destinationDir")
+        catch
+            error("Could not unzip file \"$target\"")
+        end
+    end
+end
 
 
 """
 Main function to simulate a FMU
 """
 function main(pathToFMU::String)
+    # Create uninitialized FMU
+    fmu = FMU()
 
     # load FMU
-    (libHandle, tmpFolder) = loadFMU(pathToFMU)
+    (fmu.libHandle, fmu.modelDescription, fmu.tmpFolder) = loadFMU(pathToFMU, false, true)
+    fmu.FMUPath = pathToFMU
+    fmu.modelName = fmu.modelDescription.modelName
+    fmu.instanceName = fmu.modelDescription.modelName
+    fmu.fmuResourceLocation = string(fmu.tmpFolder,"\\resources")
+    fmu.fmuGUID = fmu.modelDescription.guid
 
-    # instantiate FMU
-
-
-
-
-    # unloadFMU
-    unloadFMU(libHandle, tmpFolder)
+    try
+        # Instantiate FMU
+        # ToDo: gives segmentation fault --> fix
+        #fmi2Instantiate(fmu.libHandle, fmu.instanceName,
+        #    modelExchange, fmu.fmuGUID, fmu.fmuResourceLocation,
+        #    fmi2Functions, true, true)
+    finally
+        # Unload FMU
+        unloadFMU(fmu.libHandle, fmu.tmpFolder, false)
+    catch
+        rethrow()
+    end
 end

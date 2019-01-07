@@ -18,3 +18,9 @@ mutable struct fmi2ComponentEnvironment
     numErrors::Int
     numFatals::Int
 end
+
+
+@enum fmuType begin
+    modelExchange
+    coSimulation
+end

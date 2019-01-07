@@ -18,15 +18,15 @@ function fmi2CallbackLogger(componentEnvironment::fmi2ComponentEnvironment,
     instanceName::String, status::fmi2Status, category::String,
     message::String, String...)
 
-    println("Blablabla")
-    try
-        println(componentEnvironment.logFile,
-          "[", fmi2StatusToString(status), "][", category, "] ", message)
-    catch
-        println("Error trying to log message from FMU!")
-        println("  ", message)
-        error("Catched error in function fmi2CallbackLogger.")
-    end
+#    println("Blablabla")
+#    try
+#        println(componentEnvironment.logFile,
+#          "[", fmi2StatusToString(status), "][", category, "] ", message)
+#    catch
+#        println("Error trying to log message from FMU!")
+#        println("  ", message)
+#        error("Catched error in function fmi2CallbackLogger.")
+#    end
 end
 const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid, (Ref{Cchar}, Ref{Cchar}, Ref{Cchar}, Ref{Cchar}))
 

@@ -7,7 +7,7 @@ include("FMICallbackFunctions.jl") # Callbacks for logging and memory handling
 
 
 function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
-    fmuType::Int, fmuGUID::String, fmuResourceLocation::String,
+    fmuType::fmuType, fmuGUID::String, fmuResourceLocation::String,
     functions::CallbackFunctions, visible::Bool, loggingOn::Bool)
 
     func = dlsym(libHandle, :fmi2Instantiate)
