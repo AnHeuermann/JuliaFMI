@@ -13,22 +13,28 @@ macro libc()
     end
 end
 
-# Logger for error and information messages
-function fmi2CallbackLogger(componentEnvironment::fmi2ComponentEnvironment,
-    instanceName::String, status::fmi2Status, category::String,
-    message::String, String...)
-
-#    println("Blablabla")
-#    try
-#        println(componentEnvironment.logFile,
-#          "[", fmi2StatusToString(status), "][", category, "] ", message)
-#    catch
-#        println("Error trying to log message from FMU!")
-#        println("  ", message)
-#        error("Catched error in function fmi2CallbackLogger.")
-#    end
+# Macro to identify logger library
+macro libLogger()
+    if Sys.iswindows()
+        return string(dirname(dirname(Base.source_path())),"\\bin\\win64\\logger.dll")
+    elseif Sys.islinux()
+        return string(dirname(dirname(Base.source_path())),"\\bin\\unix64\\logger.so")
+    end
 end
-const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid, (Ref{Cvoid}, Ref{Cchar}, Cuint, Ref{Cchar}, Ref{Cchar}...))
+
+# Logger for error and information messages
+function fmi2CallbackLogger(componentEnvironment,
+    instanceName, status, category,
+    message...)
+
+    try
+        println("[", string(status), "][", unsafe_string(category), "] ", unsafe_string(message))
+    catch
+        println("Error trying to log message from FMU!")
+    end
+end
+const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
+(Ptr{Cvoid}, Cstring, Cuint, Cstring, Tuple{Cstring}))
 
 # Allocate with zeroes initialized memory
 function fmi2AllocateMemory(nitems, size)
@@ -43,9 +49,9 @@ const fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, 
 # Free memory allocated with fmi2AllocateMemory
 function fmi2FreeMemory(ptr)
     println("Freeing pointer $ptr.")
-    ccall(("free", @libc), Cvoid, (Ptr{UInt8},), ptr)
+    ccall(("free", @libc), Cvoid, (Ptr{Cvoid},), ptr)
 end
-const fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ref(Cvoid),))
+const fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
 
 
 # Pointers to functions provided by the environment to be used by the FMU
@@ -57,6 +63,10 @@ struct CallbackFunctions
 
     componentEnvironmendt::Ptr{Nothing}
 end
+
+# open shared library with logger function
+libLoggerHandle = dlopen(@libLogger)
+fmi2CallbacLogger_Cfunc = dlsym(libLoggerHandle, :logger)
 
 const fmi2Functions = CallbackFunctions(
     fmi2CallbacLogger_funcWrapC,

@@ -451,6 +451,12 @@ function unloadFMU(libHandle::Ptr{Nothing}, tmpFolder::String,
     # unload dynamic library
     dlclose(libHandle)
 
+    try
+        dlclose(libLoggerHandle)
+    catch
+        rethrow()
+    end
+
     # delete tmp folder
     if deleteTmpFolder
         rm(tmpFolder, recursive=true);
@@ -501,9 +507,9 @@ function main(pathToFMU::String)
     try
         # Instantiate FMU
         # ToDo: gives segmentation fault --> fix
-        #fmi2Instantiate(fmu.libHandle, fmu.instanceName,
-        #    modelExchange, fmu.fmuGUID, fmu.fmuResourceLocation,
-        #    fmi2Functions, true, true)
+        fmi2Instantiate(fmu.libHandle, fmu.instanceName,
+            modelExchange, fmu.fmuGUID, fmu.fmuResourceLocation,
+            fmi2Functions, true, true)
     finally
         # Unload FMU
         unloadFMU(fmu.libHandle, fmu.tmpFolder, false)

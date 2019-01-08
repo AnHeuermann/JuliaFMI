@@ -21,7 +21,7 @@ function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
       Ref(functions), visible, loggingOn
       )
 
-    if fmi2Component == C_NULL
+    if fmi2Componente == C_NULL
       error("fmi2Instantiate: Returned NULL.")
     end
 end
