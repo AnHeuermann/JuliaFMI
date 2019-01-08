@@ -28,7 +28,7 @@ function fmi2CallbackLogger(componentEnvironment::fmi2ComponentEnvironment,
 #        error("Catched error in function fmi2CallbackLogger.")
 #    end
 end
-const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid, (Ref{Cchar}, Ref{Cchar}, Ref{Cchar}, Ref{Cchar}))
+const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid, (Ref{Cvoid}, Ref{Cchar}, Cuint, Ref{Cchar}, Ref{Cchar}...))
 
 # Allocate with zeroes initialized memory
 function fmi2AllocateMemory(nitems, size)
