@@ -308,10 +308,14 @@ function main(pathToFMU::String)
 
     try
         # Instantiate FMU
-        # ToDo: gives segmentation fault --> fix
-        fmi2Instantiate(fmu.libHandle, fmu.instanceName,
-            modelExchange, fmu.fmuGUID, fmu.fmuResourceLocation,
-            fmi2Functions, true, true)
+        fmi2Instantiate!(fmu)
+
+        # Set debug logging to true for all categories
+        fmi2SetDebugLogging(fmu, true)
+
+        # Free FMU
+        # ToDo: Fix function
+        #fmi2FreeInstance(fmu.libHandle, fmi2Component)
     finally
         # Unload FMU
         println("Unload FMU")
