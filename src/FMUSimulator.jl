@@ -180,25 +180,32 @@ function readModelDescription(pathToModelDescription::String)
     return md
 end
 
-"""
-Load DLL containing FMU functions and return handle to DLL
-"""
-function loadFMU(pathToFMU::String)
-    loadFMU(pathToFMU, false, true)
-end
 
-function loadFMU(pathToFMU::String, useTemp::Bool, overWriteTemp::Bool)
+"""
+`loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)`
+
+Unzips an FMU and returns handle to dynamic library containing FMI functions.
+
+## Example calls
+```
+julia> fmu=loadFMU("path\\\\to\\\\fmu\\\\helloWorld.fmu")
+```
+"""
+function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)
+    # Create uninitialized FMU
+    fmu=FMU()
 
     # Split path
+    fmu.FMUPath = pathToFMU
     name = last(split(pathToFMU, "\\"))
 
     # Create temp folder
     if useTemp
-        tmpFolder = string(tempdir(), "FMU_", name[1:end-4], "_", floor(Int, 10000*rand()), "\\")
+        fmu.tmpFolder = string(tempdir(), "FMU_", name[1:end-4], "_", floor(Int, 10000*rand()), "\\")
     else
-        tmpFolder = string(pathToFMU[1:end-length(name)], "FMU_", name[1:end-4],  "\\")
+        fmu.tmpFolder = string(pathToFMU[1:end-length(name)], "FMU_", name[1:end-4],  "\\")
     end
-    if isdir(tmpFolder)
+    if isdir(fmu.tmpFolder)
         if !overWriteTemp
             error("Folder $tmpFolder already exists but overwriting of temp
             folder is prohibited.")
@@ -206,17 +213,24 @@ function loadFMU(pathToFMU::String, useTemp::Bool, overWriteTemp::Bool)
     end
 
     # unzip FMU to tmp folder
-    my_unzip(pathToFMU, tmpFolder)
+    my_unzip(pathToFMU, fmu.tmpFolder)
 
     # parse modelDescription.xml
-    md = readModelDescription(string(tmpFolder, "modelDescription.xml"))
+    fmu.modelDescription = readModelDescription(string(fmu.tmpFolder, "modelDescription.xml"))
+    fmu.modelName = fmu.modelDescription.modelName
+    fmu.instanceName = fmu.modelDescription.modelName
+    if (fmu.modelDescription.isModelExchange)
+        fmu.fmuType = modelExchange
+    else
+        error("FMU does not support modelExchange")
+    end
 
     # pathToDLL
     if Sys.iswindows()
-        if ispath(string(tmpFolder, "binaries\\win64\\")) && Sys.WORD_SIZE==64
-            pathToDLL = string(tmpFolder, "binaries\\win64\\", name[1:end-4], ".dll")
-        elseif ispath(string(tmpFolder, "binaries\\win32\\"))
-            pathToDLL = string(tmpFolder, "binaries\\win32\\", name[1:end-4], ".dll")
+        if ispath(string(fmu.tmpFolder, "binaries\\win64\\")) && Sys.WORD_SIZE==64
+            pathToDLL = string(fmu.tmpFolder, "binaries\\win64\\", name[1:end-4], ".dll")
+        elseif ispath(string(fmu.tmpFolder, "binaries\\win32\\"))
+            pathToDLL = string(fmu.tmpFolder, "binaries\\win32\\", name[1:end-4], ".dll")
         else
             error("No DLL found matching Windows OS and word size.")
         end
@@ -226,27 +240,32 @@ function loadFMU(pathToFMU::String, useTemp::Bool, overWriteTemp::Bool)
     end
 
     # load dynamic library
-    libHandle = dlopen(pathToDLL)
+    fmu.libHandle = dlopen(pathToDLL)
 
-    return(libHandle, md, tmpFolder)
+    # Fill FMU with remaining data
+    fmu.fmuResourceLocation = string("file:///", fmu.tmpFolder,"resources")
+    fmu.fmuGUID = fmu.modelDescription.guid
+    fmu.fmiCallbackFunctions = fmi2Functions
+
+    return fmu
 end
 
 
+"""
+Unload dynamic library and if `deleteTmpFolder=true` remove tmp files.
+"""
+function unloadFMU(fmu::FMU)
+    unloadFMU(fmu.libHandle, fmu.tmpFolder)
+end
 
-"""
-Unload dynamic library and remove tmp files
-"""
 function unloadFMU(libHandle::Ptr{Nothing}, tmpFolder::String,
     deleteTmpFolder=true::Bool)
 
-    # unload dynamic library
+    # unload FMU dynamic library
     dlclose(libHandle)
 
-    try
-        dlclose(libLoggerHandle)
-    catch
-        rethrow()
-    end
+    # unload C logger
+    dlclose(libLoggerHandle)
 
     # delete tmp folder
     if deleteTmpFolder
@@ -284,16 +303,8 @@ end
 Main function to simulate a FMU
 """
 function main(pathToFMU::String)
-    # Create uninitialized FMU
-    fmu = FMU()
-
     # load FMU
-    (fmu.libHandle, fmu.modelDescription, fmu.tmpFolder) = loadFMU(pathToFMU, false, true)
-    fmu.FMUPath = pathToFMU
-    fmu.modelName = fmu.modelDescription.modelName
-    fmu.instanceName = fmu.modelDescription.modelName
-    fmu.fmuResourceLocation = string(fmu.tmpFolder,"\\resources")
-    fmu.fmuGUID = fmu.modelDescription.guid
+    fmu = loadFMU(pathToFMU, true, true)
 
     try
         # Instantiate FMU
@@ -303,7 +314,8 @@ function main(pathToFMU::String)
             fmi2Functions, true, true)
     finally
         # Unload FMU
-        unloadFMU(fmu.libHandle, fmu.tmpFolder, false)
+        println("Unload FMU")
+        unloadFMU(fmu.libHandle, fmu.tmpFolder, true)
     catch
         rethrow()
     end
