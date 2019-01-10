@@ -39,7 +39,7 @@ const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
 (Ptr{Cvoid}, Cstring, Cuint, Cstring, Tuple{Cstring}))
 
 # Allocate with zeroes initialized memory
-function fmi2AllocateMemory(nitems, size)
+function fmi2AllocateMemory(nitems::Csize_t, size::Csize_t)
     print("Allocate Memory: ")
     ptr = ccall(("calloc", @libc), Ptr{Cvoid}, (Csize_t, Csize_t), nitems, size)
     println("Returned pointer $ptr.")
@@ -49,7 +49,7 @@ const fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, 
 
 
 # Free memory allocated with fmi2AllocateMemory
-function fmi2FreeMemory(ptr)
+function fmi2FreeMemory(ptr::Ptr{Nothing})
     println("Freeing pointer $ptr.")
     ccall(("free", @libc), Cvoid, (Ptr{Cvoid},), ptr)
 end
@@ -61,7 +61,8 @@ libLoggerHandle = dlopen(@libLogger)
 fmi2CallbacLogger_Cfunc = dlsym(libLoggerHandle, :logger)
 
 const fmi2Functions = CallbackFunctions(
-    fmi2CallbacLogger_funcWrapC,
+    #fmi2CallbacLogger_funcWrapC,       # Logger in Julia
+    fmi2CallbacLogger_Cfunc,            # Logger in C
     fmi2AllocateMemory_funcWrapC,
     fmi2FreeMemory_funcWrapC,
     C_NULL,
