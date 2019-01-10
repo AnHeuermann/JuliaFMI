@@ -4,6 +4,8 @@ Callback functions for logging and memory managment passed to FMU instance.
 
 include("FMI2Types.jl")
 
+using Libdl         # For using dlopen, dlclose and so on
+
 # Macro to identify standard C library
 macro libc()
     if Sys.iswindows()#
@@ -53,16 +55,6 @@ function fmi2FreeMemory(ptr)
 end
 const fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
 
-
-# Pointers to functions provided by the environment to be used by the FMU
-struct CallbackFunctions
-    callbackLogger::Ptr{Nothing}
-    allocateMemory::Ptr{Nothing}
-    freeMemory::Ptr{Nothing}
-    stepFinished::Ptr{Nothing}
-
-    componentEnvironmendt::Ptr{Nothing}
-end
 
 # open shared library with logger function
 libLoggerHandle = dlopen(@libLogger)
