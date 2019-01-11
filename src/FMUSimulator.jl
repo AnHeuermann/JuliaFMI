@@ -313,9 +313,13 @@ function main(pathToFMU::String)
         # Set debug logging to true for all categories
         fmi2SetDebugLogging(fmu, true)
 
+        # Get types platform
+        typesPlatform = fmi2GetTypesPlatform(fmu)
+        println("typesPlatform: $typesPlatform")
+
         # Free FMU
         # ToDo: Fix function
-        #fmi2FreeInstance(fmu.libHandle, fmi2Component)
+        #fmi2FreeInstance(fmu)
     finally
         # Unload FMU
         println("Unload FMU")
