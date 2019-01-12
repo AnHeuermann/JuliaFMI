@@ -1,0 +1,54 @@
+# This file is part of JuliaFMI.
+# License is MIT: https://servant-om.fh-bielefeld.de/gitlab/AnHeuermann/FMU_JL_Simulator/blob/master/LICENSE.txt
+
+# This YAML file
+
+
+stages:
+  - build
+  - load
+  - test
+  - deploy
+
+matrix:
+  include:
+    - language: julia
+      julia: 1.0.2
+      before_script:
+        - echo Starting Julia jobs
+      stage: load
+      script:
+        - julia src/FMI2Types.jl
+        - julia src/FMICallbacks.jl
+        - julia src/FMIWrapper.jl
+        - julia src/FMUSimulator.jl
+      after_script:
+        - rm -rf test/HelloFMI20World/
+        - echo Finished Julia jobs and cleaned up
+    - language: c
+        os: linux
+        compiler: gcc
+        compiler:
+        - gcc
+        - clang
+        stage: build
+        script:
+        - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
+        - gcc -shared src/logger.c -o bin/unix64/logger.so
+
+
+
+#runtests:
+#  stage: test
+#  script:
+#    - julia test/runtests.jl
+
+#deploy-script:
+#  stage: deploy
+#  script:
+#    - git add bin/unix64/logger.so
+#    - git commit -m "Automated commit by GitLab CI"
+#    - git push git@servant-om.fh-bielefeld.de:AnHeuermann/FMU_JL_Simulator.git/master
+
+notifications:
+  email: false
