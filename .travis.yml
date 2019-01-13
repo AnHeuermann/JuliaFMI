@@ -18,7 +18,7 @@ matrix:
       stage: build
       script:
        - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
-       - gcc -shared src/logger.c -o bin/unix64/logger.so
+       - gcc -shared src/logger.c -fPIC -o bin/unix64/logger.so
 
     - language: julia
       julia: 1.0.2
