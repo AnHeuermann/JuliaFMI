@@ -12,6 +12,14 @@ stages:
 
 matrix:
   include:
+    - language: c
+      before_script:
+       - echo Starting C jobs
+      stage: build
+      script:
+       - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
+       - gcc -shared src/logger.c -o bin/unix64/logger.so
+
     - language: julia
       julia: 1.0.2
       before_script:
@@ -22,26 +30,11 @@ matrix:
         - julia src/FMICallbacks.jl
         - julia src/FMIWrapper.jl
         - julia src/FMUSimulator.jl
+      script:
+        - julia -e "include(\"test\\\\runtests.jl\"); testHelloFMI20World()"
       after_script:
         - rm -rf test/HelloFMI20World/
         - echo Finished Julia jobs and cleaned up
-    - language: c
-        os: linux
-        compiler: gcc
-        compiler:
-        - gcc
-        - clang
-        stage: build
-        script:
-        - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
-        - gcc -shared src/logger.c -o bin/unix64/logger.so
-
-
-
-#runtests:
-#  stage: test
-#  script:
-#    - julia test/runtests.jl
 
 #deploy-script:
 #  stage: deploy
