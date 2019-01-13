@@ -5,7 +5,7 @@ Run all tests for simulating FMU's
 
 thisDir = dirname(Base.source_path())
 
-include("$(dirname(thisDir))\\src\\FMUSimulator.jl")
+include("$(dirname(thisDir))/src/FMUSimulator.jl")
 
 # First simple test
 function testHelloFMI20World()
