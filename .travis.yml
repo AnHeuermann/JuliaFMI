@@ -39,14 +39,14 @@ matrix:
         - julia src/FMIWrapper.jl
         - julia src/FMUSimulator.jl
 
-      - language: julia
-        julia: 1.0.2
-        stage: test
-        script:
-          - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
-        after_script:
-          - rm -rf test/HelloFMI20World/
-          - echo Finished Julia jobs and cleaned up
+    - language: julia
+      julia: 1.0.2
+      stage: test
+      script:
+        - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
+      after_script:
+        - rm -rf test/HelloFMI20World/
+        - echo Finished Julia jobs and cleaned up
 
 deploy-script:
   stage: deploy
