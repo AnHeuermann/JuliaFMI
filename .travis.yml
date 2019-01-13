@@ -35,7 +35,7 @@ matrix:
       stage: load
       script:
         - julia src/FMI2Types.jl
-        - julia src/FMICallbacks.jl
+        - julia src/FMICallbackFunctions.jl
         - julia src/FMIWrapper.jl
         - julia src/FMUSimulator.jl
 
@@ -48,10 +48,11 @@ matrix:
         - rm -rf test/HelloFMI20World/
         - echo Finished Julia jobs and cleaned up
 
-deploy-script:
-  stage: deploy
-  script:
-    - .travis/push.sh
+    - deploy-script:
+      stage: deploy
+      script:
+        - .travis/push.sh
+
 
 notifications:
   email: false
