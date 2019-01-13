@@ -31,17 +31,15 @@ matrix:
         - julia src/FMIWrapper.jl
         - julia src/FMUSimulator.jl
       script:
-        - julia -e "include(\"test\\\\runtests.jl\"); testHelloFMI20World()"
+        - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
       after_script:
         - rm -rf test/HelloFMI20World/
         - echo Finished Julia jobs and cleaned up
 
-#deploy-script:
-#  stage: deploy
-#  script:
-#    - git add bin/unix64/logger.so
-#    - git commit -m "Automated commit by GitLab CI"
-#    - git push git@servant-om.fh-bielefeld.de:AnHeuermann/FMU_JL_Simulator.git/master
+deploy-script:
+  stage: deploy
+  script:
+    - .travis/push.sh
 
 notifications:
   email: false
