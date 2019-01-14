@@ -64,32 +64,90 @@ mutable struct ExperimentData
     end
 end
 
-abstract type VariableType end
-abstract type RealType <: VariableType end
-abstract type IntegerType <: VariableType end
-abstract type BooleanType <: VariableType end
-abstract type StringType <: VariableType end
-abstract type EnumerationType <: VariableType end
 
-struct AbstractVariable
-    type::VariableType
+struct RealAttributes
+    quantity::String
+    unit::String            # TODO: make types for Units and functions
+    displayUnit::String     #       for unit conversion
+    relativeQuantity::Boolean
+    min::Real
+    max::Real
+    nominal::Real
+    unbound::Boolean
+
+    # Inner constructor
+    function RealAttributes(quantity, unit, displayUnit, relativeQuantity,
+        min, max, nominal, unbound)
+
+        if nominal <= 0
+            error("Nominal > 0.0 required")
+        elseif min > max
+            error("Minimum is greater than maximum")
+        end
+
+        new(quantity, unit, displayUnit, relativeQuantity, min, max, nominal,
+            unbound)
+    end
+
+    function RealAttributes(quantity, unit, displayUnit, min, max, nominal)
+
+        if nominal <= 0
+            error("Nominal > 0.0 required")
+        elseif min > max
+            error("Minimum is greater than maximum")
+        end
+
+        new(quantity, unit, displayUnit, false, min, max, nominal, false)
+    end
+end
+
+struct IntegerAttributes
+    quantity::String
+    min::Int
+    max::Int
 end
 
 
-struct ScalarVariable
+struct RealProperies
+    declaredType::String
+    variableAttributes::RealAttributes
+    start::Real
+    derivative::UInt
+    reinit::Boolean
+
+    RealProperties = new()
+end
+
+struct IntegerProperies
+    declaredType::String
+    variableAttributes::IntegerAttributes
+    start::Int
+
+    IntegerProperies = new()
+end
+
+struct BooleanProperies
+    declaredType::String
+    start::Int
+
+    BooleanProperies = new()
+end
+
+struct ScalarVariable{T<:Union{Real, Int, Bool, String}}
     name::String
     valueReference::Unsigned
 
     # Optional
     description::String
-    causality::String           # ToDo: Change to enumeration??
-    variability::String         # ToDo: Change to enumeration??
-    initial::String             # ToDo: Change to enumeration??
+    causality::String           # TODO: Change to enumeration??
+    variability::String         # TODO: Change to enumeration??
+    initial::String             # TODO: Change to enumeration??
     canHandleMultipleSetPerTimelnstant::Bool
 
     # Type specific properties of ScalarVariable
-    variableProperties::AbstractVariable
+    typeSpecificProperties::Union{RealProperies, IntegerProperties, BooleanProperties, StringProperties}
 
+    # Inner constructors
     function ScalarVariable(name, valueReference)
         if isempty(strip(name))
             errro("ScalarVariable not valid: name can't be empty or only whitespace")
@@ -190,7 +248,7 @@ mutable struct ModelDescription
 
     # Unit definitions
     # Type definitions
-    # ToDo: add here
+    # TODO: add here
 
     logCategories::Array{LogCategory}
 
@@ -221,7 +279,7 @@ Functional Mockupt Unit (FMU) struct.
 mutable struct FMU
     modelName::String
     instanceName::String
-    FMUPath::String                     # ToDo: find better type for paths
+    FMUPath::String                     # TODO: find better type for paths
     fmuResourceLocation::String         # is URI
     fmuGUID::String
 

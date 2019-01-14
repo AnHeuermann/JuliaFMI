@@ -317,13 +317,26 @@ function main(pathToFMU::String)
         typesPlatform = fmi2GetTypesPlatform(fmu)
         println("typesPlatform: $typesPlatform")
 
+        # Get version of fmi
+        fmiVersion = fmi2GetVersion(fmu)
+        println("FMI version: $fmiVersion")
+
+        # Set up experiment
+        fmi2SetupExperiment(fmu, 0)
+
+        # Initialize FMU
+        fmi2EnterInitialization(fmu)
+
+        # Exit Initialization
+        fmi2ExitInitializationMode(fmu)
+
         # Free FMU
         # ToDo: Fix function
         #fmi2FreeInstance(fmu)
     finally
         # Unload FMU
         println("Unload FMU")
-        unloadFMU(fmu.libHandle, fmu.tmpFolder, true)
+        unloadFMU(fmu)
     catch
         rethrow()
     end
