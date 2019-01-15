@@ -18,8 +18,8 @@ function readModelDescription(pathToModelDescription::String)
 
     if !isfile(pathToModelDescription)
         error("File $pathToModelDescription does not exist.")
-    elseif last(split(pathToModelDescription, "\\")) != "modelDescription.xml"
-        error("File name is not equal to \"modelDescription.xml\" but $(last(split(pathToModelDescription, "\\")))" )
+    elseif last(split(pathToModelDescription, "/")) != "modelDescription.xml"
+        error("File name is not equal to \"modelDescription.xml\" but $(last(split(pathToModelDescription, "/")))" )
     end
 
     # Parse modelDescription
@@ -188,7 +188,7 @@ Unzips an FMU and returns handle to dynamic library containing FMI functions.
 
 ## Example calls
 ```
-julia> fmu=loadFMU("path\\\\to\\\\fmu\\\\helloWorld.fmu")
+julia> fmu=loadFMU("path/to/fmu/helloWorld.fmu")
 ```
 """
 function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)
@@ -197,13 +197,13 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     # Split path
     fmu.FMUPath = pathToFMU
-    name = last(split(pathToFMU, "\\"))
+    name = last(split(pathToFMU, "/"))
 
     # Create temp folder
     if useTemp
-        fmu.tmpFolder = string(tempdir(), "FMU_", name[1:end-4], "_", floor(Int, 10000*rand()), "\\")
+        fmu.tmpFolder = string(tempdir(), "/FMU_", name[1:end-4], "_", floor(Int, 10000*rand()), "/")
     else
-        fmu.tmpFolder = string(pathToFMU[1:end-length(name)], "FMU_", name[1:end-4],  "\\")
+        fmu.tmpFolder = string(pathToFMU[1:end-length(name)], "FMU_", name[1:end-4],  "/")
     end
     if isdir(fmu.tmpFolder)
         if !overWriteTemp
@@ -227,16 +227,22 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     # pathToDLL
     if Sys.iswindows()
-        if ispath(string(fmu.tmpFolder, "binaries\\win64\\")) && Sys.WORD_SIZE==64
-            pathToDLL = string(fmu.tmpFolder, "binaries\\win64\\", name[1:end-4], ".dll")
-        elseif ispath(string(fmu.tmpFolder, "binaries\\win32\\"))
-            pathToDLL = string(fmu.tmpFolder, "binaries\\win32\\", name[1:end-4], ".dll")
+        if ispath(string(fmu.tmpFolder, "binaries/win64/")) && Sys.WORD_SIZE==64
+            pathToDLL = string(fmu.tmpFolder, "binaries/win64/", name[1:end-4], ".dll")
+        elseif ispath(string(fmu.tmpFolder, "binaries/win32/"))
+            pathToDLL = string(fmu.tmpFolder, "binaries/win32/", name[1:end-4], ".dll")
         else
             error("No DLL found matching Windows OS and word size.")
         end
 
     elseif Sys.islinux()
-        error("Linux not supported yet.")
+        if ispath(string(fmu.tmpFolder, "binaries/linux64/")) && Sys.WORD_SIZE==64
+            pathToDLL = string(fmu.tmpFolder, "binaries/linux64/", name[1:end-4], ".so")
+        elseif ispath(string(fmu.tmpFolder, "binaries/linux32/"))
+            pathToDLL = string(fmu.tmpFolder, "binaries/linux32/", name[1:end-4], ".so")
+        else
+            error("No shared object file found in $(string(fmu.tmpFolder, "binaries/linux$(Sys.WORD_SIZE)/")) matching Unix OS and word size.")
+        end
     end
 
     # load dynamic library
@@ -284,8 +290,14 @@ function my_unzip(target::String, destinationDir::String)
         error("Could not find file \"$target\"")
     end
 
+    if !ispath(destinationDir)
+        mkpath(destinationDir)
+    end
+
     try
         #use unzip
+        println("destinationDir: $destinationDir")
+
         run(Cmd(`unzip -qo $target`, dir = destinationDir))
     catch
         try
@@ -304,7 +316,7 @@ Main function to simulate a FMU
 """
 function main(pathToFMU::String)
     # load FMU
-    fmu = loadFMU(pathToFMU, true, true)
+    fmu = loadFMU(pathToFMU)
 
     try
         # Instantiate FMU

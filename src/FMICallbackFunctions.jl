@@ -20,7 +20,7 @@ macro libLogger()
     if Sys.iswindows()
         return string(dirname(dirname(Base.source_path())),"\\bin\\win64\\logger.dll")
     elseif Sys.islinux()
-        return string(dirname(dirname(Base.source_path())),"\\bin\\unix64\\logger.so")
+        return string(dirname(dirname(Base.source_path())),"/bin/unix64/logger.so")
     end
 end
 

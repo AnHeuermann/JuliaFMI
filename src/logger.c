@@ -3,8 +3,7 @@
  * different types, like in printf("%s %u", string, unsignedInt)
  *
  * Compile with:
- *     $ gcc -shared logger.c -o ../bin/<OS>/logger.dll
- * where <OS> is e.g. "win64" or "unix64"
+ *     $ gcc -shared -fPIC logger.c -o ../bin/unix64/logger.so
  */
 
 #include <stdio.h>

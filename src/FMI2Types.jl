@@ -69,11 +69,11 @@ struct RealAttributes
     quantity::String
     unit::String            # TODO: make types for Units and functions
     displayUnit::String     #       for unit conversion
-    relativeQuantity::Boolean
+    relativeQuantity::Bool
     min::Real
     max::Real
     nominal::Real
-    unbound::Boolean
+    unbound::Bool
 
     # Inner constructor
     function RealAttributes(quantity, unit, displayUnit, relativeQuantity,
@@ -113,9 +113,9 @@ struct RealProperies
     variableAttributes::RealAttributes
     start::Real
     derivative::UInt
-    reinit::Boolean
+    reinit::Bool
 
-    RealProperties = new()
+    RealProperties() = new()
 end
 
 struct IntegerProperies
@@ -123,14 +123,14 @@ struct IntegerProperies
     variableAttributes::IntegerAttributes
     start::Int
 
-    IntegerProperies = new()
+    IntegerProperies() = new()
 end
 
 struct BooleanProperies
     declaredType::String
-    start::Int
+    start::Bool
 
-    BooleanProperies = new()
+    BooleanProperies() = new()
 end
 
 struct ScalarVariable{T<:Union{Real, Int, Bool, String}}
