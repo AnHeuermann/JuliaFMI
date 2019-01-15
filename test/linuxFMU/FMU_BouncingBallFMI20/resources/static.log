@@ -1,0 +1,279 @@
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_FMU.o BouncingBallFMI20_FMU.c
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20.o BouncingBallFMI20.c
+In file included from BouncingBallFMI20.c:7:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_FMU.c:9:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_FMU.c:54:
+include/fmi2/fmu2_model_interface.c:73:11: warning: enumeration value 'modelSlaveInitialized' not handled in switch [-Wswitch]
+  switch (comp->state)
+          ^
+include/fmi2/fmu2_model_interface.c:162:16: warning: passing 'char **' to parameter of type 'const char **' discards qualifiers in nested pointer types [-Wincompatible-pointer-types-discards-qualifiers]
+  GC_vasprintf(&str, msg, args);
+               ^~~~
+include/util/modelica_string.h:71:31: note: passing argument to parameter 'strp' here
+int GC_vasprintf(const char **strp, const char *fmt, va_list ap);
+                              ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_functions.o BouncingBallFMI20_functions.c
+In file included from BouncingBallFMI20_functions.c:1:
+In file included from ./BouncingBallFMI20_functions.h:3:
+In file included from include/meta/meta_modelica.h:49:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_records.o BouncingBallFMI20_records.c
+In file included from BouncingBallFMI20_records.c:3:
+In file included from include/meta/meta_modelica.h:49:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_01exo.o BouncingBallFMI20_01exo.c
+In file included from BouncingBallFMI20_01exo.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_02nls.o BouncingBallFMI20_02nls.c
+In file included from BouncingBallFMI20_02nls.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+4 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_03lsy.o BouncingBallFMI20_03lsy.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_04set.o BouncingBallFMI20_04set.c
+In file included from BouncingBallFMI20_03lsy.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_04set.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_05evt.o BouncingBallFMI20_05evt.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_06inz.o BouncingBallFMI20_06inz.c
+In file included from BouncingBallFMI20_05evt.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_06inz.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_07dly.o BouncingBallFMI20_07dly.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_08bnd.o BouncingBallFMI20_08bnd.c
+In file included from BouncingBallFMI20_07dly.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_08bnd.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_09alg.o BouncingBallFMI20_09alg.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_10asr.o BouncingBallFMI20_10asr.c
+In file included from BouncingBallFMI20_09alg.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_10asr.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_11mix.o BouncingBallFMI20_11mix.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_12jac.o BouncingBallFMI20_12jac.c
+In file included from BouncingBallFMI20_11mix.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_12jac.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_13opt.o BouncingBallFMI20_13opt.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_14lnz.o BouncingBallFMI20_14lnz.c
+In file included from BouncingBallFMI20_13opt.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_14lnz.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_15syn.o BouncingBallFMI20_15syn.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_16dae.o BouncingBallFMI20_16dae.c
+In file included from BouncingBallFMI20_15syn.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_16dae.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_17inl.o BouncingBallFMI20_17inl.c
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=BouncingBallFMI20 -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o BouncingBallFMI20_init_fmu.o BouncingBallFMI20_init_fmu.c
+In file included from BouncingBallFMI20_17inl.c:2:
+In file included from ./BouncingBallFMI20_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+In file included from BouncingBallFMI20_init_fmu.c:1:
+In file included from include/simulation_data.h:39:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+2 warnings generated.
+mkdir -p ../binaries/linux64
+clang -shared -o BouncingBallFMI20.so BouncingBallFMI20_FMU.o BouncingBallFMI20.o BouncingBallFMI20_functions.o BouncingBallFMI20_records.o BouncingBallFMI20_01exo.o BouncingBallFMI20_02nls.o BouncingBallFMI20_03lsy.o BouncingBallFMI20_04set.o BouncingBallFMI20_05evt.o BouncingBallFMI20_06inz.o BouncingBallFMI20_07dly.o BouncingBallFMI20_08bnd.o BouncingBallFMI20_09alg.o BouncingBallFMI20_10asr.o BouncingBallFMI20_11mix.o BouncingBallFMI20_12jac.o BouncingBallFMI20_13opt.o BouncingBallFMI20_14lnz.o BouncingBallFMI20_15syn.o BouncingBallFMI20_16dae.o BouncingBallFMI20_17inl.o BouncingBallFMI20_init_fmu.o     -L'/home/andreas/workspace/OpenModelica/build/lib/x86_64-linux-gnu/omc' -Wl,-rpath,'/home/andreas/workspace/OpenModelica/build/lib/x86_64-linux-gnu/omc'   -lSimulationRuntimeFMI   -llapack -lblas   -lm -lpthread -rdynamic -Wl,--no-undefined 
+cp BouncingBallFMI20.so BouncingBallFMI20_FMU.libs ../binaries/linux64/
+head -n20 Makefile > ../resources/linux64.summary
+make distclean
+make[1]: Verzeichnis „/home/andreas/workspace/OpenModelica/testsuite/openmodelica/fmi/ModelExchange/2.0/BouncingBallFMI20.fmutmp/sources“ wird betreten
+rm -f BouncingBallFMI20.def BouncingBallFMI20.o BouncingBallFMI20.a BouncingBallFMI20.so BouncingBallFMI20_FMU.o BouncingBallFMI20.o BouncingBallFMI20_functions.o BouncingBallFMI20_records.o BouncingBallFMI20_01exo.o BouncingBallFMI20_02nls.o BouncingBallFMI20_03lsy.o BouncingBallFMI20_04set.o BouncingBallFMI20_05evt.o BouncingBallFMI20_06inz.o BouncingBallFMI20_07dly.o BouncingBallFMI20_08bnd.o BouncingBallFMI20_09alg.o BouncingBallFMI20_10asr.o BouncingBallFMI20_11mix.o BouncingBallFMI20_12jac.o BouncingBallFMI20_13opt.o BouncingBallFMI20_14lnz.o BouncingBallFMI20_15syn.o BouncingBallFMI20_16dae.o BouncingBallFMI20_17inl.o BouncingBallFMI20_init_fmu.o 
+rm -f Makefile config.status config.log
+make[1]: Verzeichnis „/home/andreas/workspace/OpenModelica/testsuite/openmodelica/fmi/ModelExchange/2.0/BouncingBallFMI20.fmutmp/sources“ wird verlassen

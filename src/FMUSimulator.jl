@@ -246,6 +246,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     end
 
     # load dynamic library
+    # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
+    # push!(DL_LOAD_PATH, "/usr/lib/x86_64-linux-gnu") maybe???
     fmu.libHandle = dlopen(pathToDLL)
 
     # Fill FMU with remaining data

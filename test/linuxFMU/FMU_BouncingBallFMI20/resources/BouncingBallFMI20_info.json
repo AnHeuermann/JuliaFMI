@@ -1,0 +1,25 @@
+{"format":"Transformational debugger info","version":1,
+"info":{"name":"BouncingBallFMI20","description":""},
+"variables":{
+"h":{"comment":"height of ball","kind":"state","type":"Real","unit":"","displayUnit":"","source":{"info":{"file":"<interactive>","lineStart":5,"lineEnd":5,"colStart":3,"colEnd":35},"within":["Real"]}},
+"der(h)":{"comment":"der(height of ball)","kind":"derivative","type":"Real","unit":"","displayUnit":"","source":{"info":{"file":"<interactive>","lineStart":5,"lineEnd":5,"colStart":3,"colEnd":35},"within":["Real"]}},
+"$whenCondition1":{"comment":"h <= 0.0","kind":"discrete","type":"Boolean","unit":"","displayUnit":"","source":{"info":{"file":"<interactive>","lineStart":13,"lineEnd":13,"colStart":5,"colEnd":22},"within":["BouncingBallFMI20"]}},
+"e":{"comment":"coefficient of restitution","kind":"parameter","type":"Real","unit":"","displayUnit":"","source":{"info":{"file":"<interactive>","lineStart":3,"lineEnd":3,"colStart":3,"colEnd":52},"within":["Real"]}}
+},
+"equations":[{"eqIndex":0,"tag":"dummy"},
+{"eqIndex":1,"tag":"alias","equation":[11],"section":"initial"},
+{"eqIndex":2,"section":"initial","tag":"assign","defines":["v"],"uses":["$START.v"],"equation":["$START.v"],"source":{"info":{"file":"","lineStart":0,"lineEnd":0,"colStart":0,"colEnd":0}}},
+{"eqIndex":3,"tag":"alias","equation":[10],"section":"initial"},
+{"eqIndex":4,"section":"initial","tag":"assign","defines":["h"],"uses":["$START.h"],"equation":["$START.h"],"source":{"info":{"file":"","lineStart":0,"lineEnd":0,"colStart":0,"colEnd":0}}},
+{"eqIndex":5,"tag":"alias","equation":[8],"section":"initial"},
+{"eqIndex":6,"section":"initial","tag":"assign","defines":["$PRE.v_new"],"uses":["$START.v_new"],"equation":["$START.v_new"],"source":{"info":{"file":"","lineStart":0,"lineEnd":0,"colStart":0,"colEnd":0}}},
+{"eqIndex":7,"section":"initial","tag":"assign","defines":["v_new"],"uses":["$PRE.v_new"],"equation":["$PRE.v_new"],"source":{"info":{"file":"","lineStart":0,"lineEnd":0,"colStart":0,"colEnd":0}}},
+{"eqIndex":8,"section":"regular","tag":"assign","defines":["$whenCondition1"],"uses":["h"],"equation":["h <= 0.0"],"source":{"info":{"file":"<interactive>","lineStart":13,"lineEnd":13,"colStart":5,"colEnd":22},"within":["BouncingBallFMI20"]}},
+{"eqIndex":9,"section":"regular","tag":"when","defines":["v_new"],"uses":["$whenCondition1","v","e"],"equation":["(-e) * pre(v)"],"source":{"info":{"file":"<interactive>","lineStart":13,"lineEnd":13,"colStart":5,"colEnd":22},"within":["BouncingBallFMI20"]}},
+{"eqIndex":10,"section":"regular","tag":"assign","defines":["der(h)"],"uses":["v"],"equation":["v"],"source":{"info":{"file":"<interactive>","lineStart":10,"lineEnd":10,"colStart":3,"colEnd":13},"within":["BouncingBallFMI20"]}},
+{"eqIndex":11,"section":"regular","tag":"assign","defines":["der(v)"],"uses":["g"],"equation":["-g"],"source":{"info":{"file":"<interactive>","lineStart":9,"lineEnd":9,"colStart":3,"colEnd":14},"within":["BouncingBallFMI20"]}},
+{"eqIndex":12,"section":"regular","tag":"when","defines":["v"],"uses":["$whenCondition1","v_new"],"equation":["v_new"],"source":{"info":{"file":"<interactive>","lineStart":14,"lineEnd":14,"colStart":5,"colEnd":21},"within":["BouncingBallFMI20"]}}
+],
+"functions":[
+]
+}

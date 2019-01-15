@@ -1,0 +1,15 @@
+{"format":"Transformational debugger info","version":1,
+"info":{"name":"HelloFMI20World","description":""},
+"variables":{
+"x":{"comment":"","kind":"state","type":"Real","unit":"","displayUnit":"","source":{"info":{"file":"<interactive>","lineStart":3,"lineEnd":3,"colStart":3,"colEnd":18},"within":["Real"]}},
+"der(x)":{"comment":"","kind":"derivative","type":"Real","unit":"","displayUnit":"","source":{"info":{"file":"<interactive>","lineStart":3,"lineEnd":3,"colStart":3,"colEnd":18},"within":["Real"]}},
+"a":{"comment":"","kind":"parameter","type":"Real","unit":"","displayUnit":"","source":{"info":{"file":"<interactive>","lineStart":4,"lineEnd":4,"colStart":3,"colEnd":21},"within":["Real"]}}
+},
+"equations":[{"eqIndex":0,"tag":"dummy"},
+{"eqIndex":1,"section":"initial","tag":"assign","defines":["x"],"uses":["$START.x"],"equation":["$START.x"],"source":{"info":{"file":"","lineStart":0,"lineEnd":0,"colStart":0,"colEnd":0}}},
+{"eqIndex":2,"tag":"alias","equation":[3],"section":"initial"},
+{"eqIndex":3,"section":"regular","tag":"assign","defines":["der(x)"],"uses":["x","a"],"equation":["a * x"],"source":{"info":{"file":"<interactive>","lineStart":6,"lineEnd":6,"colStart":3,"colEnd":17},"within":["HelloFMI20World"]}}
+],
+"functions":[
+]
+}

@@ -1,0 +1,279 @@
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_FMU.o HelloFMI20World_FMU.c
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World.o HelloFMI20World.c
+In file included from In file included from HelloFMI20World_FMU.cHelloFMI20World.c::97:
+:
+In file included from In file included from include/openmodelica.h./HelloFMI20World_model.h::695:
+:
+In file included from In file included from include/openmodelica.hinclude/openmodelica_types.h::69110:
+:
+In file included from include/gc/omc_gc.hinclude/openmodelica_types.h::217110::
+28include/gc/omc_gc.h:: 217warning:: 28expression result unused [-Wunused-value]:
+ warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+  GC_register_displacement(0);                           ^
+
+                           ^
+include/gc/omc_gc.h:include/gc/omc_gc.h221::22134::34 :warning : warningexpression result unused [-Wunused-value]: 
+expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+  GC_set_force_unmap_on_gcollect(1);                                 ^
+
+                                 ^
+In file included from HelloFMI20World_FMU.c:54:
+include/fmi2/fmu2_model_interface.c:73:11: warning: enumeration value 'modelSlaveInitialized' not handled in switch [-Wswitch]
+  switch (comp->state)
+          ^
+include/fmi2/fmu2_model_interface.c:162:16: warning: passing 'char **' to parameter of type 'const char **' discards qualifiers in nested pointer types [-Wincompatible-pointer-types-discards-qualifiers]
+  GC_vasprintf(&str, msg, args);
+               ^~~~
+include/util/modelica_string.h:71:31: note: passing argument to parameter 'strp' here
+int GC_vasprintf(const char **strp, const char *fmt, va_list ap);
+                              ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_functions.o HelloFMI20World_functions.c
+In file included from HelloFMI20World_functions.c:1:
+In file included from ./HelloFMI20World_functions.h:3:
+In file included from include/meta/meta_modelica.h:49:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_records.o HelloFMI20World_records.c
+In file included from HelloFMI20World_records.c:3:
+In file included from include/meta/meta_modelica.h:49:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_01exo.o HelloFMI20World_01exo.c
+In file included from HelloFMI20World_01exo.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_02nls.o HelloFMI20World_02nls.c
+In file included from HelloFMI20World_02nls.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+4 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_03lsy.o HelloFMI20World_03lsy.c
+2 warnings generated.
+In file included from HelloFMI20World_03lsy.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_04set.o HelloFMI20World_04set.c
+In file included from HelloFMI20World_04set.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_05evt.o HelloFMI20World_05evt.c
+In file included from HelloFMI20World_05evt.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+2 warnings  GC_register_displacement(0); generated
+.
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_06inz.o HelloFMI20World_06inz.c
+In file included from HelloFMI20World_06inz.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_07dly.o HelloFMI20World_07dly.c
+2 warnings generated.
+In file included from HelloFMI20World_07dly.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_08bnd.o HelloFMI20World_08bnd.c
+In file included from HelloFMI20World_08bnd.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_09alg.o HelloFMI20World_09alg.c
+2 warnings generated.
+In file included from HelloFMI20World_09alg.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_10asr.o HelloFMI20World_10asr.c
+In file included from HelloFMI20World_10asr.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_11mix.o HelloFMI20World_11mix.c
+2 warnings generated.
+In file included from HelloFMI20World_11mix.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_12jac.o HelloFMI20World_12jac.c
+In file included from HelloFMI20World_12jac.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_13opt.o HelloFMI20World_13opt.c
+In file included from HelloFMI20World_13opt.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_14lnz.o HelloFMI20World_14lnz.c
+In file included from HelloFMI20World_14lnz.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_15syn.o HelloFMI20World_15syn.c
+In file included from HelloFMI20World_15syn.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_16dae.o HelloFMI20World_16dae.c
+In file included from HelloFMI20World_16dae.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_17inl.o HelloFMI20World_17inl.c
+In file included from HelloFMI20World_17inl.c:2:
+In file included from ./HelloFMI20World_model.h:5:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+clang -Os -fPIC -mfpmath=sse  -DOMC_MINIMAL_RUNTIME=1 -DCMINPACK_NO_DLL=1 -Iinclude/ -Iinclude/fmi2 -I.    -DOMC_MODEL_PREFIX=HelloFMI20World -DOMC_NUM_MIXED_SYSTEMS=0 -DOMC_NUM_LINEAR_SYSTEMS=0 -DOMC_NUM_NONLINEAR_SYSTEMS=0 -DOMC_NDELAY_EXPRESSIONS=0 -DOMC_NVAR_STRING=0  -c -o HelloFMI20World_init_fmu.o HelloFMI20World_init_fmu.c
+2 warnings generated.
+In file included from HelloFMI20World_init_fmu.c:1:
+In file included from include/simulation_data.h:39:
+In file included from include/openmodelica.h:69:
+In file included from include/openmodelica_types.h:110:
+include/gc/omc_gc.h:217:28: warning: expression result unused [-Wunused-value]
+  GC_register_displacement(0);
+                           ^
+include/gc/omc_gc.h:221:34: warning: expression result unused [-Wunused-value]
+  GC_set_force_unmap_on_gcollect(1);
+                                 ^
+2 warnings generated.
+mkdir -p ../binaries/linux64
+clang -shared -o HelloFMI20World.so HelloFMI20World_FMU.o HelloFMI20World.o HelloFMI20World_functions.o HelloFMI20World_records.o HelloFMI20World_01exo.o HelloFMI20World_02nls.o HelloFMI20World_03lsy.o HelloFMI20World_04set.o HelloFMI20World_05evt.o HelloFMI20World_06inz.o HelloFMI20World_07dly.o HelloFMI20World_08bnd.o HelloFMI20World_09alg.o HelloFMI20World_10asr.o HelloFMI20World_11mix.o HelloFMI20World_12jac.o HelloFMI20World_13opt.o HelloFMI20World_14lnz.o HelloFMI20World_15syn.o HelloFMI20World_16dae.o HelloFMI20World_17inl.o HelloFMI20World_init_fmu.o     -L'/home/andreas/workspace/OpenModelica/build/lib/x86_64-linux-gnu/omc' -Wl,-rpath,'/home/andreas/workspace/OpenModelica/build/lib/x86_64-linux-gnu/omc'   -lSimulationRuntimeFMI   -llapack -lblas   -lm -lpthread -rdynamic -Wl,--no-undefined 
+cp HelloFMI20World.so HelloFMI20World_FMU.libs ../binaries/linux64/
+head -n20 Makefile > ../resources/linux64.summary
+make distclean
+make[1]: Verzeichnis „/home/andreas/workspace/OpenModelica/testsuite/openmodelica/fmi/ModelExchange/2.0/HelloFMI20World.fmutmp/sources“ wird betreten
+rm -f HelloFMI20World.def HelloFMI20World.o HelloFMI20World.a HelloFMI20World.so HelloFMI20World_FMU.o HelloFMI20World.o HelloFMI20World_functions.o HelloFMI20World_records.o HelloFMI20World_01exo.o HelloFMI20World_02nls.o HelloFMI20World_03lsy.o HelloFMI20World_04set.o HelloFMI20World_05evt.o HelloFMI20World_06inz.o HelloFMI20World_07dly.o HelloFMI20World_08bnd.o HelloFMI20World_09alg.o HelloFMI20World_10asr.o HelloFMI20World_11mix.o HelloFMI20World_12jac.o HelloFMI20World_13opt.o HelloFMI20World_14lnz.o HelloFMI20World_15syn.o HelloFMI20World_16dae.o HelloFMI20World_17inl.o HelloFMI20World_init_fmu.o 
+rm -f Makefile config.status config.log
+make[1]: Verzeichnis „/home/andreas/workspace/OpenModelica/testsuite/openmodelica/fmi/ModelExchange/2.0/HelloFMI20World.fmutmp/sources“ wird verlassen

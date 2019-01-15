@@ -118,7 +118,7 @@ struct RealProperies
     RealProperties() = new()
 end
 
-struct IntegerProperies
+struct IntegerProperties
     declaredType::String
     variableAttributes::IntegerAttributes
     start::Int
@@ -126,14 +126,14 @@ struct IntegerProperies
     IntegerProperies() = new()
 end
 
-struct BooleanProperies
+struct BooleanProperties
     declaredType::String
     start::Bool
 
     BooleanProperies() = new()
 end
 
-struct ScalarVariable{T<:Union{Real, Int, Bool, String}}
+struct ScalarVariable
     name::String
     valueReference::Unsigned
 
@@ -145,20 +145,20 @@ struct ScalarVariable{T<:Union{Real, Int, Bool, String}}
     canHandleMultipleSetPerTimelnstant::Bool
 
     # Type specific properties of ScalarVariable
-    typeSpecificProperties::Union{RealProperies, IntegerProperties, BooleanProperties, StringProperties}
+    typeSpecificProperties::Union{RealProperies, IntegerProperties, BooleanProperties}
 
     # Inner constructors
-    function ScalarVariable(name, valueReference)
+    function ScalarVariable(name, valueReference, description, typeSpecificProperties)
         if isempty(strip(name))
             errro("ScalarVariable not valid: name can't be empty or only whitespace")
         elseif valueReference < 0
             errro("ScalarVariable not valid: valueReference=$valueReference not unsigned")
         end
-        new(name, Unsigned(valueReference), "local", "continous", "", "", false)
+        new(name, Unsigned(valueReference), description, "local", "continous", "", "", false, typeSpecificProperties)
     end
 
     function ScalarVariable(name, valueReference, description, causality,
-        variability, initial, canHandleMultipleSetPerTimelnstant)
+        variability, initial, canHandleMultipleSetPerTimelnstant, typeSpecificProperties)
 
         # Check name
         if isempty(strip(name))
@@ -210,7 +210,7 @@ struct ScalarVariable{T<:Union{Real, Int, Bool, String}}
             errro("ScalarVariable not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
         end
 
-        new(name, Unsigned(valueReference), causality, variability, initial, canHandleMultipleSetPerTimelnstant)
+        new(name, Unsigned(valueReference), causality, variability, initial, canHandleMultipleSetPerTimelnstant, typeSpecificProperties)
     end
 end
 

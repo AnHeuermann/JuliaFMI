@@ -5,16 +5,17 @@ Run all tests for simulating FMU's
 
 include("../src/FMUSimulator.jl")
 
-fmuTestDir = dirname(Base.source_path())
+thisDir = dirname(Base.source_path())
+include("$(dirname(thisDir))/src/FMUSimulator.jl")
+
+
 if Sys.iswindows()
-    fmuTestDir = string(fmuTestDir, "/winFMU")
+    fmuTestDir = string(thisDir, "/winFMU")
 elseif Sys.islinux()
-    fmuTestDir = string(fmuTestDir, "/linuxFMU")
+    fmuTestDir = string(thisDir, "/linuxFMU")
 else
     error("OS not supportet for this tests.")
 end
-
-include("$(dirname(thisDir))/src/FMUSimulator.jl")
 
 # First simple test
 function testHelloFMI20World()
