@@ -10,49 +10,8 @@ stages:
   - test
   - deploy
 
-matrix:
-  include:
-    - language: c
-      before_script:
-       - echo Starting C jobs
-      stage: build
-      script:
-       - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
-       - gcc -shared src/logger.c -fPIC -o bin/unix64/logger.so
-
-    - language: julia
-      julia: 1.0.2
-      before_script:
-        - echo Starting Julia jobs
-      stage: build
-      script:
-        - julia deps/build.jl
-
-    - language: julia
-      julia: 1.0.2
-      before_script:
-        - echo Starting Julia jobs
-      stage: load
-      script:
-        - julia src/FMI2Types.jl
-        - julia src/FMICallbackFunctions.jl
-        - julia src/FMIWrapper.jl
-        - julia src/FMUSimulator.jl
-
-    - language: julia
-      julia: 1.0.2
-      stage: test
-      script:
-        - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
-      after_script:
-        - rm -rf test/HelloFMI20World/
-        - echo Finished Julia jobs and cleaned up
-
-    - deploy-script:
-      stage: deploy
-      script:
-        - .travis/push.sh
-
-
-notifications:
-  email: false
+jobs:
+  stage: build
+  script:
+    - echo HelloWorld!
+    - gcc --version
