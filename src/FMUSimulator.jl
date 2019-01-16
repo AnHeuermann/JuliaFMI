@@ -339,7 +339,7 @@ function main(pathToFMU::String)
         fmi2SetupExperiment(fmu, 0)
 
         # Initialize FMU
-        fmi2EnterInitialization(fmu)
+        fmi2EnterInitializationMode(fmu)
 
         # Exit Initialization
         fmi2ExitInitializationMode(fmu)

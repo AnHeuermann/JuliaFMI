@@ -297,9 +297,9 @@ end
 
 """
 ```
-    fmi2EnterInitialization(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing})
+    fmi2EnterInitializationMode(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing})
 
-    fmi2EnterInitialization(fmu::FMU)
+    fmi2EnterInitializationMode(fmu::FMU)
 ```
 Informs the FMU to enter Initialization Mode. Before calling this function,
 function `fmi2SetupExperiment` must be called at least once.
@@ -307,10 +307,10 @@ All variables with attribute `initial = "exact"` or `initial="approx"` can be
 set with the `fmi2SetReal`, `fmi2SetInteger`, `fmi2SetBoolean` and
 `fmi2SetString` functions.
 """
-function fmi2EnterInitialization(libHandle::Ptr{Nothing},
+function fmi2EnterInitializationMode(libHandle::Ptr{Nothing},
     fmi2Component::Ptr{Nothing})
 
-    func = dlsym(libHandle, :fmi2EnterInitialization)
+    func = dlsym(libHandle, :fmi2EnterInitializationMode)
 
     status = ccall(
         func,
@@ -320,13 +320,13 @@ function fmi2EnterInitialization(libHandle::Ptr{Nothing},
         )
 
     if status != UInt(fmi2OK)
-        error("fmi2EnterInitialization returned not status \"fmi2Ok\"")
+        error("fmi2EnterInitializationMode returned not status \"fmi2Ok\"")
     end
 end
 
-function fmi2EnterInitialization(fmu::FMU)
+function fmi2EnterInitializationMode(fmu::FMU)
 
-    return fmi2EnterInitialization(fmu.libHandle, fmu.fmi2Component)
+    return fmi2EnterInitializationMode(fmu.libHandle, fmu.fmi2Component)
 end
 
 
