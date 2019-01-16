@@ -3,15 +3,46 @@
 
 # This YAML file
 
-
 stages:
   - build
   - load
   - test
   - deploy
 
-jobs:
+
+before_script:
+ - echo Starting script
+
+build_c_file:
   stage: build
   script:
-    - echo HelloWorld!
-    - gcc --version
+   - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
+   - gcc -shared src/logger.c -fPIC -o bin/unix64/logger.so
+
+build_julia_deps:
+  stage: build
+  script:
+    - julia --version
+    - julia deps/build.jl
+
+check_julia_syntax:
+  stage: load
+  script:
+    - julia src/FMI2Types.jl
+    - julia src/FMICallbackFunctions.jl
+    - julia src/FMIWrapper.jl
+    - julia src/FMUSimulator.jl
+
+run_tests:
+  stage: test
+  script:
+    - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
+
+deploy:
+  stage: deploy
+  script:
+    - git --version
+
+after_script:
+  - rm -rf test/HelloFMI20World/
+  - echo Finished Julia jobs and cleaned up
