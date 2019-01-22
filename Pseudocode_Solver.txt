@@ -1,0 +1,23 @@
+Pseudocode for solving algebraic system
+
+function continousSimulation()
+  Input: fmu::FMU
+  Output: fmu::FMU
+  Output: results::csvFile
+
+  1. Set start time and start values in fmu.simulationData
+  2a. Do Euler Step
+  2b. Do CVODES Step
+  2c. Do IDAS Step
+  3. Update states and time
+  4. Update result file
+  5. If time smaller end time and no errors, go to Step 2
+  6. Terminate FMU
+
+
+function doEulerStep()
+  Input: y_k, t_k
+  Output: y_k+1
+
+  1. Evaluate function f for time t_k and state y_k
+  2. Update y_k+1: y_k+1 = y_k +h*f(t_k,y_k)
