@@ -76,6 +76,8 @@ struct RealAttributes
     unbound::Bool
 
     # Inner constructor
+    RealAttributes() = new()
+
     function RealAttributes(quantity, unit, displayUnit, relativeQuantity,
         min, max, nominal, unbound)
 
@@ -111,11 +113,12 @@ end
 struct RealProperties
     declaredType::String
     variableAttributes::RealAttributes
-    start::Real
+    start::Float64
     derivative::UInt
     reinit::Bool
 
     RealProperties() = new()
+    RealProperties(declaredType, variableAttributes, start, derivative, reinit) = new(declaredType, variableAttributes, start, derivative, reinit)
 end
 
 struct IntegerProperties

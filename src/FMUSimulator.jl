@@ -161,8 +161,6 @@ function readModelDescription(pathToModelDescription::String)
         for element in get_elements_by_tagname(elementModelVariables, "ScalarVariable")
             numberOfVariables += 1
         end
-
-        println("numberOfVariables: $numberOfVariables")
         scalarVariables = Array{ScalarVariable}(undef, numberOfVariables)
 
         for (index, element) in enumerate(get_elements_by_tagname(elementModelVariables, "ScalarVariable"))
@@ -195,7 +193,54 @@ function readModelDescription(pathToModelDescription::String)
             end
 
             # Get child node for typeSpecificProperties
-            tmp_typeSpecificProperties = RealProperties()       # TODO
+            tmp_typeSpecificProperties = nothing
+            for child in child_elements(element)
+                println()
+                if is_elementnode(child)
+                    if name(child)=="Real"
+                        tmp_declaredType = "Real"
+                        tmp_variableAttributes = RealAttributes()   # TODO implement
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = Float64(0)
+                        else
+                            tmp_start = parse(Float64, tmp_start)
+                        end
+                        tmp_derivative = attribute(child, "derivative"; required=false)
+                        if tmp_derivative == nothing
+                            tmp_derivative = UInt(0)
+                        else
+                            tmp_derivative = parse(UInt, tmp_derivative)
+                        end
+                        tmp_reinit = attribute(child, "reinit"; required=false)
+                        if tmp_reinit == nothing
+                            tmp_reinit = false
+                        end
+                        tmp_typeSpecificProperties = RealProperties(tmp_declaredType, tmp_variableAttributes, tmp_start, tmp_derivative, tmp_reinit)
+                    elseif name(child)=="Integer"
+                        tmp_declaredType = "Integer"
+                        tmp_variableAttributes = IntegerAttributes()   # TODO implement
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = Int(0)
+                        else
+                            tmp_start = parse(Int, tmp_start)
+                        end
+                        tmp_typeSpecificProperties = IntegerProperties(tmp_declaredType, tmp_variableAttributes, tmp_start)
+                    elseif name(child)=="Boolean"
+                        tmp_declaredType = "Boolean"
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = false
+                        else
+                            tmp_start = parse(Bool, tmp_start)
+                        end
+                        tmp_typeSpecificProperties = BooleanProperties(tmp_declaredType, tmp_start)
+                    else
+                        error("Unknown type of ScalarVariable")
+                    end
+                end
+            end
 
             scalarVariables[index] = ScalarVariable(tmp_name,
                 tmp_valueReference, tmp_description, tmp_causality,
@@ -203,7 +248,7 @@ function readModelDescription(pathToModelDescription::String)
                 tmp_canHandleMultipleSetPerTimelnstant,
                 tmp_typeSpecificProperties)
         end
-
+        md.modelVariables = scalarVariables
 
         # Get attributes of tag ModelStructure
 
@@ -340,9 +385,8 @@ function my_unzip(target::String, destinationDir::String)
 
     try
         #use unzip
-        println("destinationDir: $destinationDir")
-
         run(Cmd(`unzip -qo $target`, dir = destinationDir))
+        println("Extracted FMU to $destinationDir")
     catch
         try
             #use 7-zip
