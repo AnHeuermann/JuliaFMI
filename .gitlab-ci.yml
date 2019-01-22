@@ -37,6 +37,7 @@ run_tests:
   stage: test
   script:
     - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
+    - julia -e "include(\"test/runtests.jl\"); testBouncingBall()"
 
 deploy:
   stage: deploy

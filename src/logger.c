@@ -55,7 +55,7 @@ void logger (void* componentEnvironment,
         buffer = (char*) calloc(size+1, sizeof(char));
 
         vsprintf(buffer, message, args);
-        printf("Logger: [%s][%s][%s]:\n\t%s\n", instanceName, status2string(status), category, message);
+        printf("Logger: [%s][%s][%s]:\n\t%s\n", instanceName, status2string(status), category, buffer);
 
         /* Free memory */
         free(buffer);
