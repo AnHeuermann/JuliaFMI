@@ -41,7 +41,7 @@ const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
 # Allocate with zeroes initialized memory
 function fmi2AllocateMemory(nitems::Csize_t, size::Csize_t)
     print("Allocate Memory: ")
-    ptr = ccall(("calloc", @libc), Ptr{Cvoid}, (Csize_t, Csize_t), nitems, size)
+    ptr = ccall(("calloc"), Ptr{Cvoid}, (Csize_t, Csize_t), nitems, size)
     println("Returned pointer $ptr.")
     return ptr
 end
