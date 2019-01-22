@@ -133,7 +133,8 @@ struct BooleanProperties
     declaredType::String
     start::Bool
 
-    BooleanProperies() = new()
+    BooleanProperties() = new()
+    BooleanProperties(declaredType, start) = new(declaredType, start)
 end
 
 struct ScalarVariable
