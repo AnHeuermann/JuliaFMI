@@ -158,10 +158,52 @@ function readModelDescription(pathToModelDescription::String)
         end
 
         numberOfVariables = 0
-        for element in child_nodes(elementModelVariables)
+        for element in get_elements_by_tagname(elementModelVariables, "ScalarVariable")
             numberOfVariables += 1
         end
-        #md.modelVariables
+
+        println("numberOfVariables: $numberOfVariables")
+        scalarVariables = Array{ScalarVariable}(undef, numberOfVariables)
+
+        for (index, element) in enumerate(get_elements_by_tagname(elementModelVariables, "ScalarVariable"))
+            # Get attributes name, valueReference, variability, causality, initial
+            tmp_name = attribute(element, "name"; required=true)
+            tmp_valueReference = parse(Int, attribute(element, "valueReference"; required=true))
+
+            tmp_description = attribute(element, "description"; required=false)
+            if tmp_description == nothing
+                tmp_description=""
+            end
+            tmp_variability = attribute(element, "variability"; required=false)
+            if tmp_variability == nothing
+                tmp_variability=""
+            end
+            tmp_causality = attribute(element, "causality"; required=false)
+            if tmp_causality == nothing
+                tmp_causality=""
+            end
+            tmp_initial = attribute(element, "initial"; required=false)
+            if tmp_initial == nothing
+                tmp_initial=""
+            end
+            tmp_canHandleMultipleSetPerTimelnstant = attribute(element, "canHandleMultipleSetPerTimelnstant"; required=false)
+            if tmp_canHandleMultipleSetPerTimelnstant == nothing
+                tmp_canHandleMultipleSetPerTimelnstant = false
+            else
+                tmp_canHandleMultipleSetPerTimelnstant = parse(Bool,
+                    tmp_canHandleMultipleSetPerTimelnstant)
+            end
+
+            # Get child node for typeSpecificProperties
+            tmp_typeSpecificProperties = RealProperties()       # TODO
+
+            scalarVariables[index] = ScalarVariable(tmp_name,
+                tmp_valueReference, tmp_description, tmp_causality,
+                tmp_variability, tmp_initial,
+                tmp_canHandleMultipleSetPerTimelnstant,
+                tmp_typeSpecificProperties)
+        end
+
 
         # Get attributes of tag ModelStructure
 
