@@ -195,7 +195,6 @@ function readModelDescription(pathToModelDescription::String)
             # Get child node for typeSpecificProperties
             tmp_typeSpecificProperties = nothing
             for child in child_elements(element)
-                println()
                 if is_elementnode(child)
                     if name(child)=="Real"
                         tmp_declaredType = "Real"
@@ -262,7 +261,7 @@ function readModelDescription(pathToModelDescription::String)
     end
 
     # Free memory
-    free(xdoc)
+    LightXML.free(xdoc)
 
     return md
 end

@@ -6,15 +6,6 @@ include("FMI2Types.jl")
 
 using Libdl         # For using dlopen, dlclose and so on
 
-# Macro to identify standard C library
-macro libc()
-    if Sys.iswindows()#
-        return "msvcrt"
-    else
-        return "libc"
-    end
-end
-
 # Macro to identify logger library
 macro libLogger()
     if Sys.iswindows()
@@ -41,7 +32,7 @@ const fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
 # Allocate with zeroes initialized memory
 function fmi2AllocateMemory(nitems::Csize_t, size::Csize_t)
     print("Allocate Memory: ")
-    ptr = ccall(("calloc"), Ptr{Cvoid}, (Csize_t, Csize_t), nitems, size)
+    ptr = Libc.calloc(nitems, size)
     println("Returned pointer $ptr.")
     return ptr
 end
@@ -51,7 +42,7 @@ const fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, 
 # Free memory allocated with fmi2AllocateMemory
 function fmi2FreeMemory(ptr::Ptr{Nothing})
     println("Freeing pointer $ptr.")
-    ccall(("free"), Cvoid, (Ptr{Cvoid},), ptr)
+    Libc.free(ptr)
 end
 const fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
 
