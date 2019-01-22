@@ -51,7 +51,7 @@ const fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, 
 # Free memory allocated with fmi2AllocateMemory
 function fmi2FreeMemory(ptr::Ptr{Nothing})
     println("Freeing pointer $ptr.")
-    ccall(("free", @libc), Cvoid, (Ptr{Cvoid},), ptr)
+    ccall(("free"), Cvoid, (Ptr{Cvoid},), ptr)
 end
 const fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
 
