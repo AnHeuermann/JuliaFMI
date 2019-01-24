@@ -426,6 +426,24 @@ function main(pathToFMU::String)
         # Initialize FMU
         fmi2EnterInitializationMode(fmu)
 
+        # Set real variable with valueReference 0
+        fmi2SetReal(fmu, 0, 10.3)
+        fmi2SetReal(fmu, 1, -7.5)
+
+        # Get real variable with valueReference 0 of FMU
+        value = fmi2GetReal(fmu, 0)
+        println("value: $value")
+        value = fmi2GetReal(fmu, 1)
+        println("value: $value")
+
+        # Set real variables
+        fmi2SetReal(fmu, [0,1,2], [2.1, 13.37, -9.875])
+
+        # Get variables with valueReference 0, 1 and 2
+        value = Array{Float64}(undef,3)
+        fmi2GetReal!(fmu, [0, 1, 2], value)
+        println("value: $value")
+
         # Exit Initialization
         fmi2ExitInitializationMode(fmu)
 

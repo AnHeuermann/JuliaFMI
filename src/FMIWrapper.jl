@@ -431,22 +431,33 @@ end
 
 
 # ##############################################################################
-# Getting and Setting Variable Values
+# Getting Variable Values
 # ##############################################################################
 
 """
 ```
-    fmi2GetReal!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Real,1})
+    fmi2GetReal!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{Float64,1}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int,1}
 
-    fmi2GetReal!(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Real,1})
+    fmi2GetReal!(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Array{Float64,1}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int,1}
 ```
-Get values of real variables by providing their variable references.
+Get values of real variables by providing their value references.
 Overwrites provided array `value` with values.
 Can be called after calling `fmi2EnterInitializationMode`.
+See also `fmi2GetReal`.
+
+## Example call
+Get values of real variables with value references 0, 1 and 2
+```
+julia> value = Array{Float64}(undef,3)
+julia> fmi2GetReal!(fmu, [0, 1, 2], value)
+julia> println("value: \$value")
+```
 """
 function fmi2GetReal!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Real,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    numberOfValueReference::Int, value::Array{Float64,1})
 
     if size(valueReference) != size(value)
         error("Arrays valueReference and value are not the same size.")
@@ -455,56 +466,88 @@ function fmi2GetReal!(libHandle::Ptr{Nothing},
             Expected $(length(valueReference)) but got $numberOfValueReference.")
     end
 
-    func = dlsym(libHandle, :fmi2GetReal!)
+    func = dlsym(libHandle, :fmi2GetReal)
 
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cdouble}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cdouble}),
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != UInt(fmi2OK)
         error("fmi2GetReal returned not status \"fmi2Ok\"")
     end
+
+    return value
 end
 
 function fmi2GetReal!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    value::Array{Real,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    value::Array{Float64,1})
 
     return fmi2GetReal!(libHandle, fmi2Component, valueReference,
         length(valueReference), value)
 end
 
-function fmi2GetReal!(fmu::FMU, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Real,1})
+function fmi2GetReal!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    numberOfValueReference::Int, value::Array{Float64,1})
 
-    return fmi2GetReal!(fmu.libHandle, fmu.fmi2Component, valueReference,
-        numberOfValueReference, value)
+    return fmi2GetReal!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
 end
 
-function fmi2GetReal!(fmu::FMU, valueReference::Array{UInt,1},
-    value::Array{Real,1})
+function fmi2GetReal!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Array{Float64,1})
 
-    return fmi2GetReal!(fmu.libHandle, fmu.fmi2Component, valueReference,
-        length(valueReference), value)
+    return fmi2GetReal!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference), value)
 end
-
 
 """
 ```
- fmi2GetInteger!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Int,1})
-
- fmi2GetInteger!(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Int,1})
+    fmi2GetReal(fmu::FMU, valueReference::Union{Int, UInt, UInt32}) -> value
 ```
-Get values of integer variables by providing their variable references.
+Get value of real variable by providing a value reference.
+See also `fmi2GetReal!`.
+
+## Example call
+Get value of real variable with value reference 0
+```
+julia> value = fmi2GetReal(fmu, 0)
+julia> println("value: \$value")
+```
+"""
+function fmi2GetReal(fmu::FMU, valueReference::Union{Int, UInt, UInt32})
+
+    return fmi2GetReal!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), 1, Array{Float64}(undef,1))
+end
+
+"""
+```
+    fmi2GetInteger!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{Int32,1}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
+
+    fmi2GetInteger!(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Array{Int32,1}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
+```
+Get values of integer variables by providing their value references.
 Overwrites provided array `value` with values.
-Can be called after calling `fmi2EnterInitializationMode`
+Can be called after calling `fmi2EnterInitializationMode`.
+See also `fmi2GetInteger`.
+
+## Example call
+Get values of integer variables with value references 0, 1 and 2
+```
+julia> value = Array{Int32}(undef,3)
+julia> fmi2GetInteger!(fmu, [0, 1, 2], value)
+julia> println("value: \$value")
+```
 """
 function fmi2GetInteger!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Int,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
         error("Arrays valueReference and value are not the same size.")
@@ -513,56 +556,89 @@ function fmi2GetInteger!(libHandle::Ptr{Nothing},
             Expected $(length(valueReference)) but got $numberOfValueReference.")
     end
 
-    func = dlsym(libHandle, :fmi2GetInteger!)
+    func = dlsym(libHandle, :fmi2GetInteger)
 
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cint}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
+        fmi2Component, valueReference, numberOfValeReference, value
         )
 
     if status != UInt(fmi2OK)
         error("fmi2GetInteger returned not status \"fmi2Ok\"")
     end
+
+    return value
 end
 
 function fmi2GetInteger!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    value::Array{Int,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    value::Array{Int32,1})
 
     return fmi2GetInteger!(libHandle, fmi2Component, valueReference,
-    length(valueReference), value)
-end
-
-function fmi2GetInteger!(fmu::FMU, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Int,1})
-
-    return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component, valueReference,
-        numberOfValueReference, value)
-end
-
-function fmi2GetInteger!(fmu::FMU, valueReference::Array{UInt,1},
-    value::Array{Int,1})
-
-    return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component, valueReference,
         length(valueReference), value)
 end
 
+function fmi2GetInteger!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    numberOfValueReference::Int, value::Array{Int32,1})
+
+    return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
+end
+
+function fmi2GetInteger!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Array{Int32,1})
+
+    return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference), value)
+end
 
 """
 ```
-  fmi2GetBoolean!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Bool,1})
-
-  fmi2GetBoolean!(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Bool,1})
+    fmi2GetInteger(fmu::FMU, valueReference::Union{Int, UInt, UInt32}) -> value
 ```
-Get values of bool variables by providing their variable references.
+Get value of integer variable by providing a value reference.
+See also `fmi2GetInteger!`.
+
+## Example call
+Get value of integer variable with value reference 0
+```
+julia> value = fmi2GetInteger(fmu, 0)
+julia> println("value: \$value")
+```
+"""
+function fmi2GetInteger(fmu::FMU, valueReference::Union{Int, UInt, UInt32})
+
+    return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), 1, Array{Int32}(undef,1))
+end
+
+
+"""
+```
+    fmi2GetBoolean!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{Int32,1}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
+
+    fmi2GetBoolean!(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Union{Array{Int32,1}, Array{Bool,1}}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
+```
+Get values of boolean variables by providing their value references.
 Overwrites provided array `value` with values.
-Can be called after calling `fmi2EnterInitializationMode`
+Can be called after calling `fmi2EnterInitializationMode`.
+See also `fmi2GetBoolean`.
+
+## Example call
+Get values of boolean variables with value references 0, 1 and 2
+```
+julia> value = Array{Bool}(undef,3)
+julia> fmi2GetBoolean!(fmu, [0, 1, 2], value)
+julia> println("value: \$value")
+```
 """
 function fmi2GetBoolean!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Bool,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
         error("Arrays valueReference and value are not the same size.")
@@ -571,55 +647,96 @@ function fmi2GetBoolean!(libHandle::Ptr{Nothing},
             Expected $(length(valueReference)) but got $numberOfValueReference.")
     end
 
-    func = dlsym(libHandle, :fmi2GetBoolean!)
+    func = dlsym(libHandle, :fmi2GetBoolean)
 
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cint}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
+        fmi2Component, valueReference, numberOfValeReference, value
         )
 
     if status != UInt(fmi2OK)
         error("fmi2GetBoolean returned not status \"fmi2Ok\"")
     end
+
+    return value
 end
 
 function fmi2GetBoolean!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    value::Array{Bool,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    value::Array{Int32,1})
 
     return fmi2GetBoolean!(libHandle, fmi2Component, valueReference,
         length(valueReference), value)
 end
 
-function fmi2GetBoolean!(fmu::FMU, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Bool,1})
+function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    numberOfValueReference::Int, value::Array{Int32,1})
 
-    return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component, valueReference,
-        numberOfValueReference, value)
+    return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
 end
 
-function fmi2GetBoolean!(fmu::FMU, valueReference::Array{UInt,1},
-    value::Array{Bool,1})
+function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Array{Int32,1})
 
-    return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component, valueReference,
-        length(valueReference), value)
+    return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference), value)
+end
+
+function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Bool,1}},
+    value::Array{Int32,1})
+
+    return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference),
+        convert(Array{Int32,1}, value))
+end
+
+"""
+```
+    fmi2GetBoolean(fmu::FMU, valueReference::Union{Int, UInt, UInt32}) -> value
+```
+Get value of boolean variable by providing a value reference.
+See also `fmi2GetBool!`.
+
+## Example call
+Get value of boolean variable with value reference 0
+```
+julia> value = fmi2GetBoolean(fmu, 0)
+julia> println("value: \$value")
+```
+"""
+function fmi2GetBoolean(fmu::FMU, valueReference::Union{Int, UInt, UInt32})
+
+    return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), 1, Array{Int32}(undef,1))
 end
 
 
 """
 ```
-    fmi2GetString!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{String,1})
+    fmi2GetString!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{String,1}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
 
-    fmi2GetString!(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{String,1})
+    fmi2GetString!(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Array{String,1}) -> value
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
 ```
-Get values of string variables by providing their variable references.
-Overwrites provided array `value` with values.
-Can be called after calling `fmi2EnterInitializationMode`
+Get values of string variables by providing their value references.
+Overwrites provided array `value` with values. Actually I have no clue whats happening...
+Can be called after calling `fmi2EnterInitializationMode`.
+See also `fmi2GetString`.
+
+## Example call
+Get values of string variables with value references 0, 1 and 2
+```
+julia> value = Array{String}(undef,3)
+julia> fmi2GetString!(fmu, [0, 1, 2], value)
+julia> println("value: \$value")
+```
 """
 function fmi2GetString!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
     numberOfValueReference::Int, value::Array{String,1})
 
     if size(valueReference) != size(value)
@@ -629,55 +746,98 @@ function fmi2GetString!(libHandle::Ptr{Nothing},
             Expected $(length(valueReference)) but got $numberOfValueReference.")
     end
 
-    func = dlsym(libHandle, :fmi2GetString!)
+    func = dlsym(libHandle, :fmi2GetString)
 
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cstring}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cstring}),
+        fmi2Component, valueReference, numberOfValeReference, value
         )
 
     if status != UInt(fmi2OK)
         error("fmi2GetString returned not status \"fmi2Ok\"")
     end
+
+    # Return copy of string array, since the FMU is allowed to free the
+    # allocated memory at any time
+    return copy(value)
 end
 
 function fmi2GetString!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
     value::Array{String,1})
 
     return fmi2GetString!(libHandle, fmi2Component, valueReference,
         length(valueReference), value)
 end
 
-function fmi2GetString!(fmu::FMU, valueReference::Array{UInt,1},
+function fmi2GetString!(fmu::FMU, valueReference::Array{UInt32,1},
     numberOfValueReference::Int, value::Array{String,1})
 
     return fmi2GetString!(fmu.libHandle, fmu.fmi2Component, valueReference,
         numberOfValueReference, value)
 end
 
-function fmi2GetString!(fmu::FMU, valueReference::Array{UInt,1},
+function fmi2GetString!(fmu::FMU, valueReference::Array{UInt32,1},
     value::Array{String,1})
 
     return fmi2GetString!(fmu.libHandle, fmu.fmi2Component, valueReference,
         length(valueReference), value)
 end
 
+"""
+```
+    fmi2GetString(fmu::FMU, valueReference::Union{Int, UInt, UInt32}) -> value
+```
+Get value of string variable by providing a value reference.
+See also `fmi2GetString!`.
+
+## Example call
+Get value of string variable with value reference 0
+```
+julia> value = fmi2GetString(fmu, 0)
+julia> println("value: \$value")
+```
+"""
+function fmi2GetString(fmu::FMU, valueReference::Union{Int, UInt, UInt32})
+
+    return fmi2GetString!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), 1, Array{String}(undef,1))
+end
+
+
+# ##############################################################################
+# Setting Variable Values
+# ##############################################################################
 
 """
 ```
-    fmi2SetReal(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Real,1})
+    fmi2SetReal(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{Float64,1})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int,1}
 
-    fmi2SetReal(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Real,1})
+    fmi2SetReal(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Array{Float64,1})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int,1}
+
+    fmi2SetReal(fmu::FMU, valueReference::T, value::Float64)
+      where T is one of UInt32, UInt, Int
 ```
-Set values of real variables by providing their variable references and values.
-Can be called after calling `fmi2EnterInitializationMode`
+Set values of real variables by providing their value references and values.
+Can be called after calling `fmi2EnterInitializationMode`.
+
+## Example calls
+Set value of real variable with value reference 0
+```
+julia> fmi2SetReal(fmu, 0, -42.1337)
+```
+Set values of real variables with value references 0, 1 and 2
+```
+julia> fmi2SetReal(fmu, [0, 1, 2], [1.2,3.4,-1.0])
+```
 """
 function fmi2SetReal(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Real,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    numberOfValueReference::Int, value::Array{Float64,1})
 
     if size(valueReference) != size(value)
         error("Arrays valueReference and value are not the same size.")
@@ -691,8 +851,8 @@ function fmi2SetReal(libHandle::Ptr{Nothing},
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cdouble}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cdouble}),
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != UInt(fmi2OK)
@@ -701,46 +861,68 @@ function fmi2SetReal(libHandle::Ptr{Nothing},
 end
 
 function fmi2SetReal(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    value::Array{Real,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    value::Array{Float64,1})
 
-    return fmi2SetReal(libHandle, fmi2Component, valueReference,
+    fmi2SetReal(libHandle, fmi2Component, valueReference,
         length(valueReference), value)
 end
 
-function fmi2SetReal(fmu::FMU, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Real,1})
+function fmi2SetReal(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    numberOfValueReference::Int, value::Array{Float64,1})
 
-    return fmi2SetReal(fmu.libHandle, fmu.fmi2Component, valueReference,
-        numberOfValueReference, value)
+    fmi2SetReal(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
 end
 
-function fmi2SetReal(fmu::FMU, valueReference::Array{UInt,1},
-    value::Array{Real,1})
+function fmi2SetReal(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Array{Float64,1})
 
-    return fmi2SetReal(fmu.libHandle, fmu.fmi2Component, valueReference,
-        length(valueReference), value)
+    fmi2SetReal(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference), value)
+end
+
+function fmi2SetReal(fmu::FMU, valueReference::Union{UInt32, UInt64, Int},
+    value::Float64)
+
+    fmi2SetReal(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), length(valueReference), [value])
 end
 
 
 """
 ```
- fmi2SetInteger(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Int,1})
+    fmi2SetInteger(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{Int32,1})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
 
- fmi2SetInteger(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Int,1})
+    fmi2SetInteger(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Array{Int32,1})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
+
+    fmi2SetInteger(fmu::FMU, valueReference::T, value::Int32)
+      where T is one of UInt32, UInt, Int
 ```
-Set values of integer variables by providing their variable references and values.
-Can be called after calling `fmi2EnterInitializationMode`
+Set values of integer variables by providing their value references.
+Can be called after calling `fmi2EnterInitializationMode`.
+
+## Example calls
+Set value of integer variable with value reference 0
+```
+julia> fmi2SetInteger(fmu, 0, 42)
+```
+Set values of integer variables with value references 0, 1 and 2
+```
+julia> fmi2SetInteger(fmu, [0, 1, 2], [-1, 3, 27])
+```
 """
 function fmi2SetInteger(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Int,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
-     error("Arrays valueReference and value are not the same size.")
+        error("Arrays valueReference and value are not the same size.")
     elseif (length(valueReference) != numberOfValueReference)
-     error("Wrong numberOfValueReference.
-         Expected $(length(valueReference)) but got $numberOfValueReference.")
+        error("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference.")
     end
 
     func = dlsym(libHandle, :fmi2SetInteger)
@@ -748,50 +930,72 @@ function fmi2SetInteger(libHandle::Ptr{Nothing},
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cint}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
+        fmi2Component, valueReference, numberOfValeReference, value
         )
 
     if status != UInt(fmi2OK)
-        error("fmi2SetInteger returned not status \"fmi2Ok\"")
+        error("fmi2GetInteger returned not status \"fmi2Ok\"")
     end
 end
 
 function fmi2SetInteger(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    value::Array{Int,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    value::Array{Int32,1})
 
-    return fmi2SetInteger(libHandle, fmi2Component, valueReference,
-    length(valueReference), value)
-end
-
-function fmi2SetInteger(fmu::FMU, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Int,1})
-
-    return fmi2SetInteger(fmu.libHandle, fmu.fmi2Component, valueReference,
-        numberOfValueReference, value)
-end
-
-function fmi2SetInteger(fmu::FMU, valueReference::Array{UInt,1},
-    value::Array{Int,1})
-
-    return fmi2SetInteger(fmu.libHandle, fmu.fmi2Component, valueReference,
+    fmi2SetInteger(libHandle, fmi2Component, valueReference,
         length(valueReference), value)
 end
 
+function fmi2SetInteger(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    numberOfValueReference::Int, value::Array{Int32,1})
+
+    fmi2SetInteger(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
+end
+
+function fmi2SetInteger(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Array{Int32,1})
+
+    fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference), value)
+end
+
+function fmi2SetInteger(fmu::FMU, valueReference::Union{UInt32, UInt64, Int},
+    value::Int32)
+
+    fmi2SetInteger(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), length(valueReference), [value])
+end
+
 
 """
 ```
-  fmi2SetBoolean(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Bool,1})
+    fmi2SetBoolean(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{Int32,1})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
 
-  fmi2SetBoolean(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{Bool,1})
+    fmi2SetBoolean(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Union{Array{Int32,1}, Array{Bool,1}})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
+
+    fmi2SetBoolean(fmu::FMU, valueReference::T, value::Int32)
+      where T is one of UInt32, UInt, Int
 ```
-Set values of boolean variables by providing their variable references and values.
-Can be called after calling `fmi2EnterInitializationMode`
+Set values of boolean variables by providing their value references.
+Can be called after calling `fmi2EnterInitializationMode`.
+
+## Example calls
+Set value of boolean variable with value reference 0
+```
+julia> fmi2SetBoolean(fmu, 0, true)
+```
+Set values of boolean variables with value references 0, 1 and 2
+```
+julia> fmi2SetBoolean(fmu, [0, 1, 2], [true, false, false])
+```
 """
 function fmi2SetBoolean(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Bool,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
         error("Arrays valueReference and value are not the same size.")
@@ -805,49 +1009,78 @@ function fmi2SetBoolean(libHandle::Ptr{Nothing},
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cint}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
+        fmi2Component, valueReference, numberOfValeReference, value
         )
 
     if status != UInt(fmi2OK)
-        error("fmi2SetBoolean returned not status \"fmi2Ok\"")
+        error("fmi2GetBoolean returned not status \"fmi2Ok\"")
     end
 end
 
 function fmi2SetBoolean(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
-    value::Array{Bool,1})
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
+    value::Array{Int32,1})
 
-    return fmi2SetBoolean(libHandle, fmi2Component, valueReference,
+    fmi2SetBoolean(libHandle, fmi2Component, valueReference,
         length(valueReference), value)
 end
 
-function fmi2SetBoolean(fmu::FMU, valueReference::Array{UInt,1},
-    numberOfValueReference::Int, value::Array{Bool,1})
+function fmi2SetBoolean(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    numberOfValueReference::Int, value::Array{Int32,1})
 
-    return fmi2SetBoolean(fmu.libHandle, fmu.fmi2Component, valueReference,
-        numberOfValueReference, value)
+    fmiSGetBoolean(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
 end
 
-function fmi2SetBoolean(fmu::FMU, valueReference::Array{UInt,1},
-    value::Array{Bool,1})
+function fmiSGetBoolean(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Array{Int32,1})
 
-    return fmi2SetBoolean(fmu.libHandle, fmu.fmi2Component, valueReference,
-        length(valueReference), value)
+    fmi2SetBoolean(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference), value)
+end
+
+function fmi2SetBoolean(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Bool,1}},
+    value::Array{Int32,1})
+
+    fmi2SetBoolean(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference),
+        convert(Array{Int32,1}, value))
+end
+
+function fmi2SetBoolean(fmu::FMU, valueReference::Union{Int, UInt, UInt32}, value::Int32)
+
+    fmi2SetBoolean(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), 1, Array{Int32}(value))
 end
 
 
 """
 ```
-  fmi2SetString(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{String,1})
+    fmi2SetString(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, valueReference::T, [numberOfValueReference::Int], value::Array{String,1})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
 
-  fmi2SetString(fmu::FMU, valueReference::Array{UInt,1}, [numberOfValueReference::Int], value::Array{String,1})
+    fmi2SetString(fmu::FMU, valueReference::T, [numberOfValueReference::Int], value::Array{String,1})
+      where T is one of Array{UInt32,1}, Array{UInt,1}, Array{Int32,1}
+
+    fmi2SetString(fmu::FMU, valueReference::T, value::String)
+      where T is one of UInt32, UInt, Int
 ```
-Set values of string variables by providing their variable references and values.
-Can be called after calling `fmi2EnterInitializationMode`
+Set values of string variables by providing their value references.
+Can be called after calling `fmi2EnterInitializationMode`.
+
+## Example calls
+Set value of string variable with value reference 0
+```
+julia> fmi2SetBoolean(fmu, 0, \"foo\")
+```
+Set values of string variables with value references 0, 1 and 2
+```
+julia> fmi2SetString(fmu, [0, 1, 2], [\"Hello\", \"FMU\", \"Julia\"])
+```
 """
 function fmi2SetString(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
     numberOfValueReference::Int, value::Array{String,1})
 
     if size(valueReference) != size(value)
@@ -862,35 +1095,42 @@ function fmi2SetString(libHandle::Ptr{Nothing},
     status = ccall(
         func,
         Cuint,
-        (Ptr{Cvoid}, Ptr{Cuint}, Csize_t, Ptr{Cstring}),
-        fmi2Component, Ptr{valueReference}, numberOfValeReference, Ptr{value}
+        (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cstring}),
+        fmi2Component, valueReference, numberOfValeReference, value
         )
 
     if status != UInt(fmi2OK)
-        error("fmi2SetString returned not status \"fmi2Ok\"")
+        error("fmi2GetString returned not status \"fmi2Ok\"")
     end
 end
 
 function fmi2SetString(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt,1},
+    fmi2Component::Ptr{Nothing}, valueReference::Array{UInt32,1},
     value::Array{String,1})
 
-    return fmi2SetString(libHandle, fmi2Component, valueReference,
+    fmi2SetString(libHandle, fmi2Component, valueReference,
         length(valueReference), value)
 end
 
-function fmi2SetString(fmu::FMU, valueReference::Array{UInt,1},
+function fmi2SetString(fmu::FMU, valueReference::Array{UInt32,1},
     numberOfValueReference::Int, value::Array{String,1})
 
-    return fmi2SetString(fmu.libHandle, fmu.fmi2Component, valueReference,
+    fmi2SetString(fmu.libHandle, fmu.fmi2Component, valueReference,
         numberOfValueReference, value)
 end
 
-function fmi2SetString(fmu::FMU, valueReference::Array{UInt,1},
+function fmi2SetString(fmu::FMU, valueReference::Array{UInt32,1},
     value::Array{String,1})
 
-    return fmi2SetString(fmu.libHandle, fmu.fmi2Component, valueReference,
+    fmi2SetString(fmu.libHandle, fmu.fmi2Component, valueReference,
         length(valueReference), value)
+end
+
+function fmi2SetString(fmu::FMU, valueReference::Union{Int, UInt, UInt32},
+    value::String)
+
+    fmi2SetString(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},[valueReference]), 1, Array{String}(value))
 end
 
 
