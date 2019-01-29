@@ -2,15 +2,6 @@
 Declaration of FMI2 Types
 """
 
-@enum fmi2Status begin
-    fmi2OK
-    fmi2Warning
-    fmi2Discard
-    fmi2Error
-    fmi2Fatal
-    fmi2Pending
-end
-
 @enum fmuType begin
     modelExchange
     coSimulation
@@ -19,6 +10,53 @@ end
 @enum NamingConvention begin
     flat
     structured
+end
+
+# FMI2 Errors
+struct FMI2Warning <: Exception
+    msg::String
+end
+FMI2Warning() = FMI2Warning("")
+Base.showerror(io::IO, e::FMI2Warning) = print(io, "fmi2Warning", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Discard <: Exception
+    msg::String
+end
+FMI2Discard() = FMI2Discard("")
+Base.showerror(io::IO, e::FMI2Discard) = print(io, "fmi2Discard", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Error <: Exception
+    msg::String
+end
+FMI2Error() = FMI2Error("")
+Base.showerror(io::IO, e::FMI2Error) = print(io, "fmi2Error", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Fatal <: Exception
+    msg::String
+end
+FMI2Fatal() = FMI2Fatal("")
+Base.showerror(io::IO, e::FMI2Fatal) = print(io, "fmi2Fatal", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Pending <: Exception
+    msg::String
+end
+FMI2Pending() = FMI2Pending("")
+Base.showerror(io::IO, e::FMI2Pending) = print(io, "fmi2Pending", isempty(e.msg) ? "" : ": ", e.msg)
+
+function fmiError(fmi2Status::Union{Unsigned, Integer}, message::String="")
+    if fmi2Status == 1
+        return FMI2Warning(message)
+    elseif fmi2Status == 2
+        return FMI2Discard(message)
+    elseif fmi2Status == 3
+        return FMI2Error(message)
+    elseif fmi2Status ==  4
+        return FMI2Fatal(message)
+    elseif fmi2Status == 5
+        return FMI2Pending(message)
+    else
+        return FMI2Error("Unknown error code")
+    end
 end
 
 

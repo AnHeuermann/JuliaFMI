@@ -106,7 +106,7 @@ function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
       )
 
     if fmi2Component == C_NULL
-        throw(OutOfMemoryError())
+        throw(FMI2Error("Could not instantiate FMU"))
     end
 
     return fmi2Component
@@ -170,8 +170,8 @@ function fmi2SetDebugLogging(libHandle::Ptr{Nothing},
         fmi2Component, loggingOn, 0, C_NULL
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2SetDebugLogging returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -179,10 +179,8 @@ function fmi2SetDebugLogging(libHandle::Ptr{Nothing},
     fmi2Component::Ptr{Nothing}, loggingOn::Bool, nCategories::UInt,
     categories::Array{String,1})
 
-    if nCategories > 0
-        error("\"nCategories\" has to be positive but is $nCategories")
-    elseif length(categories) != nCategories
-        error("nCategories=$nCategories does not match length(categories)=$(length(categories))")
+    if length(categories) != nCategories
+        throw(DimensionMismatch("nCategories=$nCategories does not match length(categories)=$(length(categories))"))
     end
 
     func = dlsym(libHandle, :fmi2SetDebugLogging)
@@ -194,8 +192,8 @@ function fmi2SetDebugLogging(libHandle::Ptr{Nothing},
         fmi2Component, loggingOn, nCategories, categories
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2SetDebugLogging returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -267,8 +265,8 @@ function fmi2SetupExperiment(libHandle::Ptr{Nothing},
         stopTime
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2SetupExperiment returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -319,8 +317,8 @@ function fmi2EnterInitializationMode(libHandle::Ptr{Nothing},
         fmi2Component
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2EnterInitializationMode returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -350,8 +348,8 @@ function fmi2ExitInitializationMode(libHandle::Ptr{Nothing},
         fmi2Component
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2ExitInitializationMode returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -385,8 +383,8 @@ function fmi2Terminate(libHandle::Ptr{Nothing},
         fmi2Component
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2Terminate returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -419,8 +417,8 @@ function fmi2Reset(libHandle::Ptr{Nothing},
         fmi2Component
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2Reset returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -460,10 +458,10 @@ function fmi2GetReal!(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{Float64,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2GetReal)
@@ -475,8 +473,8 @@ function fmi2GetReal!(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValueReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2GetReal returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 
     return value
@@ -550,10 +548,10 @@ function fmi2GetInteger!(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2GetInteger)
@@ -565,8 +563,8 @@ function fmi2GetInteger!(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValeReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2GetInteger returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 
     return value
@@ -641,10 +639,10 @@ function fmi2GetBoolean!(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2GetBoolean)
@@ -656,8 +654,8 @@ function fmi2GetBoolean!(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValeReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2GetBoolean returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 
     return value
@@ -740,10 +738,10 @@ function fmi2GetString!(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{String,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2GetString)
@@ -755,8 +753,8 @@ function fmi2GetString!(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValeReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2GetString returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 
     # Return copy of string array, since the FMU is allowed to free the
@@ -840,10 +838,10 @@ function fmi2SetReal(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{Float64,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2SetReal)
@@ -855,8 +853,8 @@ function fmi2SetReal(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValueReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2SetReal returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -919,10 +917,10 @@ function fmi2SetInteger(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2SetInteger)
@@ -934,8 +932,8 @@ function fmi2SetInteger(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValeReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2GetInteger returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -998,10 +996,10 @@ function fmi2SetBoolean(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{Int32,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2SetBoolean)
@@ -1013,8 +1011,8 @@ function fmi2SetBoolean(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValeReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2GetBoolean returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
@@ -1084,10 +1082,10 @@ function fmi2SetString(libHandle::Ptr{Nothing},
     numberOfValueReference::Int, value::Array{String,1})
 
     if size(valueReference) != size(value)
-        error("Arrays valueReference and value are not the same size.")
+        throw(DimensionMismatch("Arrays valueReference and value are not the same size."))
     elseif (length(valueReference) != numberOfValueReference)
-        error("Wrong numberOfValueReference.
-            Expected $(length(valueReference)) but got $numberOfValueReference.")
+        throw(DimensionMismatch("Wrong numberOfValueReference.
+            Expected $(length(valueReference)) but got $numberOfValueReference."))
     end
 
     func = dlsym(libHandle, :fmi2SetString)
@@ -1099,8 +1097,8 @@ function fmi2SetString(libHandle::Ptr{Nothing},
         fmi2Component, valueReference, numberOfValeReference, value
         )
 
-    if status != UInt(fmi2OK)
-        error("fmi2GetString returned not status \"fmi2Ok\"")
+    if status != 0
+        throw(fmiError(status))
     end
 end
 
