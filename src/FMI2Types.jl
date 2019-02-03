@@ -315,6 +315,18 @@ mutable struct ModelDescription
 end
 
 
+mutable struct EventInfo
+    newDiscreteStatesNeeded::Bool
+    terminateSimulation::Bool
+    nominalsOfContinuousStatesChanged::Bool
+    valuesOfContinuousStatesChanged::Bool
+    nextEventTimeDefined::Bool
+    nextEventTime::Float64
+
+    EventInfo() = new(true, true, true, true, true, -1.0)
+end
+
+
 """
 Functional Mockupt Unit (FMU) struct.
 """
@@ -330,6 +342,8 @@ mutable struct FMU
     simulationData::SimulationData
 
     experimentData::ExperimentData
+
+    eventInfo::EventInfo
 
     status
 
