@@ -1228,3 +1228,433 @@ function fmi2GetDirectionalDerivative(fmu::FMU)
 
     error("FMI function not supportet")
 end
+
+
+# ##############################################################################
+# Providing Independent Variables and Re-initialization of Caching
+# ##############################################################################
+
+"""
+```
+    fmi2SetTime(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, time::Float64)
+
+    fmi2SetTime(fmu::FMU, time::Float64)
+```
+Set a new time instant and re-initialize caching of variables that depend on
+time, provided the newly provided time value is different to the previously set
+time value
+"""
+function fmi2SetTime(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing},
+    time::Float64)
+
+    func = dlsym(libHandle, :fmi2SetTime)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Cdouble),
+        fmi2Component, time
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2SetTime(fmu::FMU, time::Float64)
+    fmi2SetTime(fmu.libHandle, fmu.fmi2Component, time)
+end
+
+
+"""
+```
+    fmi2SetContinuousStates(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, states::Array{Float64,1}, [n_states::Int])
+
+    fmi2SetContinuousStates(fmu::FMU, states::Array{Float64,1}, [n_states::Int])
+```
+Set a new (continuous) state vector and re-initialize caching of variables that
+depend on the states. Argument `n_states` is the length of vector ``states`
+and is provided for checking purposes.
+"""
+function fmi2SetContinuousStates(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, states::Array{Float64,1}, n_states::Int)
+
+    if length(states) != n_states
+        throw(DimensionMismatch("Array states has not length $(length(states)).
+            Expected $n_states."))
+    end
+
+    func = dlsym(libHandle, :fmi2SetContinuousStates)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Ref{Cdouble}, Csize_t),
+        fmi2Component, states, n_states
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2SetContinuousStates(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, states::Array{Float64,1})
+
+    fmi2SetContinuousStates(libHandle, fmi2Component, states, length(states))
+end
+
+function fmi2SetContinuousStates(fmu::FMU, states::Array{Float64,1},
+    n_states::Int)
+
+    fmi2SetContinuousStates(fmu.libHandle, fmu.fmi2Component, states, n_states)
+end
+
+function fmi2SetContinuousStates(fmu::FMU, states::Array{Float64,1})
+
+    fmi2SetContinuousStates(fmu.libHandle, fmu.fmi2Component, states,
+        length(states))
+end
+
+
+"""
+```
+    fmi2EnterEventMode(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing})
+
+    fmi2EnterEventMode(fmu::FMU)
+```
+The model enters Event Mode from the Continuous-Time Mode.
+"""
+function fmi2EnterEventMode(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing})
+
+    func = dlsym(libHandle, :fmi2EnterEventMode)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid},),
+        fmi2Component,
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2EnterEventMode(fmu::FMU)
+
+    fmi2EnterEventMode(fmu.libHandle, fmu.fmi2Component)
+end
+
+
+"""
+```
+    fmi2NewDiscreteStates(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, fmi2EventInfo::EventInfo)
+
+    fmi2NewDiscreteStates(fmu::FMU)
+```
+The FMU is in Event Mode and the super dense time is incremented by this call.
+"""
+function fmi2NewDiscreteStates(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, fmi2EventInfo::EventInfo)
+
+    func = dlsym(libHandle, :fmi2NewDiscreteStates)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Ref{EventInfo}),
+        fmi2Component, fmi2EventInfo
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2NewDiscreteStates(fmu::FMU)
+
+    fmi2NewDiscreteStates(fmu.libHandle, fmu.fmi2Component, fmu.eventInfo)
+end
+
+
+"""
+
+The model enters Continuous-Time Mode and all discrete-time equations become
+inactive and all relations are "frozen".
+This function has to be called when changing from Event Mode into
+Continuous-Time Mode.
+"""
+function fmi2EnterContinuousTimeMode(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing})
+
+    func = dlsym(libHandle, :fmi2EnterContinuousTimeMode)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid},),
+        fmi2Component
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2EnterContinuousTimeMode(fmu::FMU)
+
+    fmi2EnterContinousTimeMode(fmu.libHandle, fmu.fmi2Component)
+end
+
+
+"""
+```
+    fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool, enterEventMode::Bool, terminateSimulation::Bool)
+
+    fmi2CompletedIntegratorStep(fmu::FMU, noSetFMUStatePriorToCurrentPoint::Bool, enterEventMode::Bool, terminateSimulation::Bool)
+```
+This function must be called by the environment after every completed step of
+the integrator provided the capability flag
+`completedIntegratorStepNotNeeded = false`.
+"""
+function fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool,
+    enterEventMode::Bool, terminateSimulation::Bool)
+
+    func = dlsym(libHandle, :fmi2CompletedIntegratorStep)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Cuint, Ref{Cuint}, Ref{Cuint}),
+        fmi2Component, noSetFMUStatePriorToCurrentPoint, enterEventMode,
+        terminateSimulation
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2CompletedIntegratorStep(fmu::FMU,
+    noSetFMUStatePriorToCurrentPoint::Bool, enterEventMode::Bool,
+    terminateSimulation::Bool)
+
+    fmi2CompletedIntegratorStep(fmu.libHandle, fmu.fmi2Component,
+        noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation)
+end
+
+
+"""
+```
+    fmi2GetDerivatives!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, derivatives::Array{Float64,1}, [numberOfDerivatives::Int])
+
+    fmi2GetDerivatives!(fmu::FMU, derivatives::Array{Float64,1}, [numberOfDerivatives::Int])
+```
+Compute state derivatives at the current time instant and for the current
+states.
+"""
+function fmi2GetDerivatives!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, derivatives::Array{Float64,1},
+    numberOfDerivatives::Int)
+
+    if (length(derivatives) != numberOfDerivatives)
+        throw(DimensionMismatch("Wrong numberOfDerivatives.
+            Expected $(length(derivatives)) but got $numberOfDerivatives."))
+    end
+
+    func = dlsym(libHandle, :fmi2GetDerivatives)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Ref{Cdouble}, Csize_t,),
+        fmi2Component, derivatives, numberOfDerivatives
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2GetDerivatives!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, derivatives::Array{Float64,1})
+
+    fmi2GetDerivatives!(libHandle, fmi2Component, derivatives,
+        length(derivatives))
+end
+
+function fmi2GetDerivatives!(fmu::FMU, derivatives::Array{Float64,1},
+    numberOfDerivatives::Int)
+
+    fmi2GetDerivatives!(fmu.libHandle, fmu.fmi2Component, derivatives,
+        numberOfDerivatives)
+end
+
+function fmi2GetDerivatives!(fmu::FMU, derivatives::Array{Float64,1})
+
+    fmi2GetDerivatives!(fmu.libHandle, fmu.fmi2Component, derivatives,
+        length(derivatives))
+end
+
+
+"""
+```
+    fmi2GetEventIndicators!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, derivatives::Array{Float64,1}, [numberOfDerivatives::Int])
+
+    fmi2GetEventIndicators!(fmu::FMU, derivatives::Array{Float64,1}, [numberOfDerivatives::Int])
+```
+Compute event indicators at the current time instant and for the current
+states.
+"""
+function fmi2GetEventIndicators!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, eventIndicators::Array{Float64,1},
+    numberOfEventIndiactors::Int)
+
+    if (length(eventIndicators) != numberOfEventIndiactors)
+        throw(DimensionMismatch("Wrong numberOfEventIndiactors.
+            Expected $(length(eventIndicators)) but got $numberOfEventIndiactors."))
+    end
+
+    func = dlsym(libHandle, :fmi2GetEventIndicators)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Ref{Cdouble}, Csize_t,),
+        fmi2Component, eventIndicators, numberOfEventIndiactors
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2GetEventIndicators!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, eventIndicators::Array{Float64,1})
+
+    fmi2GetDerivatives!(libHandle, fmi2Component, eventIndicators,
+        length(eventIndicators))
+end
+
+function fmi2GetEventIndicators!(fmu::FMU, eventIndicators::Array{Float64,1},
+    numberOfEventIndiactors::Int)
+
+    fmi2GetDerivatives!(fmu.libHandle, fmu.fmi2Component, eventIndicators,
+        numberOfEventIndiactors)
+end
+
+function fmi2GetEventIndicators!(fmu::FMU, eventIndicators::Array{Float64,1})
+
+    fmi2GetDerivatives!(fmu.libHandle, fmu.fmi2Component, eventIndicators,
+        length(eventIndicators))
+end
+
+
+"""
+```
+    fmi2GetContinuousStates!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, states::Array{Float64,1}, [n_states::Int])
+
+    fmi2GetContinuousStates!(fmu::FMU, states::Array{Float64,1}, [n_states::Int])
+```
+Return the new (continuous) state vector `states`. Argument `n_states` is the length of vector `states`
+and is provided for checking purposes.
+This function has to be called directly after calling function
+`fmi2EnterContinuousTimeMode` if it returns with
+`eventInfo->valuesOfContinuousStatesChanged = true`.
+"""
+function fmi2GetContinuousStates!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, states::Array{Float64,1}, n_states::Int)
+
+    if length(states) != n_states
+        throw(DimensionMismatch("Wrong n_states.
+            Expected $(length(states)) but got $n_states."))
+    end
+
+    func = dlsym(libHandle, :fmi2GetContinuousStates)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Ref{Cdouble}, Csize_t),
+        fmi2Component, states, n_states
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2GetContinuousStates!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, states::Array{Float64,1})
+
+    fmi2GetContinuousStates!(libHandle, fmi2Component, states, length(states))
+end
+
+function fmi2GetContinuousStates!(fmu::FMU, states::Array{Float64,1},
+    n_states::Int)
+
+    fmi2GetContinuousStates!(fmu.libHandle, fmu.fmi2Component, states, n_states)
+end
+
+function fmi2GetContinuousStates!(fmu::FMU, states::Array{Float64,1})
+
+    fmi2GetContinuousStates!(fmu.libHandle, fmu.fmi2Component, states,
+        length(states))
+end
+
+
+"""
+```
+    fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, x_nominal::Array{Float64,1}, [n_nominal::Int])
+
+    fmi2GetNominalsOfContinuousStates!(fmu::FMU, x_nominal::Array{Float64,1}, [n_nominal::Int])
+```
+Return the nominal values of the continuous states. This function should always
+be called after calling function `fmi2NewDiscreteStates` if it returns with
+`eventInfo->nominalsOfContinuousStatesChanged = true` since then the nominal
+values of the continuous states have changed.
+"""
+function fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, x_nominal::Array{Float64,1}, n_nominal::Int)
+
+    if length(x_nominal) != n_nominal
+        throw(DimensionMismatch("Wrong n_nominal.
+            Expected $(length(x_nominal)) but got $n_nominal."))
+    end
+
+    func = dlsym(libHandle, :fmi2GetNominalsOfContinuousStates)
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Ref{Cdouble}, Csize_t),
+        fmi2Component, x_nominal, n_nominal
+        )
+
+    if status != 0
+        throw(fmiError(status))
+    end
+end
+
+function fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, x_nominal::Array{Float64,1}, n_nominal::Int)
+
+    fmi2GetNominalsOfContinuousStates!(libHandle, fmi2Component, x_nominal,
+        length(x_nominal))
+end
+
+function fmi2GetNominalsOfContinuousStates!(fmu::FMU,
+    x_nominal::Array{Float64,1}, n_nominal::Int)
+
+    fmi2GetNominalsOfContinuousStates!(fmu.libHandle, fmu.fmi2Component, x_nominal,
+        n_nominal)
+end
+
+function fmi2GetNominalsOfContinuousStates!(fmu::FMU,
+    x_nominal::Array{Float64,1})
+
+    fmi2GetNominalsOfContinuousStates!(fmu.libHandle, fmu.fmi2Component, x_nominal,
+        length(x_nominal))
+end

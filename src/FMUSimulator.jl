@@ -446,8 +446,17 @@ function main(pathToFMU::String)
         fmi2GetReal!(fmu, [0, 1, 2], value)
         println("value: $value")
 
+        # fmi2GetContinuousStates
+
         # Exit Initialization
         fmi2ExitInitializationMode(fmu)
+
+        # Check for discrete changes in states
+        fmi2NewDiscreteStates(fmu)
+        if fmu.eventInfo.nextEventTimeDefined
+            println("Next event time: ", fmu.eventInfo.nextEventTime)
+        end
+
 
         # Free FMU
         # ToDo: Fix function
