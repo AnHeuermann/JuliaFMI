@@ -78,8 +78,39 @@ mutable struct fmi2ComponentEnvironment
     numFatals::Int
 end
 
+mutable struct RealVariable
+    value::Float64
+    valueReference::UInt
+
+    # attributes
+    min::Float64
+    max::Float64
+end
+
+mutable struct IntVariable
+    value::Int64
+    valueReference::UInt
+
+    # attributes
+    min::Int64
+    max::Int64
+end
+
+mutable struct EnumerationVariable
+    #TODO Add
+end
+
+mutable struct ModelVariables
+    reals::Array{RealVariable,1}
+    ints::Array{IntVariable,1}
+    bools::Array{Bool,1}
+    strings::Array{String,1}
+    enumerations::Array{EnumerationVariable,1}
+end
+
 mutable struct SimulationData
     time::AbstractFloat
+    modelVariables::ModelVariables
 end
 
 mutable struct ExperimentData
