@@ -33,10 +33,14 @@ check_julia_syntax:
     - julia src/FMIWrapper.jl
     - julia src/FMUSimulator.jl
 
-run_tests:
+HelloFMI20World.fmu:
   stage: test
   script:
     - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
+
+BouncingBall.fmu:
+  stage: test
+  script:
     - julia -e "include(\"test/runtests.jl\"); testBouncingBall()"
 
 deploy:
@@ -45,5 +49,5 @@ deploy:
     - git --version
 
 after_script:
-  - rm -rf test/HelloFMI20World/
-  - echo Finished Julia jobs and cleaned up
+  - rm -rf test/linuxFMU/FMU_*
+  - echo cleaned tmp files up
