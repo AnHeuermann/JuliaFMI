@@ -423,6 +423,10 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     fmu.eventInfo = EventInfo()
 
+    # Open result and log file
+    fmu.csvFile = open("$(fmu.modelName)_results.csv", "w")
+    fmu.logFile = open("$(fmu.modelName).log", "w")
+
     # load dynamic library
     # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
     # push!(DL_LOAD_PATH, "/usr/lib/x86_64-linux-gnu") maybe???
@@ -444,6 +448,10 @@ Unload dynamic library and if `deleteTmpFolder=true` remove tmp files.
 """
 function unloadFMU(fmu::FMU)
     unloadFMU(fmu.libHandle, fmu.tmpFolder)
+
+    # Close result and log file
+    close(fmu.csvFile)
+    close(fmu.logFile)
 end
 
 function unloadFMU(libHandle::Ptr{Nothing}, tmpFolder::String,
@@ -596,6 +604,43 @@ function setTime!(fmu::FMU, time::Float64)
     fmi2SetTime(fmu, fmu.simulationData.time)
 end
 
+function writeNamesToCSV(fmu::FMU)
+
+    write(fmu.csvFile, "\"time\"")
+    for realVar in fmu.simulationData.modelVariables.reals
+        write(fmu.csvFile, ",\"$(realVar.name)\"")
+    end
+    for intVar in fmu.simulationData.modelVariables.ints
+        write(fmu.csvFile, ",\"$(intVar.name)\"")
+    end
+    for boolVar in fmu.simulationData.modelVariables.bools
+        write(fmu.csvFile, ",\"$(boolVar.name)\"")
+    end
+    for stringVar in fmu.simulationData.modelVariables.strings
+        write(fmu.csvFile, ",\"$(stringVar.name)\"")
+    end
+    write(fmu.csvFile, "\r\n")
+end
+
+
+function writeValuesToCSV(fmu::FMU)
+
+    write(fmu.csvFile, "$(fmu.simulationData.time)")
+    for realVar in fmu.simulationData.modelVariables.reals
+        write(fmu.csvFile, ",$(realVar.value)")
+    end
+    for intVar in fmu.simulationData.modelVariables.ints
+        write(fmu.csvFile, ",$(intVar.value)")
+    end
+    for boolVar in fmu.simulationData.modelVariables.bools
+        write(fmu.csvFile, ",$(boolVar.value)")
+    end
+    for stringVar in fmu.simulationData.modelVariables.strings
+        write(fmu.csvFile, ",$(stringVar.value)")
+    end
+    write(fmu.csvFile,"\r\n")
+end
+
 
 """
 Main function to simulate a FMU
@@ -603,6 +648,7 @@ Main function to simulate a FMU
 function main(pathToFMU::String)
     # load FMU
     fmu = loadFMU(pathToFMU)
+    writeNamesToCSV(fmu)
 
     try
         # Instantiate FMU
@@ -652,6 +698,9 @@ function main(pathToFMU::String)
         # retrieve initial states
         getContinuousStates!(fmu)
 
+        # retrive solution
+        getAllVariables!(fmu)           # TODO Is not returning der(x) correctly
+        writeValuesToCSV(fmu)
 
         # Iterate with explicit euler method
         k = 0
@@ -689,6 +738,10 @@ function main(pathToFMU::String)
             if terminateSimulation
                 error("Solution got terminated bevore reaching end time.")
             end
+
+            # save results
+            getAllVariables!(fmu)
+            writeValuesToCSV(fmu)
 
             # Handle events
         end
