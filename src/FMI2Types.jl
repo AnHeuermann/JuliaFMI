@@ -12,6 +12,17 @@ end
     structured
 end
 
+@enum ModelState begin
+    modelUninstantiated
+    modelInstantiated
+    modelInitializationMode
+    modelContinuousTimeMode
+    modelEventMode
+    modelTerminated
+    modelError
+    modelFatal
+end
+
 # FMI2 Errors
 struct FMI2Warning <: Exception
     msg::String
@@ -81,36 +92,108 @@ end
 mutable struct RealVariable
     value::Float64
     valueReference::UInt
+    name::String
 
     # attributes
     min::Float64
     max::Float64
+
+    # Inner constructors
+    RealVariable()=new()
+    function RealVariable(value, valueReference, name)
+        new(value, valueReference, name, -Inf64, Inf64)
+    end
 end
 
 mutable struct IntVariable
     value::Int64
     valueReference::UInt
+    name::String
 
     # attributes
     min::Int64
     max::Int64
+
+    # Inner constructors
+    IntVariable()=new()
+    function IntVariable(value, valueReference, name)
+        new(value, valueReference, name, -(2^63 - 1), 2^63 - 1)
+    end
 end
+
+mutable struct BoolVariable
+    value::Bool
+    valueReference::UInt
+    name::String
+
+    # Inner Constructors
+    BoolVariable() = new()
+    function BoolVariable(value, valueReference, name)
+        new(value, valueReference, name)
+    end
+end
+
+mutable struct StringVariable
+    value::String
+    valueReference::UInt
+    name::String
+
+    # Inner constructors
+    StringVariable() = new()
+    function StringVariable(value, valueReference, name)
+        new(value, valueReference, name)
+    end
+end
+
 
 mutable struct EnumerationVariable
     #TODO Add
+
+    EnumerationVariable() = new()
 end
 
 mutable struct ModelVariables
     reals::Array{RealVariable,1}
     ints::Array{IntVariable,1}
-    bools::Array{Bool,1}
-    strings::Array{String,1}
+    bools::Array{BoolVariable,1}
+    strings::Array{StringVariable,1}
     enumerations::Array{EnumerationVariable,1}
+
+    function ModelVariables(n_reals, n_ints, n_bools, n_strings, n_enumerations)
+
+        reals = Array{RealVariable}(undef, n_reals)
+        ints = Array{IntVariable}(undef, n_ints)
+        bools = Array{BoolVariable}(undef, n_bools)
+        strings = Array{StringVariable}(undef, n_strings)
+        enumerations = Array{EnumerationVariable}(undef, n_enumerations)
+
+        new(reals, ints, bools, strings, enumerations)
+    end
 end
 
 mutable struct SimulationData
     time::AbstractFloat
     modelVariables::ModelVariables
+
+    SimulationData()=new()
+    function SimulationData(n_reals, n_ints, n_bools, n_strings, n_enumerations)
+        modelVariables=ModelVariables(n_reals, n_ints, n_bools, n_strings,
+            n_enumerations)
+        new(0, modelVariables)
+    end
+end
+
+mutable struct ModelData
+    numberOfStates::Int
+    numberOfDerivatives::Int    # Is always numberOfStates
+
+    numberOfReals::Int
+    numberOfInts::Int
+    numberOfBools::Int
+    numberOfStrings::Int
+    numberOfExterns::Int
+
+    ModelData() = new(0,0,0,0,0,0,0)
 end
 
 mutable struct ExperimentData
@@ -370,13 +453,19 @@ mutable struct FMU
 
     modelDescription::ModelDescription
 
+    modelData::ModelData
+
     simulationData::SimulationData
 
     experimentData::ExperimentData
 
     eventInfo::EventInfo
 
-    status
+    modelState::ModelState
+
+    # CSV and log file
+    csvFile::IOStream
+    logFile::IOStream
 
     # Other stuff
     libHandle::Ptr{Nothing}
