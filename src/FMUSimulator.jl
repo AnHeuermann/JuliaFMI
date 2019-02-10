@@ -141,7 +141,7 @@ function readModelDescription(pathToModelDescription::String)
             if stepSize != nothing
                 stepSize = parse(Float64, stepSize)
             else
-                stepSize = 1e-6/4
+                stepSize = 2e-3
             end
 
             md.defaultExperiment = ExperimentData(startTime, stopTime, tolerance, stepSize)
@@ -267,6 +267,87 @@ function readModelDescription(pathToModelDescription::String)
 end
 
 
+function modelDescriptionToModelData(modelDescription::ModelDescription)
+
+    modelData = ModelData()
+
+    for var in modelDescription.modelVariables
+        if typeof(var.typeSpecificProperties)==RealProperties
+            modelData.numberOfReals += 1
+        elseif typeof(var.typeSpecificProperties)==IntegerProperties
+            modelData.numberOfInts += 1
+        elseif typeof(var.typeSpecificProperties)==BooleanProperties
+            modelData.numberOfBools += 1
+        elseif typeof(var.typeSpecificProperties)==StringProperties
+            modelData.numberOfStrings += 1
+        else
+            error()
+        end
+    end
+
+    return modelData
+end
+
+
+"""
+Helper function to initialize modelVars in simulationData with start values from
+modelDescription and set valueReference and name.
+"""
+function initializeSimulationData(modelDescription::ModelDescription,
+    modelData::ModelData)
+
+    prevVars=0
+
+    simulationData = SimulationData(modelData.numberOfReals,
+        modelData.numberOfInts, modelData.numberOfBools,
+        modelData.numberOfStrings, 0)
+
+    # Fill real simulation data with start value, value reference and name
+    for (i,scalarVar) in enumerate(modelDescription.modelVariables[1:modelData.numberOfReals])
+        simulationData.modelVariables.reals[i] =
+            RealVariable(scalarVar.typeSpecificProperties.start,
+                         scalarVar.valueReference,
+                         scalarVar.name)
+    end
+    prevVars += modelData.numberOfReals
+
+    # Fill integer simulation data
+    if (modelData.numberOfInts > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars:prevVars+modelData.numberOfInts])
+            simulationData.modelVariables.ints[i] =
+                IntVariable(scalarVar.typeSpecificProperties.start,
+                            scalarVar.valueReference,
+                            scalarVar.name)
+        end
+        prevVars += modelData.numberOfInts
+    end
+
+    # Fill boolean simulation data
+    if (modelData.numberOfInts > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars:prevVars+modelData.numberOfBools])
+            println(scalarVar)
+            simulationData.modelVariables.bools[i] =
+                BoolVariable(scalarVar.typeSpecificProperties.start,
+                             scalarVar.valueReference,
+                             scalarVar.name)
+        end
+        prevVars += modelData.numberOfBools
+    end
+
+    # Fill string simulation data
+    if (modelData.numberOfInts > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars:prevVars+modelData.numberOfStrings])
+            simulationData.modelVariables.strings[i] =
+                StringVariable(scalarVar.typeSpecificProperties.start,
+                               scalarVar.valueReference,
+                               scalarVar.name)
+        end
+    end
+
+    return simulationData
+end
+
+
 """
 `loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)`
 
@@ -331,6 +412,15 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
         end
     end
 
+    # Fill model data
+    fmu.modelData = modelDescriptionToModelData(fmu.modelDescription)
+
+    # Fill Simulation Data
+    fmu.simulationData = initializeSimulationData(fmu.modelDescription, fmu.modelData)
+
+    # Set default experiment
+    fmu.experimentData = deepcopy(fmu.modelDescription.defaultExperiment)
+
     fmu.eventInfo = EventInfo()
 
     # load dynamic library
@@ -342,6 +432,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.fmuResourceLocation = string("file:///", fmu.tmpFolder,"resources")
     fmu.fmuGUID = fmu.modelDescription.guid
     fmu.fmiCallbackFunctions = fmi2Functions
+
+    fmu.modelState = modelUninstantiated
 
     return fmu
 end
@@ -401,6 +493,111 @@ end
 
 
 """
+Gets values of all states of a FMU.
+Helper function for main.
+"""
+function getContinuousStates!(fmu::FMU)
+
+    if fmu.modelState != modelContinuousTimeMode
+        error("Function call only allowed in modelContinuousTimeMode but model is in mode: $(fmu.modelState)")
+    end
+
+    states = Array{Float64}(undef,fmu.modelData.numberOfStates)
+    fmi2GetContinuousStates!(fmu, states)
+
+    println("states : $states")
+
+    for i=1:fmu.modelData.numberOfStates
+        fmu.simulationData.modelVariables.reals[i].value = states[i]
+    end
+end
+
+
+function getDerivatives!(fmu::FMU)
+
+    if fmu.modelState != modelContinuousTimeMode
+        error("Function call only allowed in modelContinuousTimeMode but model is in mode: $(fmu.modelState)")
+    end
+
+    derivatives = Array{Float64}(undef,fmu.modelData.numberOfStates)
+    fmi2GetDerivatives!(fmu, derivatives)
+
+    println("derivatives : $derivatives")
+
+    for i=1:fmu.modelData.numberOfDerivatives
+        fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value = derivatives[i]
+    end
+end
+
+
+"""
+Sets continous states in `FMU`
+"""
+function setContinuousStates!(fmu::FMU)
+
+    if fmu.modelState != modelContinuousTimeMode
+        error("Function call only allowed in modelContinuousTimeMode but model is in mode: $(fmu.modelState)")
+    end
+
+    states = Array{Float64}(undef,fmu.modelData.numberOfStates)
+
+    for i=1:fmu.modelData.numberOfStates
+        states[i] = fmu.simulationData.modelVariables.reals[i].value
+    end
+
+    println("states: $states")
+    fmi2SetContinuousStates(fmu, states)
+
+end
+
+function getVariable!(fmu::FMU, variable::RealVariable)
+
+    fmi2GetReal!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getVariable!(fmu::FMU, variable::IntVariable)
+
+    fmi2GetInteger!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getVariable!(fmu::FMU, variable::BoolVariable)
+
+    fmi2GetBoolean!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getVariable!(fmu::FMU, variable::StringVariable)
+
+    fmi2GetString!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getAllVariables!(fmu::FMU)
+
+    for realVar in fmu.simulationData.modelVariables.reals
+        realVar.value = getVariable!(fmu, realVar)
+    end
+    for intVar in fmu.simulationData.modelVariables.ints
+        intVar.value = getVariable!(fmu, intVar)
+    end
+    for boolVar in fmu.simulationData.modelVariables.bools
+        boolVar.value = getVariable!(fmu, boolVar)
+    end
+    for stringVar in fmu.simulationData.modelVariables.strings
+        stringVar.value = getVariable!(fmu, stringVar)
+    end
+end
+
+function setTime!(fmu::FMU, time::Float64)
+
+    fmu.simulationData.time = time
+    fmi2SetTime(fmu, fmu.simulationData.time)
+end
+
+
+"""
 Main function to simulate a FMU
 """
 function main(pathToFMU::String)
@@ -410,6 +607,10 @@ function main(pathToFMU::String)
     try
         # Instantiate FMU
         fmi2Instantiate!(fmu)
+        fmu.modelState = modelInstantiated
+
+        fmu.modelData.numberOfStates = 1    # TODO do automatically
+        fmu.modelData.numberOfDerivatives = fmu.modelData.numberOfStates
 
         # Set debug logging to true for all categories
         fmi2SetDebugLogging(fmu, true)
@@ -425,38 +626,75 @@ function main(pathToFMU::String)
         # Set up experiment
         fmi2SetupExperiment(fmu, 0)
 
+        # Set start time
+        setTime!(fmu, 0.0)
+
+        # Set initial variables with intial="exact" or "approx"
+
         # Initialize FMU
         fmi2EnterInitializationMode(fmu)
-
-        # Set real variable with valueReference 0
-        fmi2SetReal(fmu, 0, 10.3)
-        fmi2SetReal(fmu, 1, -7.5)
-
-        # Get real variable with valueReference 0 of FMU
-        value = fmi2GetReal(fmu, 0)
-        println("value: $value")
-        value = fmi2GetReal(fmu, 1)
-        println("value: $value")
-
-        # Set real variables
-        fmi2SetReal(fmu, [0,1,2], [2.1, 13.37, -9.875])
-
-        # Get variables with valueReference 0, 1 and 2
-        value = Array{Float64}(undef,3)
-        fmi2GetReal!(fmu, [0, 1, 2], value)
-        println("value: $value")
-
-        # fmi2GetContinuousStates
 
         # Exit Initialization
         fmi2ExitInitializationMode(fmu)
 
-        # Check for discrete changes in states
-        fmi2NewDiscreteStates(fmu)
-        if fmu.eventInfo.nextEventTimeDefined
-            println("Next event time: ", fmu.eventInfo.nextEventTime)
+        # Event iteration
+        fmu.eventInfo.newDiscreteStatesNeeded = true
+        while fmu.eventInfo.newDiscreteStatesNeeded
+            fmi2NewDiscreteStates!(fmu)
+            if fmu.eventInfo.terminateSimulation
+                error()
+            end
         end
 
+        # Enter Continuous time mode
+        fmi2EnterContinuousTimeMode(fmu)
+
+        # retrieve initial states
+        getContinuousStates!(fmu)
+
+
+        # Iterate with explicit euler method
+        k = 0
+        k_max = 1000
+        while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
+            k += 1
+            getDerivatives!(fmu)
+            println("reals: ", fmu.simulationData.modelVariables.reals)
+
+            # Compute next step size
+            if fmu.eventInfo.nextEventTimeDefined
+                h = min(fmu.experimentData.stepSize, fmu.eventInfo.nextEventTime - fmu.simulationData.time)
+            else
+                h = min(fmu.experimentData.stepSize, fmu.experimentData.stopTime - fmu.simulationData.time)
+            end
+
+            # Update time
+            setTime!(fmu, fmu.simulationData.time + h)
+
+            # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
+            for i=1:fmu.modelData.numberOfStates
+                println("x_$i = $(fmu.simulationData.modelVariables.reals[i].value) + $h * $(fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value)")
+                fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
+            end
+            setContinuousStates!(fmu)
+
+            # Get event indicators and check for events
+
+            # Inform the model abaut an accepred step
+            (enterEventMode, terminateSimulation) = fmi2CompletedIntegratorStep(fmu, true)
+            if enterEventMode
+                error("Should now enter Event mode...")
+            end
+
+            if terminateSimulation
+                error("Solution got terminated bevore reaching end time.")
+            end
+
+            # Handle events
+        end
+
+        # Terminate Simulation
+        fmi2Terminate(fmu)
 
         # Free FMU
         # ToDo: Fix function
