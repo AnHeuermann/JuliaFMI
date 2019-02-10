@@ -1273,7 +1273,7 @@ end
     fmi2SetContinuousStates(fmu::FMU, states::Array{Float64,1}, [n_states::Int])
 ```
 Set a new (continuous) state vector and re-initialize caching of variables that
-depend on the states. Argument `n_states` is the length of vector ``states`
+depend on the states. Argument `n_states` is the length of vector `states`
 and is provided for checking purposes.
 """
 function fmi2SetContinuousStates(libHandle::Ptr{Nothing},
@@ -1349,13 +1349,13 @@ end
 
 """
 ```
-    fmi2NewDiscreteStates(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, fmi2EventInfo::EventInfo)
+    fmi2NewDiscreteStates!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, fmi2EventInfo::EventInfo) -> fmi2EventInfo
 
-    fmi2NewDiscreteStates(fmu::FMU)
+    fmi2NewDiscreteStates!(fmu::FMU) -> fmi2EventInfo
 ```
 The FMU is in Event Mode and the super dense time is incremented by this call.
 """
-function fmi2NewDiscreteStates(libHandle::Ptr{Nothing},
+function fmi2NewDiscreteStates!(libHandle::Ptr{Nothing},
     fmi2Component::Ptr{Nothing}, fmi2EventInfo::EventInfo)
 
     func = dlsym(libHandle, :fmi2NewDiscreteStates)
@@ -1370,11 +1370,13 @@ function fmi2NewDiscreteStates(libHandle::Ptr{Nothing},
     if status != 0
         throw(fmiError(status))
     end
+
+    return fmi2EventInfo
 end
 
-function fmi2NewDiscreteStates(fmu::FMU)
+function fmi2NewDiscreteStates!(fmu::FMU)
 
-    fmi2NewDiscreteStates(fmu.libHandle, fmu.fmi2Component, fmu.eventInfo)
+    return fmi2NewDiscreteStates!(fmu.libHandle, fmu.fmi2Component, fmu.eventInfo)
 end
 
 
@@ -1404,15 +1406,17 @@ end
 
 function fmi2EnterContinuousTimeMode(fmu::FMU)
 
-    fmi2EnterContinousTimeMode(fmu.libHandle, fmu.fmi2Component)
+    fmu.modelState = modelContinuousTimeMode
+
+    fmi2EnterContinuousTimeMode(fmu.libHandle, fmu.fmi2Component)
 end
 
 
 """
 ```
-    fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool, enterEventMode::Bool, terminateSimulation::Bool)
+    fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool, [enterEventMode::Bool], [terminateSimulation::Bool]) -> (enterEventMode, terminateSimulation)
 
-    fmi2CompletedIntegratorStep(fmu::FMU, noSetFMUStatePriorToCurrentPoint::Bool, enterEventMode::Bool, terminateSimulation::Bool)
+    fmi2CompletedIntegratorStep(fmu::FMU, noSetFMUStatePriorToCurrentPoint::Bool, [enterEventMode::Bool], [terminateSimulation::Bool]) -> (enterEventMode, terminateSimulation)
 ```
 This function must be called by the environment after every completed step of
 the integrator provided the capability flag
@@ -1424,25 +1428,66 @@ function fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing},
 
     func = dlsym(libHandle, :fmi2CompletedIntegratorStep)
 
+    # TODO Ugly workaround to call C function with data by reference
+    enterEventModeOut = [UInt32(enterEventMode)]
+    terminateSimulationOut = [UInt32(terminateSimulation)]
+
     status = ccall(
         func,
         Cuint,
         (Ptr{Cvoid}, Cuint, Ref{Cuint}, Ref{Cuint}),
-        fmi2Component, noSetFMUStatePriorToCurrentPoint, enterEventMode,
-        terminateSimulation
+        fmi2Component, noSetFMUStatePriorToCurrentPoint, enterEventModeOut,
+        terminateSimulationOut
         )
+    # TODO Call by reference is not working here!
+    # fmi2CompletedIntegratorStep does not write on input booleans.
 
     if status != 0
         throw(fmiError(status))
     end
+
+    return (Bool(enterEventModeOut[1]), Bool(terminateSimulationOut[1]))
+end
+
+function fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing},
+    fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool)
+
+    func = dlsym(libHandle, :fmi2CompletedIntegratorStep)
+
+    # TODO Ugly workaround to call C function with data by reference
+    enterEventModeOut = [UInt32(true)]
+    terminateSimulationOut = [UInt32(true)]
+
+    status = ccall(
+        func,
+        Cuint,
+        (Ptr{Cvoid}, Cuint, Ref{Cuint}, Ref{Cuint}),
+        fmi2Component, noSetFMUStatePriorToCurrentPoint, enterEventModeOut,
+        terminateSimulationOut
+        )
+    # TODO Call by reference is not working here!
+    # fmi2CompletedIntegratorStep does not write on input booleans.
+
+    if status != 0
+        throw(fmiError(status))
+    end
+
+    return (Bool(enterEventModeOut[1]), Bool(terminateSimulationOut[1]))
 end
 
 function fmi2CompletedIntegratorStep(fmu::FMU,
     noSetFMUStatePriorToCurrentPoint::Bool, enterEventMode::Bool,
     terminateSimulation::Bool)
 
-    fmi2CompletedIntegratorStep(fmu.libHandle, fmu.fmi2Component,
+    return fmi2CompletedIntegratorStep(fmu.libHandle, fmu.fmi2Component,
         noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation)
+end
+
+function fmi2CompletedIntegratorStep(fmu::FMU,
+    noSetFMUStatePriorToCurrentPoint::Bool)
+
+    return fmi2CompletedIntegratorStep(fmu.libHandle, fmu.fmi2Component,
+        noSetFMUStatePriorToCurrentPoint)
 end
 
 
@@ -1554,12 +1599,12 @@ end
 
 """
 ```
-    fmi2GetContinuousStates!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, states::Array{Float64,1}, [n_states::Int])
+    fmi2GetContinuousStates!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, states::Array{Float64,1}, [n_states::Int]) -> states
 
-    fmi2GetContinuousStates!(fmu::FMU, states::Array{Float64,1}, [n_states::Int])
+    fmi2GetContinuousStates!(fmu::FMU, states::Array{Float64,1}, [n_states::Int]) -> states
 ```
-Return the new (continuous) state vector `states`. Argument `n_states` is the length of vector `states`
-and is provided for checking purposes.
+Return the new (continuous) state vector `states`. Argument `n_states` is the
+length of vector `states`and is provided for checking purposes.
 This function has to be called directly after calling function
 `fmi2EnterContinuousTimeMode` if it returns with
 `eventInfo->valuesOfContinuousStatesChanged = true`.
@@ -1584,32 +1629,34 @@ function fmi2GetContinuousStates!(libHandle::Ptr{Nothing},
     if status != 0
         throw(fmiError(status))
     end
+
+    return states
 end
 
 function fmi2GetContinuousStates!(libHandle::Ptr{Nothing},
     fmi2Component::Ptr{Nothing}, states::Array{Float64,1})
 
-    fmi2GetContinuousStates!(libHandle, fmi2Component, states, length(states))
+    return fmi2GetContinuousStates!(libHandle, fmi2Component, states, length(states))
 end
 
 function fmi2GetContinuousStates!(fmu::FMU, states::Array{Float64,1},
     n_states::Int)
 
-    fmi2GetContinuousStates!(fmu.libHandle, fmu.fmi2Component, states, n_states)
+    return fmi2GetContinuousStates!(fmu.libHandle, fmu.fmi2Component, states, n_states)
 end
 
 function fmi2GetContinuousStates!(fmu::FMU, states::Array{Float64,1})
 
-    fmi2GetContinuousStates!(fmu.libHandle, fmu.fmi2Component, states,
+    return fmi2GetContinuousStates!(fmu.libHandle, fmu.fmi2Component, states,
         length(states))
 end
 
 
 """
 ```
-    fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, x_nominal::Array{Float64,1}, [n_nominal::Int])
+    fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, x_nominal::Array{Float64,1}, [n_nominal::Int]) -> x_nominal
 
-    fmi2GetNominalsOfContinuousStates!(fmu::FMU, x_nominal::Array{Float64,1}, [n_nominal::Int])
+    fmi2GetNominalsOfContinuousStates!(fmu::FMU, x_nominal::Array{Float64,1}, [n_nominal::Int]) -> x_nominal
 ```
 Return the nominal values of the continuous states. This function should always
 be called after calling function `fmi2NewDiscreteStates` if it returns with
@@ -1636,25 +1683,27 @@ function fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing},
     if status != 0
         throw(fmiError(status))
     end
+
+    return x_nominal
 end
 
 function fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing},
     fmi2Component::Ptr{Nothing}, x_nominal::Array{Float64,1}, n_nominal::Int)
 
-    fmi2GetNominalsOfContinuousStates!(libHandle, fmi2Component, x_nominal,
-        length(x_nominal))
+    return fmi2GetNominalsOfContinuousStates!(libHandle, fmi2Component,
+        x_nominal, length(x_nominal))
 end
 
 function fmi2GetNominalsOfContinuousStates!(fmu::FMU,
     x_nominal::Array{Float64,1}, n_nominal::Int)
 
-    fmi2GetNominalsOfContinuousStates!(fmu.libHandle, fmu.fmi2Component, x_nominal,
-        n_nominal)
+    return fmi2GetNominalsOfContinuousStates!(fmu.libHandle, fmu.fmi2Component,
+        x_nominal, n_nominal)
 end
 
 function fmi2GetNominalsOfContinuousStates!(fmu::FMU,
     x_nominal::Array{Float64,1})
 
-    fmi2GetNominalsOfContinuousStates!(fmu.libHandle, fmu.fmi2Component, x_nominal,
-        length(x_nominal))
+    return fmi2GetNominalsOfContinuousStates!(fmu.libHandle, fmu.fmi2Component,
+        x_nominal, length(x_nominal))
 end
