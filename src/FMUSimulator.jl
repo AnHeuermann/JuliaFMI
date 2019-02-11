@@ -313,7 +313,7 @@ function initializeSimulationData(modelDescription::ModelDescription,
 
     # Fill integer simulation data
     if (modelData.numberOfInts > 0)
-        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars:prevVars+modelData.numberOfInts])
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfInts])
             simulationData.modelVariables.ints[i] =
                 IntVariable(scalarVar.typeSpecificProperties.start,
                             scalarVar.valueReference,
@@ -323,9 +323,8 @@ function initializeSimulationData(modelDescription::ModelDescription,
     end
 
     # Fill boolean simulation data
-    if (modelData.numberOfInts > 0)
-        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars:prevVars+modelData.numberOfBools])
-            println(scalarVar)
+    if (modelData.numberOfBools > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfBools])
             simulationData.modelVariables.bools[i] =
                 BoolVariable(scalarVar.typeSpecificProperties.start,
                              scalarVar.valueReference,
@@ -335,8 +334,8 @@ function initializeSimulationData(modelDescription::ModelDescription,
     end
 
     # Fill string simulation data
-    if (modelData.numberOfInts > 0)
-        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars:prevVars+modelData.numberOfStrings])
+    if (modelData.numberOfStrings > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfStrings])
             simulationData.modelVariables.strings[i] =
                 StringVariable(scalarVar.typeSpecificProperties.start,
                                scalarVar.valueReference,
@@ -513,8 +512,6 @@ function getContinuousStates!(fmu::FMU)
     states = Array{Float64}(undef,fmu.modelData.numberOfStates)
     fmi2GetContinuousStates!(fmu, states)
 
-    println("states : $states")
-
     for i=1:fmu.modelData.numberOfStates
         fmu.simulationData.modelVariables.reals[i].value = states[i]
     end
@@ -529,8 +526,6 @@ function getDerivatives!(fmu::FMU)
 
     derivatives = Array{Float64}(undef,fmu.modelData.numberOfStates)
     fmi2GetDerivatives!(fmu, derivatives)
-
-    println("derivatives : $derivatives")
 
     for i=1:fmu.modelData.numberOfDerivatives
         fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value = derivatives[i]
@@ -553,7 +548,6 @@ function setContinuousStates!(fmu::FMU)
         states[i] = fmu.simulationData.modelVariables.reals[i].value
     end
 
-    println("states: $states")
     fmi2SetContinuousStates(fmu, states)
 
 end
@@ -708,7 +702,6 @@ function main(pathToFMU::String)
         while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
             k += 1
             getDerivatives!(fmu)
-            println("reals: ", fmu.simulationData.modelVariables.reals)
 
             # Compute next step size
             if fmu.eventInfo.nextEventTimeDefined
@@ -722,7 +715,6 @@ function main(pathToFMU::String)
 
             # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
             for i=1:fmu.modelData.numberOfStates
-                println("x_$i = $(fmu.simulationData.modelVariables.reals[i].value) + $h * $(fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value)")
                 fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
             end
             setContinuousStates!(fmu)

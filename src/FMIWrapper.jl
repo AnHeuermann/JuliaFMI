@@ -653,7 +653,7 @@ function fmi2GetBoolean!(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -672,21 +672,21 @@ function fmi2GetBoolean!(libHandle::Ptr{Nothing},
 end
 
 function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
-    numberOfValueReference::Int, value::Array{Int32,1})
+    numberOfValueReference::Int, value::Union{Array{Int32,1}, Array{Bool,1}})
 
     return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
         convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
 end
 
 function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
-    value::Array{Int32,1})
+    value::Union{Array{Int32,1}, Array{Bool,1}})
 
     return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
         convert(Array{UInt32,1},valueReference), length(valueReference), value)
 end
 
-function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Bool,1}},
-    value::Array{Int32,1})
+function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Union{Array{Int32,1}, Array{Bool,1}})
 
     return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
         convert(Array{UInt32,1},valueReference), length(valueReference),
