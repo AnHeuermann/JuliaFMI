@@ -273,6 +273,10 @@ function modelDescriptionToModelData(modelDescription::ModelDescription)
 
     for var in modelDescription.modelVariables
         if typeof(var.typeSpecificProperties)==RealProperties
+            if var.typeSpecificProperties.derivative > 0
+                modelData.numberOfStates += 1
+                modelData.numberOfDerivatives += 1
+            end
             modelData.numberOfReals += 1
         elseif typeof(var.typeSpecificProperties)==IntegerProperties
             modelData.numberOfInts += 1
@@ -649,9 +653,6 @@ function main(pathToFMU::String)
         fmi2Instantiate!(fmu)
         fmu.modelState = modelInstantiated
 
-        fmu.modelData.numberOfStates = 1    # TODO do automatically
-        fmu.modelData.numberOfDerivatives = fmu.modelData.numberOfStates
-
         # Set debug logging to true for all categories
         fmi2SetDebugLogging(fmu, true)
 
@@ -721,7 +722,7 @@ function main(pathToFMU::String)
 
             # Get event indicators and check for events
 
-            # Inform the model abaut an accepred step
+            # Inform the model abaut an accepted step
             (enterEventMode, terminateSimulation) = fmi2CompletedIntegratorStep(fmu, true)
             if enterEventMode
                 error("Should now enter Event mode...")
