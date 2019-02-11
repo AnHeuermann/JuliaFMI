@@ -627,7 +627,7 @@ function writeValuesToCSV(fmu::FMU)
         write(fmu.csvFile, ",$(intVar.value)")
     end
     for boolVar in fmu.simulationData.modelVariables.bools
-        write(fmu.csvFile, ",$(boolVar.value)")
+        write(fmu.csvFile, ",$(Int(boolVar.value))")
     end
     for stringVar in fmu.simulationData.modelVariables.strings
         write(fmu.csvFile, ",$(stringVar.value)")
