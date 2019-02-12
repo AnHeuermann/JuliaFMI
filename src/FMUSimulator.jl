@@ -8,6 +8,14 @@ using LightXML      # For parsing XML files
 
 include("FMIWrapper.jl")
 
+# Macro to identify logger library
+macro libLogger()
+    if Sys.iswindows()
+        return string(dirname(dirname(Base.source_path())),"\\bin\\win64\\logger.dll")
+    elseif Sys.islinux()
+        return string(dirname(dirname(Base.source_path())),"/bin/unix64/logger.so")
+    end
+end
 
 """
 Parse modelDescription.xml
@@ -430,10 +438,26 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.csvFile = open("$(fmu.modelName)_results.csv", "w")
     fmu.logFile = open("$(fmu.modelName).log", "w")
 
-    # load dynamic library
+    # load shared library with FMU
     # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
     # push!(DL_LOAD_PATH, "/usr/lib/x86_64-linux-gnu") maybe???
     fmu.libHandle = dlopen(pathToDLL)
+
+    # Load hared library with logger function
+    fmu.libLoggerHandle = dlopen(@libLogger)
+    fmi2CallbacLogger_Cfunc = dlsym(fmu.libLoggerHandle, :logger)
+    # fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
+    #    (Ptr{Cvoid}, Cstring, Cuint, Cstring, Tuple{Cstring}))
+    fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, (Csize_t, Csize_t))
+    fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
+
+    fmi2Functions = CallbackFunctions(
+        #fmi2CallbacLogger_funcWrapC,       # Logger in Julia
+        fmi2CallbacLogger_Cfunc,            # Logger in C
+        fmi2AllocateMemory_funcWrapC,
+        fmi2FreeMemory_funcWrapC,
+        C_NULL,
+        C_NULL)
 
     # Fill FMU with remaining data
     fmu.fmuResourceLocation = string("file:///", fmu.tmpFolder,"resources")
@@ -447,29 +471,27 @@ end
 
 
 """
-Unload dynamic library and if `deleteTmpFolder=true` remove tmp files.
+```
+    unloadFMU(fmu::FMU, [deleteTmpFolder=true::Bool])
+```
+Unload FMU and if `deleteTmpFolder=true` remove tmp files.
 """
-function unloadFMU(fmu::FMU)
-    unloadFMU(fmu.libHandle, fmu.tmpFolder)
+function unloadFMU(fmu::FMU, deleteTmpFolder=true::Bool)
+
+    # unload FMU dynamic library
+    dlclose(fmu.libHandle)
+
+    # unload C logger
+    dlclose(fmu.libLoggerHandle)
+
+    # delete tmp folder
+    if deleteTmpFolder
+        rm(fmu.tmpFolder, recursive=true, force=true);
+    end
 
     # Close result and log file
     close(fmu.csvFile)
     close(fmu.logFile)
-end
-
-function unloadFMU(libHandle::Ptr{Nothing}, tmpFolder::String,
-    deleteTmpFolder=true::Bool)
-
-    # unload FMU dynamic library
-    dlclose(libHandle)
-
-    # unload C logger
-    dlclose(libLoggerHandle)
-
-    # delete tmp folder
-    if deleteTmpFolder
-        rm(tmpFolder, recursive=true);
-    end
 end
 
 

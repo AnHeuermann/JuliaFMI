@@ -469,6 +469,7 @@ mutable struct FMU
 
     # Other stuff
     libHandle::Ptr{Nothing}
+    libLoggerHandle::Ptr{Nothing}
     tmpFolder::String
     fmuType::fmuType
     fmiCallbackFunctions::CallbackFunctions
