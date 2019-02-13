@@ -1414,49 +1414,21 @@ end
 
 """
 ```
-    fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool, [enterEventMode::Bool], [terminateSimulation::Bool]) -> (enterEventMode, terminateSimulation)
+    fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool) -> (enterEventMode, terminateSimulation)
 
-    fmi2CompletedIntegratorStep(fmu::FMU, noSetFMUStatePriorToCurrentPoint::Bool, [enterEventMode::Bool], [terminateSimulation::Bool]) -> (enterEventMode, terminateSimulation)
+    fmi2CompletedIntegratorStep(fmu::FMU, noSetFMUStatePriorToCurrentPoint::Bool) -> (enterEventMode, terminateSimulation)
 ```
 This function must be called by the environment after every completed step of
 the integrator provided the capability flag
 `completedIntegratorStepNotNeeded = false`.
 """
 function fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool,
-    enterEventMode::Bool, terminateSimulation::Bool)
-
-    func = dlsym(libHandle, :fmi2CompletedIntegratorStep)
-
-    # TODO Ugly workaround to call C function with data by reference
-    enterEventModeOut = [UInt32(enterEventMode)]
-    terminateSimulationOut = [UInt32(terminateSimulation)]
-
-    status = ccall(
-        func,
-        Cuint,
-        (Ptr{Cvoid}, Cuint, Ref{Cuint}, Ref{Cuint}),
-        fmi2Component, noSetFMUStatePriorToCurrentPoint, enterEventModeOut,
-        terminateSimulationOut
-        )
-    # TODO Call by reference is not working here!
-    # fmi2CompletedIntegratorStep does not write on input booleans.
-
-    if status != 0
-        throw(fmiError(status))
-    end
-
-    return (Bool(enterEventModeOut[1]), Bool(terminateSimulationOut[1]))
-end
-
-function fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing},
     fmi2Component::Ptr{Nothing}, noSetFMUStatePriorToCurrentPoint::Bool)
 
     func = dlsym(libHandle, :fmi2CompletedIntegratorStep)
 
-    # TODO Ugly workaround to call C function with data by reference
-    enterEventModeOut = [UInt32(true)]
-    terminateSimulationOut = [UInt32(true)]
+    enterEventModeOut = Ref(UInt32(true))
+    terminateSimulationOut = Ref(UInt32(true))
 
     status = ccall(
         func,
@@ -1465,22 +1437,12 @@ function fmi2CompletedIntegratorStep(libHandle::Ptr{Nothing},
         fmi2Component, noSetFMUStatePriorToCurrentPoint, enterEventModeOut,
         terminateSimulationOut
         )
-    # TODO Call by reference is not working here!
-    # fmi2CompletedIntegratorStep does not write on input booleans.
 
     if status != 0
         throw(fmiError(status))
     end
 
-    return (Bool(enterEventModeOut[1]), Bool(terminateSimulationOut[1]))
-end
-
-function fmi2CompletedIntegratorStep(fmu::FMU,
-    noSetFMUStatePriorToCurrentPoint::Bool, enterEventMode::Bool,
-    terminateSimulation::Bool)
-
-    return fmi2CompletedIntegratorStep(fmu.libHandle, fmu.fmi2Component,
-        noSetFMUStatePriorToCurrentPoint, enterEventMode, terminateSimulation)
+    return (Bool(enterEventModeOut[]), Bool(terminateSimulationOut[]))
 end
 
 function fmi2CompletedIntegratorStep(fmu::FMU,
