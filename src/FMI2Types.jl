@@ -2,15 +2,6 @@
 Declaration of FMI2 Types
 """
 
-@enum fmi2Status begin
-    fmi2OK
-    fmi2Warning
-    fmi2Discard
-    fmi2Error
-    fmi2Fatal
-    fmi2Pending
-end
-
 @enum fmuType begin
     modelExchange
     coSimulation
@@ -19,6 +10,64 @@ end
 @enum NamingConvention begin
     flat
     structured
+end
+
+@enum ModelState begin
+    modelUninstantiated
+    modelInstantiated
+    modelInitializationMode
+    modelContinuousTimeMode
+    modelEventMode
+    modelTerminated
+    modelError
+    modelFatal
+end
+
+# FMI2 Errors
+struct FMI2Warning <: Exception
+    msg::String
+end
+FMI2Warning() = FMI2Warning("")
+Base.showerror(io::IO, e::FMI2Warning) = print(io, "fmi2Warning", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Discard <: Exception
+    msg::String
+end
+FMI2Discard() = FMI2Discard("")
+Base.showerror(io::IO, e::FMI2Discard) = print(io, "fmi2Discard", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Error <: Exception
+    msg::String
+end
+FMI2Error() = FMI2Error("")
+Base.showerror(io::IO, e::FMI2Error) = print(io, "fmi2Error", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Fatal <: Exception
+    msg::String
+end
+FMI2Fatal() = FMI2Fatal("")
+Base.showerror(io::IO, e::FMI2Fatal) = print(io, "fmi2Fatal", isempty(e.msg) ? "" : ": ", e.msg)
+
+struct FMI2Pending <: Exception
+    msg::String
+end
+FMI2Pending() = FMI2Pending("")
+Base.showerror(io::IO, e::FMI2Pending) = print(io, "fmi2Pending", isempty(e.msg) ? "" : ": ", e.msg)
+
+function fmiError(fmi2Status::Union{Unsigned, Integer}, message::String="")
+    if fmi2Status == 1
+        return FMI2Warning(message)
+    elseif fmi2Status == 2
+        return FMI2Discard(message)
+    elseif fmi2Status == 3
+        return FMI2Error(message)
+    elseif fmi2Status ==  4
+        return FMI2Fatal(message)
+    elseif fmi2Status == 5
+        return FMI2Pending(message)
+    else
+        return FMI2Error("Unknown error code")
+    end
 end
 
 
@@ -40,8 +89,111 @@ mutable struct fmi2ComponentEnvironment
     numFatals::Int
 end
 
+mutable struct RealVariable
+    value::Float64
+    valueReference::UInt
+    name::String
+
+    # attributes
+    min::Float64
+    max::Float64
+
+    # Inner constructors
+    RealVariable()=new()
+    function RealVariable(value, valueReference, name)
+        new(value, valueReference, name, -Inf64, Inf64)
+    end
+end
+
+mutable struct IntVariable
+    value::Int64
+    valueReference::UInt
+    name::String
+
+    # attributes
+    min::Int64
+    max::Int64
+
+    # Inner constructors
+    IntVariable()=new()
+    function IntVariable(value, valueReference, name)
+        new(value, valueReference, name, -(2^63 - 1), 2^63 - 1)
+    end
+end
+
+mutable struct BoolVariable
+    value::Bool
+    valueReference::UInt
+    name::String
+
+    # Inner Constructors
+    BoolVariable() = new()
+    function BoolVariable(value, valueReference, name)
+        new(value, valueReference, name)
+    end
+end
+
+mutable struct StringVariable
+    value::String
+    valueReference::UInt
+    name::String
+
+    # Inner constructors
+    StringVariable() = new()
+    function StringVariable(value, valueReference, name)
+        new(value, valueReference, name)
+    end
+end
+
+
+mutable struct EnumerationVariable
+    #TODO Add
+
+    EnumerationVariable() = new()
+end
+
+mutable struct ModelVariables
+    reals::Array{RealVariable,1}
+    ints::Array{IntVariable,1}
+    bools::Array{BoolVariable,1}
+    strings::Array{StringVariable,1}
+    enumerations::Array{EnumerationVariable,1}
+
+    function ModelVariables(n_reals, n_ints, n_bools, n_strings, n_enumerations)
+
+        reals = Array{RealVariable}(undef, n_reals)
+        ints = Array{IntVariable}(undef, n_ints)
+        bools = Array{BoolVariable}(undef, n_bools)
+        strings = Array{StringVariable}(undef, n_strings)
+        enumerations = Array{EnumerationVariable}(undef, n_enumerations)
+
+        new(reals, ints, bools, strings, enumerations)
+    end
+end
+
 mutable struct SimulationData
     time::AbstractFloat
+    modelVariables::ModelVariables
+
+    SimulationData()=new()
+    function SimulationData(n_reals, n_ints, n_bools, n_strings, n_enumerations)
+        modelVariables=ModelVariables(n_reals, n_ints, n_bools, n_strings,
+            n_enumerations)
+        new(0, modelVariables)
+    end
+end
+
+mutable struct ModelData
+    numberOfStates::Int
+    numberOfDerivatives::Int    # Is always numberOfStates
+
+    numberOfReals::Int
+    numberOfInts::Int
+    numberOfBools::Int
+    numberOfStrings::Int
+    numberOfExterns::Int
+
+    ModelData() = new(0,0,0,0,0,0,0)
 end
 
 mutable struct ExperimentData
@@ -64,17 +216,78 @@ mutable struct ExperimentData
     end
 end
 
-abstract type VariableType end
-abstract type RealType <: VariableType end
-abstract type IntegerType <: VariableType end
-abstract type BooleanType <: VariableType end
-abstract type StringType <: VariableType end
-abstract type EnumerationType <: VariableType end
 
-struct AbstractVariable
-    type::VariableType
+struct RealAttributes
+    quantity::String
+    unit::String            # TODO: make types for Units and functions
+    displayUnit::String     #       for unit conversion
+    relativeQuantity::Bool
+    min::Real
+    max::Real
+    nominal::Real
+    unbound::Bool
+
+    # Inner constructor
+    RealAttributes() = new()
+
+    function RealAttributes(quantity, unit, displayUnit, relativeQuantity,
+        min, max, nominal, unbound)
+
+        if nominal <= 0
+            error("Nominal > 0.0 required")
+        elseif min > max
+            error("Minimum is greater than maximum")
+        end
+
+        new(quantity, unit, displayUnit, relativeQuantity, min, max, nominal,
+            unbound)
+    end
+
+    function RealAttributes(quantity, unit, displayUnit, min, max, nominal)
+
+        if nominal <= 0
+            error("Nominal > 0.0 required")
+        elseif min > max
+            error("Minimum is greater than maximum")
+        end
+
+        new(quantity, unit, displayUnit, false, min, max, nominal, false)
+    end
 end
 
+struct IntegerAttributes
+    quantity::String
+    min::Int
+    max::Int
+end
+
+
+struct RealProperties
+    declaredType::String
+    variableAttributes::RealAttributes
+    start::Float64
+    derivative::UInt
+    reinit::Bool
+
+    RealProperties() = new()
+    RealProperties(declaredType, variableAttributes, start, derivative, reinit) = new(declaredType, variableAttributes, start, derivative, reinit)
+end
+
+struct IntegerProperties
+    declaredType::String
+    variableAttributes::IntegerAttributes
+    start::Int
+
+    IntegerProperies() = new()
+end
+
+struct BooleanProperties
+    declaredType::String
+    start::Bool
+
+    BooleanProperties() = new()
+    BooleanProperties(declaredType, start) = new(declaredType, start)
+end
 
 struct ScalarVariable
     name::String
@@ -82,77 +295,78 @@ struct ScalarVariable
 
     # Optional
     description::String
-    causality::String           # ToDo: Change to enumeration??
-    variability::String         # ToDo: Change to enumeration??
-    initial::String             # ToDo: Change to enumeration??
+    causality::String           # TODO: Change to enumeration??
+    variability::String         # TODO: Change to enumeration??
+    initial::String             # TODO: Change to enumeration??
     canHandleMultipleSetPerTimelnstant::Bool
 
     # Type specific properties of ScalarVariable
-    variableProperties::AbstractVariable
+    typeSpecificProperties::Union{RealProperties, IntegerProperties, BooleanProperties}
 
-    function ScalarVariable(name, valueReference)
+    # Inner constructors
+    function ScalarVariable(name, valueReference, description, typeSpecificProperties)
         if isempty(strip(name))
-            errro("ScalarVariable not valid: name can't be empty or only whitespace")
+            error("ScalarVariable not valid: name can't be empty or only whitespace")
         elseif valueReference < 0
-            errro("ScalarVariable not valid: valueReference=$valueReference not unsigned")
+            error("ScalarVariable not valid: valueReference=$valueReference not unsigned")
         end
-        new(name, Unsigned(valueReference), "local", "continous", "", "", false)
+        new(name, Unsigned(valueReference), description, "local", "continous", "", false, typeSpecificProperties)
     end
 
     function ScalarVariable(name, valueReference, description, causality,
-        variability, initial, canHandleMultipleSetPerTimelnstant)
+        variability, initial, canHandleMultipleSetPerTimelnstant, typeSpecificProperties)
 
         # Check name
         if isempty(strip(name))
-            errro("ScalarVariable not valid: name can't be empty or only whitespace")
+            error("ScalarVariable not valid: name can't be empty or only whitespace")
         end
 
         # Check valueReference
         if valueReference < 0
-            errro("ScalarVariable not valid: valueReference=$valueReference not unsigned")
+            error("ScalarVariable not valid: valueReference=$valueReference not unsigned")
         end
 
         # Check causality
         if isempty(causality)
             causality = "local"
         elseif !in(causality,["parameter", "calculatedParameter","input", "output", "local", "independent"])
-            errro("ScalarVariable not valid: causality has to be one of \"parameter\", \"calculatedParameter\", \"input\", \"output\", \"local\", \"independent\" but is \"$causality\"")
+            error("ScalarVariable not valid: causality has to be one of \"parameter\", \"calculatedParameter\", \"input\", \"output\", \"local\", \"independent\" but is \"$causality\"")
         elseif causality=="parameter"
-            if (variability!="fixed" || variability!="tunable")
-                errro("ScalarVariable not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$causality\"")
+            if (variability!="fixed" && variability!="tunable")
+                error("ScalarVariable not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
             end
             if isempty(initial)
                 initial = "exact"
             elseif initial!="exact"
-                errro("ScalarVariable not valid: causality is \"parameter\", so initial has to be \"exact\" or empty but is \"$initial\"")
+                error("ScalarVariable not valid: causality is \"parameter\", so initial has to be \"exact\" or empty but is \"$initial\"")
             end
         elseif causality=="calculatedParameter"
-            if (variability!="fixed" || variability!="tunable")
-                errro("ScalarVariable not valid: causality is \"calculatedParameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$causality\"")
+            if (variability!="fixed" && variability!="tunable")
+                error("ScalarVariable not valid: causality is \"calculatedParameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$causality\"")
             end
             if isempty(initial)
                 initial = "calculated"
             elseif !in(initial, ["approx", "calculated"])
-                errro("ScalarVariable not valid: causality is \"calculatedParameter\", so initial has to be \"approx\", \"calculated\" or empty but is \"$initial\"")
+                error("ScalarVariable not valid: causality is \"calculatedParameter\", so initial has to be \"approx\", \"calculated\" or empty but is \"$initial\"")
             end
         elseif causality=="input"
             if !isempty(initial)
-                errro("ScalarVariable not valid: causality is \"input\", so initial has to be empty but is \"$initial\"")
+                error("ScalarVariable not valid: causality is \"input\", so initial has to be empty but is \"$initial\"")
             end
         elseif causality=="independent"
             if variability!="continuous"
-                errro("ScalarVariable not valid: causality is \"independent\", so variability has to be \"continuous\" but is \"$causality\"")
+                error("ScalarVariable not valid: causality is \"independent\", so variability has to be \"continuous\" but is \"$causality\"")
             end
         end
 
         # Check variability
         if isempty(variability)
             variability = "continous"
-        elseif !in(causvariabilityality, ["constant", "fixed","tunable", "discrete", "continuous"])
-            errro("ScalarVariable not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
+        elseif !in(variability, ["constant", "fixed","tunable", "discrete", "continuous"])
+            error("ScalarVariable not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
         end
 
-        new(name, Unsigned(valueReference), causality, variability, initial, canHandleMultipleSetPerTimelnstant)
+        new(name, Unsigned(valueReference), description, causality, variability, initial, canHandleMultipleSetPerTimelnstant, typeSpecificProperties)
     end
 end
 
@@ -190,7 +404,7 @@ mutable struct ModelDescription
 
     # Unit definitions
     # Type definitions
-    # ToDo: add here
+    # TODO: add here
 
     logCategories::Array{LogCategory}
 
@@ -200,7 +414,7 @@ mutable struct ModelDescription
     # Vendor annotations
 
     # Model variables
-    modelVariables::Array{ScalarVariable}
+    modelVariables::Array{ScalarVariable,1}
 
     # Model structure
     modelStructure
@@ -215,26 +429,47 @@ mutable struct ModelDescription
 end
 
 
+mutable struct EventInfo
+    newDiscreteStatesNeeded::Bool
+    terminateSimulation::Bool
+    nominalsOfContinuousStatesChanged::Bool
+    valuesOfContinuousStatesChanged::Bool
+    nextEventTimeDefined::Bool
+    nextEventTime::Float64
+
+    EventInfo() = new(true, true, true, true, true, -1.0)
+end
+
+
 """
 Functional Mockupt Unit (FMU) struct.
 """
 mutable struct FMU
     modelName::String
     instanceName::String
-    FMUPath::String                     # ToDo: find better type for paths
+    FMUPath::String                     # TODO: find better type for paths
     fmuResourceLocation::String         # is URI
     fmuGUID::String
 
     modelDescription::ModelDescription
 
+    modelData::ModelData
+
     simulationData::SimulationData
 
     experimentData::ExperimentData
 
-    status
+    eventInfo::EventInfo
+
+    modelState::ModelState
+
+    # CSV and log file
+    csvFile::IOStream
+    logFile::IOStream
 
     # Other stuff
     libHandle::Ptr{Nothing}
+    libLoggerHandle::Ptr{Nothing}
     tmpFolder::String
     fmuType::fmuType
     fmiCallbackFunctions::CallbackFunctions

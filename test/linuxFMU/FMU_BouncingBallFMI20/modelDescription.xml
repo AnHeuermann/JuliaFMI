@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fmiModelDescription
+  fmiVersion="2.0"
+  modelName="BouncingBallFMI20"
+  guid="{83e3623b-dae7-4f68-a9b6-11318b1e264c}"
+  description=""
+  generationTool="OpenModelica Compiler OMCompiler v1.13.0-dev.1097+gde1221967"
+  generationDateAndTime="2019-01-14T17:42:05Z"
+  variableNamingConvention="structured"
+  numberOfEventIndicators="1">
+  <ModelExchange
+    modelIdentifier="BouncingBallFMI20">
+  </ModelExchange>
+  <CoSimulation
+    modelIdentifier="BouncingBallFMI20"
+    needsExecutionTool="false"
+    canHandleVariableCommunicationStepSize="true"
+    canInterpolateInputs="false"
+    maxOutputDerivativeOrder="1"
+    canRunAsynchronuously = "false"
+    canBeInstantiatedOnlyOncePerProcess="false"
+    canNotUseMemoryManagementFunctions="false"
+    canGetAndSetFMUstate="false"
+    canSerializeFMUstate="false"
+     />
+  <LogCategories>
+    <Category name="logEvents" />
+    <Category name="logSingularLinearSystems" />
+    <Category name="logNonlinearSystems" />
+    <Category name="logDynamicStateSelection" />
+    <Category name="logStatusWarning" />
+    <Category name="logStatusDiscard" />
+    <Category name="logStatusError" />
+    <Category name="logStatusFatal" />
+    <Category name="logStatusPending" />
+    <Category name="logAll" />
+    <Category name="logFmi2Call" />
+  </LogCategories>
+  <DefaultExperiment startTime="0.0" stopTime="1.0" tolerance="1e-06"/>
+  <ModelVariables>
+  <!-- Index of variable = "1" -->
+  <ScalarVariable
+    name="h"
+    valueReference="0"
+    description="height of ball"
+    variability="continuous"
+    causality="local"
+    initial="exact">
+    <Real start="1.0"/>
+  </ScalarVariable>
+  <!-- Index of variable = "2" -->
+  <ScalarVariable
+    name="v"
+    valueReference="1"
+    description="velocity of ball"
+    variability="continuous"
+    causality="local"
+    initial="calculated">
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "3" -->
+  <ScalarVariable
+    name="der(h)"
+    valueReference="2"
+    description="der(height of ball)"
+    variability="continuous"
+    causality="local"
+    initial="calculated">
+    <Real derivative="1"/>
+  </ScalarVariable>
+  <!-- Index of variable = "4" -->
+  <ScalarVariable
+    name="der(v)"
+    valueReference="3"
+    description="der(velocity of ball)"
+    variability="continuous"
+    causality="local"
+    initial="calculated">
+    <Real derivative="2"/>
+  </ScalarVariable>
+  <!-- Index of variable = "5" -->
+  <ScalarVariable
+    name="v_new"
+    valueReference="4"
+    variability="discrete"
+    causality="local"
+    initial="calculated">
+    <Real/>
+  </ScalarVariable>
+  <!-- Index of variable = "6" -->
+  <ScalarVariable
+    name="e"
+    valueReference="5"
+    description="coefficient of restitution"
+    variability="fixed"
+    causality="parameter"
+    initial="exact">
+    <Real start="0.7"/>
+  </ScalarVariable>
+  <!-- Index of variable = "7" -->
+  <ScalarVariable
+    name="g"
+    valueReference="6"
+    description="gravity acceleration"
+    variability="fixed"
+    causality="parameter"
+    initial="exact">
+    <Real start="9.81"/>
+  </ScalarVariable>
+  <!-- Index of variable = "8" -->
+  <ScalarVariable
+    name="_D_whenCondition1"
+    valueReference="0"
+    description="h &lt;= 0.0"
+    variability="discrete"
+    causality="local"
+    initial="exact">
+    <Boolean start="false"/>
+  </ScalarVariable>
+  </ModelVariables>
+  <ModelStructure>
+    <Derivatives>
+      <Unknown index="3" dependencies="2" dependenciesKind="dependent" />
+      <Unknown index="4" dependencies="" dependenciesKind="" />
+    </Derivatives>
+  </ModelStructure>
+</fmiModelDescription>

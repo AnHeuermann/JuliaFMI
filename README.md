@@ -1,5 +1,7 @@
 # JuliaFMI
 
+[![Build Status](https://travis-ci.com/AnHeuermann/JuliaFMI.svg?branch=master)](https://travis-ci.com/AnHeuermann/JuliaFMI)
+
 Julia simulator for [Functional Mockup Interface (FMI)](https://fmi-standard.org/)
 
 ## Getting started

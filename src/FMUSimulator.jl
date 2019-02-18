@@ -8,6 +8,14 @@ using LightXML      # For parsing XML files
 
 include("FMIWrapper.jl")
 
+# Macro to identify logger library
+macro libLogger()
+    if Sys.iswindows()
+        return string(dirname(dirname(Base.source_path())),"\\bin\\win64\\logger.dll")
+    elseif Sys.islinux()
+        return string(dirname(dirname(Base.source_path())),"/bin/unix64/logger.so")
+    end
+end
 
 """
 Parse modelDescription.xml
@@ -18,8 +26,8 @@ function readModelDescription(pathToModelDescription::String)
 
     if !isfile(pathToModelDescription)
         error("File $pathToModelDescription does not exist.")
-    elseif last(split(pathToModelDescription, "\\")) != "modelDescription.xml"
-        error("File name is not equal to \"modelDescription.xml\" but $(last(split(pathToModelDescription, "\\")))" )
+    elseif last(split(pathToModelDescription, "/")) != "modelDescription.xml"
+        error("File name is not equal to \"modelDescription.xml\" but $(last(split(pathToModelDescription, "/")))" )
     end
 
     # Parse modelDescription
@@ -141,7 +149,7 @@ function readModelDescription(pathToModelDescription::String)
             if stepSize != nothing
                 stepSize = parse(Float64, stepSize)
             else
-                stepSize = 1e-6/4
+                stepSize = 2e-3
             end
 
             md.defaultExperiment = ExperimentData(startTime, stopTime, tolerance, stepSize)
@@ -158,10 +166,96 @@ function readModelDescription(pathToModelDescription::String)
         end
 
         numberOfVariables = 0
-        for element in child_nodes(elementModelVariables)
+        for element in get_elements_by_tagname(elementModelVariables, "ScalarVariable")
             numberOfVariables += 1
         end
-        #md.modelVariables
+        scalarVariables = Array{ScalarVariable}(undef, numberOfVariables)
+
+        for (index, element) in enumerate(get_elements_by_tagname(elementModelVariables, "ScalarVariable"))
+            # Get attributes name, valueReference, variability, causality, initial
+            tmp_name = attribute(element, "name"; required=true)
+            tmp_valueReference = parse(Int, attribute(element, "valueReference"; required=true))
+
+            tmp_description = attribute(element, "description"; required=false)
+            if tmp_description == nothing
+                tmp_description=""
+            end
+            tmp_variability = attribute(element, "variability"; required=false)
+            if tmp_variability == nothing
+                tmp_variability=""
+            end
+            tmp_causality = attribute(element, "causality"; required=false)
+            if tmp_causality == nothing
+                tmp_causality=""
+            end
+            tmp_initial = attribute(element, "initial"; required=false)
+            if tmp_initial == nothing
+                tmp_initial=""
+            end
+            tmp_canHandleMultipleSetPerTimelnstant = attribute(element, "canHandleMultipleSetPerTimelnstant"; required=false)
+            if tmp_canHandleMultipleSetPerTimelnstant == nothing
+                tmp_canHandleMultipleSetPerTimelnstant = false
+            else
+                tmp_canHandleMultipleSetPerTimelnstant = parse(Bool,
+                    tmp_canHandleMultipleSetPerTimelnstant)
+            end
+
+            # Get child node for typeSpecificProperties
+            tmp_typeSpecificProperties = nothing
+            for child in child_elements(element)
+                if is_elementnode(child)
+                    if name(child)=="Real"
+                        tmp_declaredType = "Real"
+                        tmp_variableAttributes = RealAttributes()   # TODO implement
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = Float64(0)
+                        else
+                            tmp_start = parse(Float64, tmp_start)
+                        end
+                        tmp_derivative = attribute(child, "derivative"; required=false)
+                        if tmp_derivative == nothing
+                            tmp_derivative = UInt(0)
+                        else
+                            tmp_derivative = parse(UInt, tmp_derivative)
+                        end
+                        tmp_reinit = attribute(child, "reinit"; required=false)
+                        if tmp_reinit == nothing
+                            tmp_reinit = false
+                        end
+                        tmp_typeSpecificProperties = RealProperties(tmp_declaredType, tmp_variableAttributes, tmp_start, tmp_derivative, tmp_reinit)
+                    elseif name(child)=="Integer"
+                        tmp_declaredType = "Integer"
+                        tmp_variableAttributes = IntegerAttributes()   # TODO implement
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = Int(0)
+                        else
+                            tmp_start = parse(Int, tmp_start)
+                        end
+                        tmp_typeSpecificProperties = IntegerProperties(tmp_declaredType, tmp_variableAttributes, tmp_start)
+                    elseif name(child)=="Boolean"
+                        tmp_declaredType = "Boolean"
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = false
+                        else
+                            tmp_start = parse(Bool, tmp_start)
+                        end
+                        tmp_typeSpecificProperties = BooleanProperties(tmp_declaredType, tmp_start)
+                    else
+                        error("Unknown type of ScalarVariable")
+                    end
+                end
+            end
+
+            scalarVariables[index] = ScalarVariable(tmp_name,
+                tmp_valueReference, tmp_description, tmp_causality,
+                tmp_variability, tmp_initial,
+                tmp_canHandleMultipleSetPerTimelnstant,
+                tmp_typeSpecificProperties)
+        end
+        md.modelVariables = scalarVariables
 
         # Get attributes of tag ModelStructure
 
@@ -175,9 +269,93 @@ function readModelDescription(pathToModelDescription::String)
     end
 
     # Free memory
-    free(xdoc)
+    LightXML.free(xdoc)
 
     return md
+end
+
+
+function modelDescriptionToModelData(modelDescription::ModelDescription)
+
+    modelData = ModelData()
+
+    for var in modelDescription.modelVariables
+        if typeof(var.typeSpecificProperties)==RealProperties
+            if var.typeSpecificProperties.derivative > 0
+                modelData.numberOfStates += 1
+                modelData.numberOfDerivatives += 1
+            end
+            modelData.numberOfReals += 1
+        elseif typeof(var.typeSpecificProperties)==IntegerProperties
+            modelData.numberOfInts += 1
+        elseif typeof(var.typeSpecificProperties)==BooleanProperties
+            modelData.numberOfBools += 1
+        elseif typeof(var.typeSpecificProperties)==StringProperties
+            modelData.numberOfStrings += 1
+        else
+            error()
+        end
+    end
+
+    return modelData
+end
+
+
+"""
+Helper function to initialize modelVars in simulationData with start values from
+modelDescription and set valueReference and name.
+"""
+function initializeSimulationData(modelDescription::ModelDescription,
+    modelData::ModelData)
+
+    prevVars=0
+
+    simulationData = SimulationData(modelData.numberOfReals,
+        modelData.numberOfInts, modelData.numberOfBools,
+        modelData.numberOfStrings, 0)
+
+    # Fill real simulation data with start value, value reference and name
+    for (i,scalarVar) in enumerate(modelDescription.modelVariables[1:modelData.numberOfReals])
+        simulationData.modelVariables.reals[i] =
+            RealVariable(scalarVar.typeSpecificProperties.start,
+                         scalarVar.valueReference,
+                         scalarVar.name)
+    end
+    prevVars += modelData.numberOfReals
+
+    # Fill integer simulation data
+    if (modelData.numberOfInts > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfInts])
+            simulationData.modelVariables.ints[i] =
+                IntVariable(scalarVar.typeSpecificProperties.start,
+                            scalarVar.valueReference,
+                            scalarVar.name)
+        end
+        prevVars += modelData.numberOfInts
+    end
+
+    # Fill boolean simulation data
+    if (modelData.numberOfBools > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfBools])
+            simulationData.modelVariables.bools[i] =
+                BoolVariable(scalarVar.typeSpecificProperties.start,
+                             scalarVar.valueReference,
+                             scalarVar.name)
+        end
+        prevVars += modelData.numberOfBools
+    end
+
+    # Fill string simulation data
+    if (modelData.numberOfStrings > 0)
+        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfStrings])
+            simulationData.modelVariables.strings[i] =
+                StringVariable(scalarVar.typeSpecificProperties.start,
+                               scalarVar.valueReference,
+                               scalarVar.name)
+        end
+    end
+
+    return simulationData
 end
 
 
@@ -188,7 +366,7 @@ Unzips an FMU and returns handle to dynamic library containing FMI functions.
 
 ## Example calls
 ```
-julia> fmu=loadFMU("path\\\\to\\\\fmu\\\\helloWorld.fmu")
+julia> fmu=loadFMU("path/to/fmu/helloWorld.fmu")
 ```
 """
 function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)
@@ -197,13 +375,13 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     # Split path
     fmu.FMUPath = pathToFMU
-    name = last(split(pathToFMU, "\\"))
+    name = last(split(pathToFMU, "/"))
 
     # Create temp folder
     if useTemp
-        fmu.tmpFolder = string(tempdir(), "FMU_", name[1:end-4], "_", floor(Int, 10000*rand()), "\\")
+        fmu.tmpFolder = string(tempdir(), "/FMU_", name[1:end-4], "_", floor(Int, 10000*rand()), "/")
     else
-        fmu.tmpFolder = string(pathToFMU[1:end-length(name)], "FMU_", name[1:end-4],  "\\")
+        fmu.tmpFolder = string(pathToFMU[1:end-length(name)], "FMU_", name[1:end-4],  "/")
     end
     if isdir(fmu.tmpFolder)
         if !overWriteTemp
@@ -227,50 +405,93 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     # pathToDLL
     if Sys.iswindows()
-        if ispath(string(fmu.tmpFolder, "binaries\\win64\\")) && Sys.WORD_SIZE==64
-            pathToDLL = string(fmu.tmpFolder, "binaries\\win64\\", name[1:end-4], ".dll")
-        elseif ispath(string(fmu.tmpFolder, "binaries\\win32\\"))
-            pathToDLL = string(fmu.tmpFolder, "binaries\\win32\\", name[1:end-4], ".dll")
+        if ispath(string(fmu.tmpFolder, "binaries/win64/")) && Sys.WORD_SIZE==64
+            pathToDLL = string(fmu.tmpFolder, "binaries/win64/", name[1:end-4], ".dll")
+        elseif ispath(string(fmu.tmpFolder, "binaries/win32/"))
+            pathToDLL = string(fmu.tmpFolder, "binaries/win32/", name[1:end-4], ".dll")
         else
             error("No DLL found matching Windows OS and word size.")
         end
 
     elseif Sys.islinux()
-        error("Linux not supported yet.")
+        if ispath(string(fmu.tmpFolder, "binaries/linux64/")) && Sys.WORD_SIZE==64
+            pathToDLL = string(fmu.tmpFolder, "binaries/linux64/", name[1:end-4], ".so")
+        elseif ispath(string(fmu.tmpFolder, "binaries/linux32/"))
+            pathToDLL = string(fmu.tmpFolder, "binaries/linux32/", name[1:end-4], ".so")
+        else
+            error("No shared object file found in $(string(fmu.tmpFolder, "binaries/linux$(Sys.WORD_SIZE)/")) matching Unix OS and word size.")
+        end
     end
 
-    # load dynamic library
+    # Fill model data
+    fmu.modelData = modelDescriptionToModelData(fmu.modelDescription)
+
+    # Fill Simulation Data
+    fmu.simulationData = initializeSimulationData(fmu.modelDescription, fmu.modelData)
+
+    # Set default experiment
+    fmu.experimentData = deepcopy(fmu.modelDescription.defaultExperiment)
+
+    fmu.eventInfo = EventInfo()
+
+    # Open result and log file
+    fmu.csvFile = open("$(fmu.modelName)_results.csv", "w")
+    fmu.logFile = open("$(fmu.modelName).log", "w")
+
+    # load shared library with FMU
+    # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
+    # push!(DL_LOAD_PATH, "/usr/lib/x86_64-linux-gnu") maybe???
     fmu.libHandle = dlopen(pathToDLL)
+
+    # Load hared library with logger function
+    fmu.libLoggerHandle = dlopen(@libLogger)
+    fmi2CallbacLogger_Cfunc = dlsym(fmu.libLoggerHandle, :logger)
+    # fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
+    #    (Ptr{Cvoid}, Cstring, Cuint, Cstring, Tuple{Cstring}))
+    fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, (Csize_t, Csize_t))
+    fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
+
+    fmi2Functions = CallbackFunctions(
+        #fmi2CallbacLogger_funcWrapC,       # Logger in Julia
+        fmi2CallbacLogger_Cfunc,            # Logger in C
+        fmi2AllocateMemory_funcWrapC,
+        fmi2FreeMemory_funcWrapC,
+        C_NULL,
+        C_NULL)
 
     # Fill FMU with remaining data
     fmu.fmuResourceLocation = string("file:///", fmu.tmpFolder,"resources")
     fmu.fmuGUID = fmu.modelDescription.guid
     fmu.fmiCallbackFunctions = fmi2Functions
 
+    fmu.modelState = modelUninstantiated
+
     return fmu
 end
 
 
 """
-Unload dynamic library and if `deleteTmpFolder=true` remove tmp files.
+```
+    unloadFMU(fmu::FMU, [deleteTmpFolder=true::Bool])
+```
+Unload FMU and if `deleteTmpFolder=true` remove tmp files.
 """
-function unloadFMU(fmu::FMU)
-    unloadFMU(fmu.libHandle, fmu.tmpFolder)
-end
-
-function unloadFMU(libHandle::Ptr{Nothing}, tmpFolder::String,
-    deleteTmpFolder=true::Bool)
+function unloadFMU(fmu::FMU, deleteTmpFolder=true::Bool)
 
     # unload FMU dynamic library
-    dlclose(libHandle)
+    dlclose(fmu.libHandle)
 
     # unload C logger
-    dlclose(libLoggerHandle)
+    dlclose(fmu.libLoggerHandle)
 
     # delete tmp folder
     if deleteTmpFolder
-        rm(tmpFolder, recursive=true);
+        rm(fmu.tmpFolder, recursive=true, force=true);
     end
+
+    # Close result and log file
+    close(fmu.csvFile)
+    close(fmu.logFile)
 end
 
 
@@ -284,9 +505,14 @@ function my_unzip(target::String, destinationDir::String)
         error("Could not find file \"$target\"")
     end
 
+    if !ispath(destinationDir)
+        mkpath(destinationDir)
+    end
+
     try
         #use unzip
         run(Cmd(`unzip -qo $target`, dir = destinationDir))
+        println("Extracted FMU to $destinationDir")
     catch
         try
             #use 7-zip
@@ -300,15 +526,154 @@ end
 
 
 """
+Gets values of all states of a FMU.
+Helper function for main.
+"""
+function getContinuousStates!(fmu::FMU)
+
+    if fmu.modelState != modelContinuousTimeMode
+        error("Function call only allowed in modelContinuousTimeMode but model is in mode: $(fmu.modelState)")
+    end
+
+    states = Array{Float64}(undef,fmu.modelData.numberOfStates)
+    fmi2GetContinuousStates!(fmu, states)
+
+    for i=1:fmu.modelData.numberOfStates
+        fmu.simulationData.modelVariables.reals[i].value = states[i]
+    end
+end
+
+
+function getDerivatives!(fmu::FMU)
+
+    if fmu.modelState != modelContinuousTimeMode
+        error("Function call only allowed in modelContinuousTimeMode but model is in mode: $(fmu.modelState)")
+    end
+
+    derivatives = Array{Float64}(undef,fmu.modelData.numberOfStates)
+    fmi2GetDerivatives!(fmu, derivatives)
+
+    for i=1:fmu.modelData.numberOfDerivatives
+        fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value = derivatives[i]
+    end
+end
+
+
+"""
+Sets continous states in `FMU`
+"""
+function setContinuousStates!(fmu::FMU)
+
+    if fmu.modelState != modelContinuousTimeMode
+        error("Function call only allowed in modelContinuousTimeMode but model is in mode: $(fmu.modelState)")
+    end
+
+    states = Array{Float64}(undef,fmu.modelData.numberOfStates)
+
+    for i=1:fmu.modelData.numberOfStates
+        states[i] = fmu.simulationData.modelVariables.reals[i].value
+    end
+
+    fmi2SetContinuousStates(fmu, states)
+
+end
+
+function getVariable!(fmu::FMU, variable::RealVariable)
+
+    fmi2GetReal!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getVariable!(fmu::FMU, variable::IntVariable)
+
+    fmi2GetInteger!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getVariable!(fmu::FMU, variable::BoolVariable)
+
+    fmi2GetBoolean!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getVariable!(fmu::FMU, variable::StringVariable)
+
+    fmi2GetString!(fmu, [variable.valueReference], [variable.value])
+    return variable.value
+end
+
+function getAllVariables!(fmu::FMU)
+
+    for realVar in fmu.simulationData.modelVariables.reals
+        realVar.value = getVariable!(fmu, realVar)
+    end
+    for intVar in fmu.simulationData.modelVariables.ints
+        intVar.value = getVariable!(fmu, intVar)
+    end
+    for boolVar in fmu.simulationData.modelVariables.bools
+        boolVar.value = getVariable!(fmu, boolVar)
+    end
+    for stringVar in fmu.simulationData.modelVariables.strings
+        stringVar.value = getVariable!(fmu, stringVar)
+    end
+end
+
+function setTime!(fmu::FMU, time::Float64)
+
+    fmu.simulationData.time = time
+    fmi2SetTime(fmu, fmu.simulationData.time)
+end
+
+function writeNamesToCSV(fmu::FMU)
+
+    write(fmu.csvFile, "\"time\"")
+    for realVar in fmu.simulationData.modelVariables.reals
+        write(fmu.csvFile, ",\"$(realVar.name)\"")
+    end
+    for intVar in fmu.simulationData.modelVariables.ints
+        write(fmu.csvFile, ",\"$(intVar.name)\"")
+    end
+    for boolVar in fmu.simulationData.modelVariables.bools
+        write(fmu.csvFile, ",\"$(boolVar.name)\"")
+    end
+    for stringVar in fmu.simulationData.modelVariables.strings
+        write(fmu.csvFile, ",\"$(stringVar.name)\"")
+    end
+    write(fmu.csvFile, "\r\n")
+end
+
+
+function writeValuesToCSV(fmu::FMU)
+
+    write(fmu.csvFile, "$(fmu.simulationData.time)")
+    for realVar in fmu.simulationData.modelVariables.reals
+        write(fmu.csvFile, ",$(realVar.value)")
+    end
+    for intVar in fmu.simulationData.modelVariables.ints
+        write(fmu.csvFile, ",$(intVar.value)")
+    end
+    for boolVar in fmu.simulationData.modelVariables.bools
+        write(fmu.csvFile, ",$(Int(boolVar.value))")
+    end
+    for stringVar in fmu.simulationData.modelVariables.strings
+        write(fmu.csvFile, ",$(stringVar.value)")
+    end
+    write(fmu.csvFile,"\r\n")
+end
+
+
+"""
 Main function to simulate a FMU
 """
 function main(pathToFMU::String)
     # load FMU
-    fmu = loadFMU(pathToFMU, true, true)
+    fmu = loadFMU(pathToFMU)
+    writeNamesToCSV(fmu)
 
     try
         # Instantiate FMU
         fmi2Instantiate!(fmu)
+        fmu.modelState = modelInstantiated
 
         # Set debug logging to true for all categories
         fmi2SetDebugLogging(fmu, true)
@@ -317,13 +682,95 @@ function main(pathToFMU::String)
         typesPlatform = fmi2GetTypesPlatform(fmu)
         println("typesPlatform: $typesPlatform")
 
+        # Get version of fmi
+        fmiVersion = fmi2GetVersion(fmu)
+        println("FMI version: $fmiVersion")
+
+        # Set up experiment
+        fmi2SetupExperiment(fmu, 0)
+
+        # Set start time
+        setTime!(fmu, 0.0)
+
+        # Set initial variables with intial="exact" or "approx"
+
+        # Initialize FMU
+        fmi2EnterInitializationMode(fmu)
+
+        # Exit Initialization
+        fmi2ExitInitializationMode(fmu)
+
+        # Event iteration
+        fmu.eventInfo.newDiscreteStatesNeeded = true
+        while fmu.eventInfo.newDiscreteStatesNeeded
+            fmi2NewDiscreteStates!(fmu)
+            if fmu.eventInfo.terminateSimulation
+                error()
+            end
+        end
+
+        # Enter Continuous time mode
+        fmi2EnterContinuousTimeMode(fmu)
+
+        # retrieve initial states
+        getContinuousStates!(fmu)
+
+        # retrive solution
+        getAllVariables!(fmu)           # TODO Is not returning der(x) correctly
+        writeValuesToCSV(fmu)
+
+        # Iterate with explicit euler method
+        k = 0
+        k_max = 1000
+        while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
+            k += 1
+            getDerivatives!(fmu)
+
+            # Compute next step size
+            if fmu.eventInfo.nextEventTimeDefined
+                h = min(fmu.experimentData.stepSize, fmu.eventInfo.nextEventTime - fmu.simulationData.time)
+            else
+                h = min(fmu.experimentData.stepSize, fmu.experimentData.stopTime - fmu.simulationData.time)
+            end
+
+            # Update time
+            setTime!(fmu, fmu.simulationData.time + h)
+
+            # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
+            for i=1:fmu.modelData.numberOfStates
+                fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
+            end
+            setContinuousStates!(fmu)
+
+            # Get event indicators and check for events
+
+            # Inform the model abaut an accepted step
+            (enterEventMode, terminateSimulation) = fmi2CompletedIntegratorStep(fmu, true)
+            if enterEventMode
+                error("Should now enter Event mode...")
+            end
+
+            if terminateSimulation
+                error("Solution got terminated bevore reaching end time.")
+            end
+
+            # save results
+            getAllVariables!(fmu)
+            writeValuesToCSV(fmu)
+
+            # Handle events
+        end
+
+        # Terminate Simulation
+        fmi2Terminate(fmu)
+
         # Free FMU
         # ToDo: Fix function
         #fmi2FreeInstance(fmu)
     finally
         # Unload FMU
         println("Unload FMU")
-        unloadFMU(fmu.libHandle, fmu.tmpFolder, true)
+        unloadFMU(fmu)
     catch
         rethrow()
     end
