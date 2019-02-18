@@ -1,58 +1,31 @@
 # This file is part of JuliaFMI.
 # License is MIT: https://servant-om.fh-bielefeld.de/gitlab/AnHeuermann/FMU_JL_Simulator/blob/master/LICENSE.txt
 
-# This YAML file
+language: julia
+julia:
+  - 1.0.2
 
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install libblas-dev liblapack-dev
+  - sudo apt-get install -y build-essential
 
-stages:
-  - build
-  - load
-  - test
-  - deploy
-
-matrix:
+jobs:
   include:
-    - language: c
-      before_script:
-       - echo Starting C jobs
-      stage: build
+    - stage: test
       script:
-       - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
-       - gcc -shared src/logger.c -fPIC -o bin/unix64/logger.so
+        - if [ ! -d ./bin/unix64/ ]; then mkdir ./bin/unix64/; fi
+        - gcc -shared src/logger.c -fPIC -o bin/unix64/logger.so
 
-    - language: julia
-      julia: 1.0.2
-      before_script:
-        - echo Starting Julia jobs
-      stage: build
-      script:
         - julia deps/build.jl
 
-    - language: julia
-      julia: 1.0.2
-      before_script:
-        - echo Starting Julia jobs
-      stage: load
-      script:
         - julia src/FMI2Types.jl
         - julia src/FMICallbackFunctions.jl
         - julia src/FMIWrapper.jl
         - julia src/FMUSimulator.jl
 
-    - language: julia
-      julia: 1.0.2
-      stage: test
-      script:
         - julia -e "include(\"test/runtests.jl\"); testHelloFMI20World()"
-      after_script:
-        - rm -rf test/HelloFMI20World/
-        - echo Finished Julia jobs and cleaned up
-
-    - deploy-script:
-      stage: deploy
-      script:
-        - .travis/push.sh
-
+        - julia -e "include(\"test/runtests.jl\"); testBouncingBall()"
 
 notifications:
   email: false
