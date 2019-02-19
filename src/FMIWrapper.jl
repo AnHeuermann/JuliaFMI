@@ -1512,9 +1512,9 @@ end
 
 """
 ```
-    fmi2GetEventIndicators!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, derivatives::Array{Float64,1}, [numberOfDerivatives::Int])
+    fmi2GetEventIndicators!(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing}, eventIndicators::Array{Float64,1}, [numberOfEventIndiactors::Int])
 
-    fmi2GetEventIndicators!(fmu::FMU, derivatives::Array{Float64,1}, [numberOfDerivatives::Int])
+    fmi2GetEventIndicators!(fmu::FMU, eventIndicators::Array{Float64,1}, [numberOfEventIndiactors::Int])
 ```
 Compute event indicators at the current time instant and for the current
 states.
@@ -1545,20 +1545,20 @@ end
 function fmi2GetEventIndicators!(libHandle::Ptr{Nothing},
     fmi2Component::Ptr{Nothing}, eventIndicators::Array{Float64,1})
 
-    fmi2GetDerivatives!(libHandle, fmi2Component, eventIndicators,
+    fmi2GetEventIndicators!(libHandle, fmi2Component, eventIndicators,
         length(eventIndicators))
 end
 
 function fmi2GetEventIndicators!(fmu::FMU, eventIndicators::Array{Float64,1},
     numberOfEventIndiactors::Int)
 
-    fmi2GetDerivatives!(fmu.libHandle, fmu.fmi2Component, eventIndicators,
+    fmi2GetEventIndicators!(fmu.libHandle, fmu.fmi2Component, eventIndicators,
         numberOfEventIndiactors)
 end
 
 function fmi2GetEventIndicators!(fmu::FMU, eventIndicators::Array{Float64,1})
 
-    fmi2GetDerivatives!(fmu.libHandle, fmu.fmi2Component, eventIndicators,
+    fmi2GetEventIndicators!(fmu.libHandle, fmu.fmi2Component, eventIndicators,
         length(eventIndicators))
 end
 
