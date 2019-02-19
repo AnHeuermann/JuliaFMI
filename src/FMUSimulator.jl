@@ -295,6 +295,8 @@ function modelDescriptionToModelData(modelDescription::ModelDescription)
         else
             error()
         end
+
+    modelData.numberOfEventIndicators = modelDescription.numberOfEventIndicators
     end
 
     return modelData
@@ -312,7 +314,7 @@ function initializeSimulationData(modelDescription::ModelDescription,
 
     simulationData = SimulationData(modelData.numberOfReals,
         modelData.numberOfInts, modelData.numberOfBools,
-        modelData.numberOfStrings, 0)
+        modelData.numberOfStrings, 0, modelData.numberOfEventIndicators)
 
     # Fill real simulation data with start value, value reference and name
     for (i,scalarVar) in enumerate(modelDescription.modelVariables[1:modelData.numberOfReals])
@@ -618,8 +620,11 @@ function getAllVariables!(fmu::FMU)
     end
 end
 
-function setTime!(fmu::FMU, time::Float64)
+function setTime!(fmu::FMU, time::Float64, saveLastStepTime=true::Bool)
 
+    if saveLastStepTime
+        fmu.simulationData.lastStepTime = fmu.simulationData.time
+    end
     fmu.simulationData.time = time
     fmi2SetTime(fmu, fmu.simulationData.time)
 end
