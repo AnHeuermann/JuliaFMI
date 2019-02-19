@@ -173,13 +173,18 @@ end
 
 mutable struct SimulationData
     time::AbstractFloat
+    lastStepTime::AbstractFloat
     modelVariables::ModelVariables
+    eventIndicators::Array{Float64}
 
     SimulationData()=new()
-    function SimulationData(n_reals, n_ints, n_bools, n_strings, n_enumerations)
+    function SimulationData(n_reals, n_ints, n_bools, n_strings, n_enumerations,
+        numberOfEventIndicators)
+
         modelVariables=ModelVariables(n_reals, n_ints, n_bools, n_strings,
             n_enumerations)
-        new(0, modelVariables)
+        eventIndicators = Array{Float64}(undef, numberOfEventIndicators)
+        new(0, 0, modelVariables, eventIndicators)
     end
 end
 
@@ -193,7 +198,9 @@ mutable struct ModelData
     numberOfStrings::Int
     numberOfExterns::Int
 
-    ModelData() = new(0,0,0,0,0,0,0)
+    numberOfEventIndicators::Int
+
+    ModelData() = new(0,0,0,0,0,0,0,0)
 end
 
 mutable struct ExperimentData
