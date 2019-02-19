@@ -1381,7 +1381,11 @@ end
 
 
 """
+```
+    fmi2EnterContinuousTimeMode(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing})
 
+    fmi2EnterContinuousTimeMode(fmu::FMU)
+```
 The model enters Continuous-Time Mode and all discrete-time equations become
 inactive and all relations are "frozen".
 This function has to be called when changing from Event Mode into
