@@ -7,7 +7,9 @@ Julia simulator for [Functional Mockup Interface (FMI)](https://fmi-standard.org
 ## Getting started
 
 ### Installing JuliaFMI
-
+```
+julia> Pkg.clone("https://github.com/AnHeuermann/JuliaFMI.git")
+```
 
 ## FMI
 Functional Mock-up Interface (FMI) is a tool independent standard to support
@@ -23,19 +25,18 @@ For more informations see the [documentation](https://svn.modelica.org/fmi/branc
 
 ## Features
 At the moment the following features are implemented:
-* Wreak havoc
-* Segmentation faults
 * Import of FMU's
+* Simulation of first ModelExchange 2.0 FMUs without event handling
 
 ## Planed features
-* Basic check of correctness for imported FMU's
-* Import of FMU's
+* Basic check of correctness of imported FMU's
 * Simulation with changeable explicit and implicit ODE and DAE integrators
 * Export of simulation results as CVS and MAT files
 
 ## Documentation
-Missing as well :-)
+Missing as well :-)<br>
+There are some Julia doc strings for most functions though...
 
 
 ## Known issues
-It's buggy as hell.
+* `fmi2FreeInstance` is not working for provided FMUs in test directory.
