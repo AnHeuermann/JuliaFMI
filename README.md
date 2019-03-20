@@ -1,6 +1,7 @@
 # JuliaFMI
 
 [![Build Status](https://travis-ci.com/AnHeuermann/JuliaFMI.svg?branch=master)](https://travis-ci.com/AnHeuermann/JuliaFMI)
+[![Coverage Status](https://coveralls.io/repos/github/AnHeuermann/JuliaFMI/badge.svg)](https://coveralls.io/github/AnHeuermann/JuliaFMI)
 
 Julia simulator for [Functional Mockup Interface (FMI)](https://fmi-standard.org/)
 
