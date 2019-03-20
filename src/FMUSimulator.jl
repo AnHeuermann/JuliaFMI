@@ -13,9 +13,11 @@ include("FMIWrapper.jl")
 # Macro to identify logger library
 macro libLogger()
     if Sys.iswindows()
-        return string(dirname(dirname(Base.source_path())),"\\bin\\win64\\logger.dll")
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "win64", "logger.dll")
     elseif Sys.islinux()
-        return string(dirname(dirname(Base.source_path())),"/bin/unix64/logger.so")
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "unix64", "logger.so")
+    else
+        error("OS not supportet")
     end
 end
 
@@ -28,8 +30,8 @@ function readModelDescription(pathToModelDescription::String)
 
     if !isfile(pathToModelDescription)
         error("File $pathToModelDescription does not exist.")
-    elseif last(split(pathToModelDescription, "/")) != "modelDescription.xml"
-        error("File name is not equal to \"modelDescription.xml\" but $(last(split(pathToModelDescription, "/")))" )
+    elseif basename(pathToModelDescription) != "modelDescription.xml"
+        error("File name is not equal to \"modelDescription.xml\" but $(basename(pathToModelDescription))" )
     end
 
     # Parse modelDescription
@@ -379,13 +381,13 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     # Split path
     fmu.FMUPath = pathToFMU
-    name = last(split(pathToFMU, "/"))
+    name = splitext(basename(pathToFMU))[1]
 
     # Create temp folder
     if useTemp
-        fmu.tmpFolder = string(tempdir(), "/FMU_", name[1:end-4], "_", floor(Int, 10000*rand()), "/")
+        fmu.tmpFolder = joinpath(tempdir(), string("FMU_", name, "_", floor(Int, 10000*rand())))
     else
-        fmu.tmpFolder = string(pathToFMU[1:end-length(name)], "FMU_", name[1:end-4],  "/")
+        fmu.tmpFolder = joinpath(dirname(pathToFMU), string("FMU_", name))
     end
     if isdir(fmu.tmpFolder)
         if !overWriteTemp
@@ -398,7 +400,7 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     my_unzip(pathToFMU, fmu.tmpFolder)
 
     # parse modelDescription.xml
-    fmu.modelDescription = readModelDescription(string(fmu.tmpFolder, "modelDescription.xml"))
+    fmu.modelDescription = readModelDescription(joinpath(fmu.tmpFolder, "modelDescription.xml"))
     fmu.modelName = fmu.modelDescription.modelName
     fmu.instanceName = fmu.modelDescription.modelName
     if (fmu.modelDescription.isModelExchange)
@@ -409,21 +411,18 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     # pathToDLL
     if Sys.iswindows()
-        if ispath(string(fmu.tmpFolder, "binaries/win64/")) && Sys.WORD_SIZE==64
-            pathToDLL = string(fmu.tmpFolder, "binaries/win64/", name[1:end-4], ".dll")
-        elseif ispath(string(fmu.tmpFolder, "binaries/win32/"))
-            pathToDLL = string(fmu.tmpFolder, "binaries/win32/", name[1:end-4], ".dll")
-        else
-            error("No DLL found matching Windows OS and word size.")
-        end
-
+        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "win$(Sys.WORD_SIZE)", string(name, ".dll"))
     elseif Sys.islinux()
-        if ispath(string(fmu.tmpFolder, "binaries/linux64/")) && Sys.WORD_SIZE==64
-            pathToDLL = string(fmu.tmpFolder, "binaries/linux64/", name[1:end-4], ".so")
-        elseif ispath(string(fmu.tmpFolder, "binaries/linux32/"))
-            pathToDLL = string(fmu.tmpFolder, "binaries/linux32/", name[1:end-4], ".so")
-        else
-            error("No shared object file found in $(string(fmu.tmpFolder, "binaries/linux$(Sys.WORD_SIZE)/")) matching Unix OS and word size.")
+        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "linux$(Sys.WORD_SIZE)", string(name, ".so"))
+    else
+        error("OS not supportet!")
+    end
+
+    if !isfile(pathToDLL)
+        if Sys.iswindows()
+            error("No shared library found matching $(Sys.WORD_SIZE) bit Windows.")
+        elseif Sys.islinux()
+            error("No shared library found matching $(Sys.WORD_SIZE) bit Linux.")
         end
     end
 
@@ -464,7 +463,7 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
         C_NULL)
 
     # Fill FMU with remaining data
-    fmu.fmuResourceLocation = string("file:///", fmu.tmpFolder,"resources")
+    fmu.fmuResourceLocation = joinpath(string("file:///", fmu.tmpFolder), "resources")
     fmu.fmuGUID = fmu.modelDescription.guid
     fmu.fmiCallbackFunctions = fmi2Functions
 

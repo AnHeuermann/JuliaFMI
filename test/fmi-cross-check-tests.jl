@@ -6,13 +6,14 @@ using Test
 using LibGit2
 
 thisDir = dirname(Base.source_path())
-fmiCrossCheckDir = string(thisDir,"/fmi-cross-check")
+fmiCrossCheckDir = joinpath(thisDir,"fmi-cross-check")
+
 include("$(dirname(thisDir))/src/FMUSimulator.jl")
 
 if Sys.iswindows()
-    fmiCrossCheckFMUDir = string(thisDir, "/fmi-cross-check/fmus/2.0/me/win$(Sys.WORD_SIZE)")
+    fmiCrossCheckFMUDir = joinpath(thisDir, "fmi-cross-check", "fmus", "2.0", "me", "win$(Sys.WORD_SIZE)")
 elseif Sys.islinux()
-    fmiCrossCheckFMUDir = string(thisDir, "/fmi-cross-check/fmus/2.0/me/linux$(Sys.WORD_SIZE)")
+    fmiCrossCheckFMUDir = joinpath(thisDir, "fmi-cross-check", "fmus", "2.0", "me", "linux$(Sys.WORD_SIZE)")
 else
     error("OS not supportet for this tests.")
 end
@@ -29,7 +30,7 @@ function updateFmiCrossCheck()
     if isdir(fmiCrossCheckDir)
         # Update repository
         println("Updating repository modelica/fmi-cross-check.")
-        repo = GitRepo(string(thisDir,"/fmi-cross-check"))
+        repo = GitRepo(fmiCrossCheckDir)
         LibGit2.fetch(repo)
         LibGit2.merge!(repo, fastforward=true)
 
@@ -50,11 +51,10 @@ Resets fmi-cross-check repository. All changes will get lost!
 function cleanFmiCrossCheck()
 
     if isdir(fmiCrossCheckDir)
-        repo = GitRepo(string(thisDir,"/fmi-cross-check"))
+        repo = GitRepo(fmiCrossCheckDir)
         head_oid = LibGit2.head_oid(repo)
         mode = LibGit2.Consts.RESET_HARD
         LibGit2.reset!(repo, head_oid, mode)
-        println("")
     end
 end
 

@@ -7,9 +7,9 @@ include("$(dirname(thisDir))/src/FMUSimulator.jl")
 
 
 if Sys.iswindows()
-    fmuTestDir = string(thisDir, "/winFMU")
+    fmuTestDir = joinpath(thisDir, "winFMU")
 elseif Sys.islinux()
-    fmuTestDir = string(thisDir, "/linuxFMU")
+    fmuTestDir = joinpath(thisDir, "linuxFMU")
 else
     error("OS not supportet for this tests.")
 end
@@ -30,7 +30,7 @@ FMU generated for Modelica model:
 ```
 """
 function testHelloFMI20World()
-    helloFMI20World = string(fmuTestDir,"/HelloFMI20World.fmu")
+    helloFMI20World = joinpath(fmuTestDir,"HelloFMI20World.fmu")
     main(helloFMI20World)
     return true
 end
@@ -61,7 +61,7 @@ FMU generated from Modelica model:
 ```
 """
 function testBouncingBall()
-    bouncingBall = string(fmuTestDir,"/BouncingBallFMI20.fmu")
+    bouncingBall = joinpath(fmuTestDir,"BouncingBallFMI20.fmu")
     main(bouncingBall)
     return true
 end
