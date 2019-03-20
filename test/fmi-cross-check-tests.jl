@@ -152,7 +152,7 @@ function testJModelicaFMUs()
         error("Test only supportet on 64 bit Linux.")
     end
 
-    toolName = "Jmodelica.org"
+    toolName = "JModelica.org"
     versions = ["1.15"]
     tests = ["CauerLowPassAnalog" "ControlledTemperature" "CoupledClutches" "PID_Controller"]
 
