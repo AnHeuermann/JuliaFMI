@@ -11,6 +11,15 @@ end
     flat
     structured
 end
+function NamingConvention(in::String)
+    if in=="flat"
+        return flat
+    elseif in == "structured"
+        return structured
+    else
+        error("Can not convert String \"$in\" to NamingConvention.")
+    end
+end
 
 @enum ModelState begin
     modelUninstantiated
@@ -266,6 +275,10 @@ struct IntegerAttributes
     quantity::String
     min::Int
     max::Int
+
+    # Inner constructors
+    IntegerAttributes()=new()
+    IntegerAttributes(quantity, min, max)=new(quantity, min, max)
 end
 
 
@@ -276,8 +289,20 @@ struct RealProperties
     derivative::UInt
     reinit::Bool
 
+    # Inner constructors
     RealProperties() = new()
     RealProperties(declaredType, variableAttributes, start, derivative, reinit) = new(declaredType, variableAttributes, start, derivative, reinit)
+    function RealProperties(declaredType, variableAttributes, start, derivative, reinit_in::String)
+        if reinit_in == "true"
+            reinit = true
+        elseif reinit_in == "false"
+            reinit = false
+        else
+            error("Could not parste input reinit=$reinit_in to Bool.")
+        end
+
+        return new(declaredType, variableAttributes, start, derivative, reinit)
+    end
 end
 
 struct IntegerProperties
@@ -285,7 +310,9 @@ struct IntegerProperties
     variableAttributes::IntegerAttributes
     start::Int
 
+    # Inner constructors
     IntegerProperies() = new()
+    IntegerProperties(declaredType, variableAttributes, start) = new(declaredType, variableAttributes, start)
 end
 
 struct BooleanProperties
