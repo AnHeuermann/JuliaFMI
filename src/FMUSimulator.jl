@@ -57,14 +57,7 @@ function readModelDescription(pathToModelDescription::String)
         md.license = get(attributes, "license", "")
         md.generationTool = get(attributes, "generationTool", "")
         md.generationDateAndTime = get(attributes, "generationDateAndTime", "")
-
-        if attributes["variableNamingConvention"]=="flat"
-            md.variableNamingConvention =  flat
-        elseif attributes["variableNamingConvention"]=="structured"
-            md.variableNamingConvention =  structured
-        else
-            error("Unknown variableNamingConvention")
-        end
+        md.variableNamingConvention = NamingConvention(get(attributes, "variableNamingConvention", "flat"))
         md.numberOfEventIndicators = parse(Int, attributes["numberOfEventIndicators"])
 
         # Get attributes of tag <ModelExchange>
@@ -247,8 +240,10 @@ function readModelDescription(pathToModelDescription::String)
                             tmp_start = parse(Bool, tmp_start)
                         end
                         tmp_typeSpecificProperties = BooleanProperties(tmp_declaredType, tmp_start)
+                    elseif name(child)=="String"
+                        error("Type \"String\" not implemented.")
                     else
-                        error("Unknown type of ScalarVariable")
+                        error("Unknown type \"$(name(child))\" of ScalarVariable")
                     end
                 end
             end
@@ -266,7 +261,7 @@ function readModelDescription(pathToModelDescription::String)
 
     catch err
         if isa(err, KeyError)
-            error("While parsing modelDescription: Non-optinal element \"$(err.key)\" not found")
+            error("While parsing modelDescription: Non-optional element \"$(err.key)\" not found")
         else
             rethrow(err)
         end
@@ -322,6 +317,9 @@ function initializeSimulationData(modelDescription::ModelDescription,
 
     # Fill real simulation data with start value, value reference and name
     for (i,scalarVar) in enumerate(modelDescription.modelVariables[1:modelData.numberOfReals])
+        if typeof(scalarVar.typeSpecificProperties)!=RealProperties
+            error("Wrong type of scalarVariable. Expected Real but got $(typeof(scalarVar.typeSpecificProperties))")
+        end
         simulationData.modelVariables.reals[i] =
             RealVariable(scalarVar.typeSpecificProperties.start,
                          scalarVar.valueReference,
@@ -332,6 +330,9 @@ function initializeSimulationData(modelDescription::ModelDescription,
     # Fill integer simulation data
     if (modelData.numberOfInts > 0)
         for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfInts])
+            if typeof(scalarVar.typeSpecificProperties)!=IntegerProperties
+                error("Wrong type of scalarVariable. Expected Int but got $(typeof(scalarVar.typeSpecificProperties))")
+            end
             simulationData.modelVariables.ints[i] =
                 IntVariable(scalarVar.typeSpecificProperties.start,
                             scalarVar.valueReference,
@@ -343,6 +344,9 @@ function initializeSimulationData(modelDescription::ModelDescription,
     # Fill boolean simulation data
     if (modelData.numberOfBools > 0)
         for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfBools])
+            if typeof(scalarVar.typeSpecificProperties)!=BooleanProperties
+                error("Wrong type of scalarVariable. Expected Bool but got $(typeof(scalarVar.typeSpecificProperties))")
+            end
             simulationData.modelVariables.bools[i] =
                 BoolVariable(scalarVar.typeSpecificProperties.start,
                              scalarVar.valueReference,
@@ -354,6 +358,9 @@ function initializeSimulationData(modelDescription::ModelDescription,
     # Fill string simulation data
     if (modelData.numberOfStrings > 0)
         for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfStrings])
+            if typeof(scalarVar.typeSpecificProperties)!=StringProperties
+                error("Wrong type of scalarVariable. Expected String but got $(typeof(scalarVar.typeSpecificProperties))")
+            end
             simulationData.modelVariables.strings[i] =
                 StringVariable(scalarVar.typeSpecificProperties.start,
                                scalarVar.valueReference,
@@ -774,7 +781,8 @@ function main(pathToFMU::String)
         fmi2SetupExperiment(fmu, 0)
 
         # Set start time
-        setTime!(fmu, 0.0)
+        setTime!(fmu, fmu.experimentData.startTime, true)
+        nextTime = fmu.experimentData.stopTime
 
         # Set initial variables with intial="exact" or "approx"
 
@@ -789,9 +797,11 @@ function main(pathToFMU::String)
         while fmu.eventInfo.newDiscreteStatesNeeded
             fmi2NewDiscreteStates!(fmu)
             if fmu.eventInfo.terminateSimulation
-                error()
+                error("FMU was terminated in Event at time $(fmu.simulationData.time)")
             end
         end
+        # Initialize event indicators
+        getEventIndicators!(fmu)
 
         # Enter Continuous time mode
         fmi2EnterContinuousTimeMode(fmu)
@@ -800,7 +810,8 @@ function main(pathToFMU::String)
         getContinuousStates!(fmu)
 
         # retrive solution
-        getAllVariables!(fmu)           # TODO Is not returning der(x) correctly
+        getAllVariables!(fmu)       # TODO Is not returning der(x) correctly
+                                    # Needs to call fmi2GetXXX of course...
         writeValuesToCSV(fmu)
 
         # Iterate with explicit euler method
