@@ -5,6 +5,8 @@ language: julia
 julia:
   - 1.0.2
 
+coveralls: true
+
 before_install:
   - sudo apt-get update
   - sudo apt-get install libblas-dev liblapack-dev
