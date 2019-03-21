@@ -9,6 +9,7 @@ using LightXML      # For parsing XML files
 export main
 
 include("FMIWrapper.jl")
+<<<<<<< HEAD
 
 # Macro to identify logger library
 macro libLogger()
@@ -22,6 +23,8 @@ macro libLogger()
         error("OS not supported")
     end
 end
+=======
+>>>>>>> Moved macro for logger to FMICallbackFunctions.jl
 include("EventHandling.jl")
 
 """

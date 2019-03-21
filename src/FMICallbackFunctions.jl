@@ -4,6 +4,17 @@ Callback functions for logging and memory managment passed to FMU instance.
 
 include("FMI2Types.jl")
 
+# Macro to identify logger library
+macro libLogger()
+    if Sys.iswindows()
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "win$(Sys.WORD_SIZE)", "logger.dll")
+    elseif Sys.islinux()
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "unix$(Sys.WORD_SIZE)", "logger.so")
+    else
+        error("OS not supportet")
+    end
+end
+
 # Logger for error and information messages
 function fmi2CallbackLogger(componentEnvironment,
     instanceName, status, category,
