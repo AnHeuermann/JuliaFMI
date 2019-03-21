@@ -313,59 +313,58 @@ function initializeSimulationData(modelDescription::ModelDescription,
 
     simulationData = SimulationData(modelData.numberOfReals,
         modelData.numberOfInts, modelData.numberOfBools,
-        modelData.numberOfStrings, 0, modelData.numberOfEventIndicators)
+        modelData.numberOfStrings, 0, modelData.numberOfEventIndicators)    # TODO Add number of enumerations here!
 
-    # Fill real simulation data with start value, value reference and name
-    for (i,scalarVar) in enumerate(modelDescription.modelVariables[1:modelData.numberOfReals])
-        if typeof(scalarVar.typeSpecificProperties)!=RealProperties
-            error("Wrong type of scalarVariable. Expected Real but got $(typeof(scalarVar.typeSpecificProperties))")
-        end
-        simulationData.modelVariables.reals[i] =
-            RealVariable(scalarVar.typeSpecificProperties.start,
-                         scalarVar.valueReference,
-                         scalarVar.name)
-    end
-    prevVars += modelData.numberOfReals
+    i_real = i_int = i_bool = i_string = i_enumertion = 0
 
-    # Fill integer simulation data
-    if (modelData.numberOfInts > 0)
-        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfInts])
-            if typeof(scalarVar.typeSpecificProperties)!=IntegerProperties
-                error("Wrong type of scalarVariable. Expected Int but got $(typeof(scalarVar.typeSpecificProperties))")
-            end
-            simulationData.modelVariables.ints[i] =
+    # Fill simulation data with start value, value reference and name for all
+    # scalar variables
+    for scalarVar in modelDescription.modelVariables
+        if typeof(scalarVar.typeSpecificProperties) == RealProperties
+            i_real += 1
+            simulationData.modelVariables.reals[i_real] =
+                RealVariable(scalarVar.typeSpecificProperties.start,
+                             scalarVar.valueReference,
+                             scalarVar.name)
+        elseif typeof(scalarVar.typeSpecificProperties) == IntegerProperties
+            i_int += 1
+            simulationData.modelVariables.ints[i_int] =
                 IntVariable(scalarVar.typeSpecificProperties.start,
                             scalarVar.valueReference,
                             scalarVar.name)
-        end
-        prevVars += modelData.numberOfInts
-    end
-
-    # Fill boolean simulation data
-    if (modelData.numberOfBools > 0)
-        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfBools])
-            if typeof(scalarVar.typeSpecificProperties)!=BooleanProperties
-                error("Wrong type of scalarVariable. Expected Bool but got $(typeof(scalarVar.typeSpecificProperties))")
-            end
-            simulationData.modelVariables.bools[i] =
+        elseif typeof(scalarVar.typeSpecificProperties) == BooleanProperties
+            i_bool += 1
+            simulationData.modelVariables.bools[i_bool] =
                 BoolVariable(scalarVar.typeSpecificProperties.start,
                              scalarVar.valueReference,
                              scalarVar.name)
-        end
-        prevVars += modelData.numberOfBools
-    end
-
-    # Fill string simulation data
-    if (modelData.numberOfStrings > 0)
-        for (i,scalarVar) in enumerate(modelDescription.modelVariables[prevVars+1:prevVars+modelData.numberOfStrings])
-            if typeof(scalarVar.typeSpecificProperties)!=StringProperties
-                error("Wrong type of scalarVariable. Expected String but got $(typeof(scalarVar.typeSpecificProperties))")
-            end
-            simulationData.modelVariables.strings[i] =
+        elseif typeof(scalarVar.typeSpecificProperties) == StringProperties
+            i_string += 1
+            simulationData.modelVariables.strings[i_string] =
                 StringVariable(scalarVar.typeSpecificProperties.start,
                                scalarVar.valueReference,
                                scalarVar.name)
+        elseif typeof(scalarVar.typeSpecificProperties) == EnumerationProperties
+            error("Enumeration variables not implemeted!")
+            #i_enumertion += 1
+            # TODO add enumerations here
+            #simulationData.modelVariables.enumerations[i_enumertion] =
+            #    EnumerationVariable()
+        else
+            error("Unknown scalar variable type $(typeof(scalarVar.typeSpecificProperties)).")
         end
+    end
+
+    if i_real != modelData.numberOfReals
+        error("Counted number of real scalar variables $i_real didn't matched expeted $(modelData.numberOfReals + modelData.numberOfEventIndicators)")
+    elseif i_int != modelData.numberOfInts
+        error("Counted number of integer scalar variables $i_int didn't matched expeted $(modelData.numberOfInts)")
+    elseif i_bool != modelData.numberOfBools
+        error("Counted number of boolean scalar variables $i_bool didn't matched expeted $(modelData.numberOfBools)")
+    elseif i_string != modelData.numberOfStrings
+        error("Counted number of string scalar variables $i_string didn't matched expeted $(modelData.numberOfStrings)")
+    elseif i_enumertion != 0
+        error("Counted number of enumeration scalar variables $i_enumertion didn't matched expeted 0")
     end
 
     return simulationData
