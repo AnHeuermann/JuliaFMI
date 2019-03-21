@@ -9,22 +9,6 @@ using LightXML      # For parsing XML files
 export main
 
 include("FMIWrapper.jl")
-<<<<<<< HEAD
-
-# Macro to identify logger library
-macro libLogger()
-    if Sys.iswindows()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "win64", "logger.dll")
-    elseif Sys.islinux()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "unix64", "logger.so")
-    elseif Sys.isapple()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "darwin64", "logger.dylib")
-    else
-        error("OS not supported")
-    end
-end
-=======
->>>>>>> Moved macro for logger to FMICallbackFunctions.jl
 include("EventHandling.jl")
 
 """
@@ -781,6 +765,9 @@ function main(pathToFMU::String)
         # Event iteration
         fmu.eventInfo = eventIteration!(fmu)
 
+        # Initialize event indicators
+        getEventIndicators!(fmu)
+
         # Enter Continuous time mode
         fmi2EnterContinuousTimeMode(fmu)
 
@@ -799,14 +786,8 @@ function main(pathToFMU::String)
             k += 1
             getDerivatives!(fmu)
 
-            # Compute next step size
-            if fmu.eventInfo.nextEventTimeDefined
-                h = min(fmu.experimentData.stepSize, fmu.eventInfo.nextEventTime - fmu.simulationData.time)
-            else
-                h = min(fmu.experimentData.stepSize, fmu.experimentData.stopTime - fmu.simulationData.time)
-            end
-
-            # Update time
+            # Compute next step size and update time
+            h = min(fmu.experimentData.stepSize, nextTime - fmu.simulationData.time)
             setTime!(fmu, fmu.simulationData.time + h)
 
             # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
@@ -815,23 +796,74 @@ function main(pathToFMU::String)
             end
             setContinuousStates!(fmu)
 
-            # Get event indicators and check for events
+            # Detect time events
+            timeEvent = abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize       # TODO add handling of time events
+
+            # Detect events
+            #(eventFound, eventTime) = findEvent(fmu)
+            eventFound = findEventSimple(fmu)
 
             # Inform the model abaut an accepted step
             (enterEventMode, terminateSimulation) = fmi2CompletedIntegratorStep(fmu, true)
-            if enterEventMode
-                error("Should now enter Event mode...")
+            if terminateSimulation
+                error("FMU was terminated after completed integrator step at time $(fmu.simulationData.time)")
             end
 
+<<<<<<< HEAD
             if terminateSimulation
                 error("Solution got terminated before reaching end time.")
+=======
+            # Handle events
+            if timeEvent || eventFound || enterEventMode
+                if timeEvent
+                    eventName = "time"
+                elseif eventFound
+                    eventName = "state"
+                else
+                    eventName = "step"
+                end
+                println("Handling an $eventName event.")
+                println("Enter Event Mode at time $(fmu.simulationData.time)")
+
+                # Save variable values to csv
+                # TODO Add
+
+                fmi2EnterEventMode(fmu)
+
+                # Event iteration
+                fmu.eventInfo = eventIteration!(fmu)
+
+                # Update changed continuous states
+                getContinuousStates!(fmu)
+
+                # Enter continuous-time mode
+                fmi2EnterContinuousTimeMode(fmu)
+                getEventIndicators!(fmu)
+
+                # Retrieve solution at simulation restart
+                getAllVariables!(fmu)
+                if fmu.eventInfo.valuesOfContinuousStatesChanged
+                    # TODO check if this is working correctly
+                    getContiuousStates(fmu)
+                end
+
+                # Check if nominals changed
+                if fmu.eventInfo.nominalsOfContinuousStatesChanged
+                    error("Nominals not handled at the moment")
+                    # getNominalsOfContinuousStates(fmu)
+                end
+
+                if fmu.eventInfo.nextEventTimeDefined
+                    nextTime = min(fmu.eventInfo.nextEventTime, fmu.experimentData.stopTime)
+                else
+                    nextTime = fmu.experimentData.stopTime
+                end
+>>>>>>> WIP Add event handling
             end
 
             # save results
-            getAllVariables!(fmu)
+            getAllVariables!(fmu) # TODO check if this is working correctly
             writeValuesToCSV(fmu)
-
-            # Handle events
         end
 
         # Terminate Simulation
