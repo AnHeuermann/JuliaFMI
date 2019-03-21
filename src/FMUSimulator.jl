@@ -1,3 +1,8 @@
+# This file is part of JuliaFMI.
+# License is MIT: https://servant-om.fh-bielefeld.de/gitlab/AnHeuermann/FMU_JL_Simulator/blob/master/LICENSE.txt
+
+# This file contains thhe main simulator routine
+
 """
 Simulator for FMUs of
 FMI 2.0 for Model Exchange Standard
@@ -5,8 +10,6 @@ FMI 2.0 for Model Exchange Standard
 
 using Libdl         # For using dlopen, dlclose and so on
 using LightXML      # For parsing XML files
-
-export main
 
 include("FMIWrapper.jl")
 include("EventHandling.jl")
@@ -402,7 +405,7 @@ end
 """
 `loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)`
 
-Unzips an FMU and returns handle to dynamic library containing FMI functions.
+Unzips a FMU and returns handle to dynamic library containing FMI functions.
 
 ## Example calls
 ```
