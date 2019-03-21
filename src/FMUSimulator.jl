@@ -740,7 +740,7 @@ function findEvent(fmu::FMU)
         steps += 1
 
         # Evaluate eventIndicators in center of intervall
-        centerTime = 0.5*(rightTime - leftTime)
+        centerTime = 0.5*(rightTime + leftTime)
         setTime!(fmu, centerTime, false)
         getEventIndicators!(fmu)
         centerEventIndicators = copy(fmu.simulationData.eventIndicators)     # TODO Do I need to copy here?
