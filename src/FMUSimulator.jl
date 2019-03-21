@@ -495,8 +495,6 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.logFile = open("$(fmu.modelName).log", "w")
 
     # load shared library with FMU
-    # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
-    # push!(DL_LOAD_PATH, "/usr/lib/x86_64-linux-gnu") maybe???
     fmu.libHandle = dlopen(pathToDLL)
 
     # Load hared library with logger function
