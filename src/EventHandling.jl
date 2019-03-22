@@ -27,19 +27,6 @@ function arrayDiffSign(array1::Array{Float64,1}, array2::Array{Float64,1})
 end
 
 
-function findEventSimple(fmu::FMU)
-
-    leftEventIndicators = copy(fmu.simulationData.eventIndicators)
-    getEventIndicators!(fmu)
-    rightEventIndicators = copy(fmu.simulationData.eventIndicators)
-    if arrayDiffSign(leftEventIndicators, rightEventIndicators)
-        return true
-    else
-        return false
-    end
-end
-
-
 function eventIteration!(fmu)
 
     k = 0
@@ -65,7 +52,29 @@ end
 
 
 """
-Find event time with bisection method for `eventIndicators` for given `fmu`.
+    findEventSimple(fmu::FMU)
+
+Returns `true` if an event occured in last step, othwerwise `false`.
+"""
+function findEventSimple(fmu::FMU)
+
+    leftEventIndicators = copy(fmu.simulationData.eventIndicators)
+    getEventIndicators!(fmu)
+    rightEventIndicators = copy(fmu.simulationData.eventIndicators)
+    if arrayDiffSign(leftEventIndicators, rightEventIndicators)
+        return true
+    else
+        return false
+    end
+end
+
+
+"""
+    findEvent(fmu::FMU)
+
+Checks if an event occured and find event time.
+
+Uses bisection method for `eventIndicators` for given `fmu` to find event time.
 """
 function findEvent(fmu::FMU)
 
