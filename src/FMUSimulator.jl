@@ -776,6 +776,7 @@ function main(pathToFMU::String)
 
         # retrieve initial states
         getContinuousStates!(fmu)
+        getDerivatives!(fmu)
 
         # retrive solution
         getAllVariables!(fmu)       # TODO Is not returning der(x) correctly
@@ -787,7 +788,6 @@ function main(pathToFMU::String)
         k_max = 1000
         while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
             k += 1
-            getDerivatives!(fmu)
 
             # Compute next step size and update time
             h = min(fmu.experimentData.stepSize, nextTime - fmu.simulationData.time)
@@ -798,6 +798,7 @@ function main(pathToFMU::String)
                 fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
             end
             setContinuousStates!(fmu)
+            getDerivatives!(fmu)
 
             # Detect time events
             timeEvent = abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize       # TODO add handling of time events
