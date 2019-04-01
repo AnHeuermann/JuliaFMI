@@ -1,4 +1,4 @@
-tartTime, 0
+StartTime, 0
 StopTime, 1
 StepSize, 0
 RelTol, 1e-6

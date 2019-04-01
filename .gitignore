@@ -1,2 +1,4 @@
-.DS_Store
-test/fmi-cross-check
+*.log
+*.csv
+/test/*/
+/.vscode/

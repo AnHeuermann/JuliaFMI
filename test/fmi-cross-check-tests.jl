@@ -165,6 +165,9 @@ function testTool(toolName::String, versions::Array{String,1}, tests, compliance
                         end
                         @test main(model)
                     end
+                    result = string("$test", "_results.csv")
+                    reference = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", string("$test",  "_ref.csv"))
+                    csvFilesEqual(result,reference)
                 end
             end
         end;
