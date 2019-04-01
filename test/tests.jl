@@ -9,6 +9,8 @@ Define tests for unit testing
 
 using JuliaFMI
 
+include("../src/compare_CSV.jl")
+
 thisDir = dirname(Base.source_path())
 
 
@@ -40,7 +42,7 @@ FMU generated for Modelica model:
 function testHelloFMI20World()
     helloFMI20World = joinpath(fmuTestDir,"HelloFMI20World.fmu")
     simulateFMU(helloFMI20World)
-    return true
+    return csvFilesEqual("HelloFMI20World_results.csv", "test/modelicaSource/HelloFMI20World_ref.csv")
 end
 
 
@@ -71,7 +73,7 @@ FMU generated from Modelica model:
 function testBouncingBall()
     bouncingBall = joinpath(fmuTestDir,"BouncingBallFMI20.fmu")
     simulateFMU(bouncingBall)
-    return true
+    return csvFilesEqual("BouncingBallFMI20_results.csv", "test/modelicaSource/BouncingBallFMI20_ref.csv")
 end
 
 function testCauerLowPassAnalog()
