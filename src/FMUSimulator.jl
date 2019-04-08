@@ -343,8 +343,9 @@ function initializeSimulationData(modelDescription::ModelDescription,
     prevVars=0
 
     simulationData = SimulationData(modelData.numberOfReals,
-        modelData.numberOfInts, modelData.numberOfBools,
-        modelData.numberOfStrings, 0, modelData.numberOfEventIndicators)    # TODO Add number of enumerations here!
+        modelData.numberOfStates, modelData.numberOfInts,
+        modelData.numberOfBools, modelData.numberOfStrings, 0,
+        modelData.numberOfEventIndicators)    # TODO Add number of enumerations here!
 
     i_real = i_int = i_bool = i_string = i_enumertion = 0
 
@@ -795,6 +796,7 @@ function main(pathToFMU::String)
 
             # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
             for i=1:fmu.modelData.numberOfStates
+                fmu.simulationData.modelVariables.oldStates[i] = fmu.simulationData.modelVariables.reals[i].value
                 fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
             end
             setContinuousStates!(fmu)

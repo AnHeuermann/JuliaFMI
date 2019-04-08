@@ -163,20 +163,22 @@ end
 
 mutable struct ModelVariables
     reals::Array{RealVariable,1}
+    oldStates::Array{Float64}
     ints::Array{IntVariable,1}
     bools::Array{BoolVariable,1}
     strings::Array{StringVariable,1}
     enumerations::Array{EnumerationVariable,1}
 
-    function ModelVariables(n_reals, n_ints, n_bools, n_strings, n_enumerations)
+    function ModelVariables(n_reals, n_states, n_ints, n_bools, n_strings, n_enumerations)
 
         reals = Array{RealVariable}(undef, n_reals)
+        oldStates = Array{Float64}(undef, n_states)
         ints = Array{IntVariable}(undef, n_ints)
         bools = Array{BoolVariable}(undef, n_bools)
         strings = Array{StringVariable}(undef, n_strings)
         enumerations = Array{EnumerationVariable}(undef, n_enumerations)
 
-        new(reals, ints, bools, strings, enumerations)
+        new(reals, oldStates, ints, bools, strings, enumerations)
     end
 end
 
@@ -187,10 +189,10 @@ mutable struct SimulationData
     eventIndicators::Array{Float64}
 
     SimulationData()=new()
-    function SimulationData(n_reals, n_ints, n_bools, n_strings, n_enumerations,
+    function SimulationData(n_reals, n_states, n_ints, n_bools, n_strings, n_enumerations,
         numberOfEventIndicators)
 
-        modelVariables=ModelVariables(n_reals, n_ints, n_bools, n_strings,
+        modelVariables=ModelVariables(n_reals, n_states, n_ints, n_bools, n_strings,
             n_enumerations)
         eventIndicators = Array{Float64}(undef, numberOfEventIndicators)
         new(0, 0, modelVariables, eventIndicators)
