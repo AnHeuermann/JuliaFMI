@@ -806,8 +806,7 @@ function main(pathToFMU::String)
             timeEvent = abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize       # TODO add handling of time events
 
             # Detect events
-            #(eventFound, eventTime) = findEvent(fmu)
-            eventFound = findEventSimple(fmu)
+            (eventFound, eventTime, leftStates) = findEvent(fmu)
 
             # Inform the model abaut an accepted step
             (enterEventMode, terminateSimulation) = fmi2CompletedIntegratorStep(fmu, true)
@@ -815,10 +814,6 @@ function main(pathToFMU::String)
                 error("FMU was terminated after completed integrator step at time $(fmu.simulationData.time)")
             end
 
-<<<<<<< HEAD
-            if terminateSimulation
-                error("Solution got terminated before reaching end time.")
-=======
             # Handle events
             if timeEvent || eventFound || enterEventMode
                 if timeEvent
@@ -860,11 +855,15 @@ function main(pathToFMU::String)
                 end
 
                 if fmu.eventInfo.nextEventTimeDefined
+                    println("Next event time defined")
                     nextTime = min(fmu.eventInfo.nextEventTime, fmu.experimentData.stopTime)
                 else
-                    nextTime = fmu.experimentData.stopTime
+                    nextTime = fmu.simulationData.lastStepTime+fmu.experimentData.stepSize
                 end
->>>>>>> WIP Add event handling
+                println("fmu.simulationData.time = $(fmu.simulationData.time)")
+                println("eventTime = $eventTime")
+                println("nextTime = $nextTime")
+
             end
 
             # save results
@@ -876,7 +875,7 @@ function main(pathToFMU::String)
         fmi2Terminate(fmu)
 
         # Free FMU
-        # ToDo: Fix function
+        # TODO: Fix function
         #fmi2FreeInstance(fmu)
     finally
         # Unload FMU
