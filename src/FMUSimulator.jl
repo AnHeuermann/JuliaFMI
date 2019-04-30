@@ -16,8 +16,10 @@ macro libLogger()
         return joinpath(dirname(dirname(Base.source_path())),"bin", "win64", "logger.dll")
     elseif Sys.islinux()
         return joinpath(dirname(dirname(Base.source_path())),"bin", "unix64", "logger.so")
+    elseif Sys.isapple()
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "darwin64", "logger.dylib")
     else
-        error("OS not supportet")
+        error("OS not supported")
     end
 end
 
@@ -420,8 +422,11 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
         pathToDLL = joinpath(fmu.tmpFolder, "binaries", "win$(Sys.WORD_SIZE)", string(name, ".dll"))
     elseif Sys.islinux()
         pathToDLL = joinpath(fmu.tmpFolder, "binaries", "linux$(Sys.WORD_SIZE)", string(name, ".so"))
+    elseif Sys.isapple()
+        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "darwin$(Sys.WORD_SIZE)", string(name, ".dylib"))
+        println(pathToDLL)
     else
-        error("OS not supportet!")
+        error("OS not supported!")
     end
 
     if !isfile(pathToDLL)
@@ -429,6 +434,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
             error("No shared library found matching $(Sys.WORD_SIZE) bit Windows.")
         elseif Sys.islinux()
             error("No shared library found matching $(Sys.WORD_SIZE) bit Linux.")
+        elseif Sys.isapple()
+            error("No shared library found matching $(Sys.WORD_SIZE) bit macOS.")
         end
     end
 

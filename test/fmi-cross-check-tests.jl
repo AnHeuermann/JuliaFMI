@@ -14,8 +14,10 @@ if Sys.iswindows()
     fmiCrossCheckFMUDir = joinpath(thisDir, "fmi-cross-check", "fmus", "2.0", "me", "win$(Sys.WORD_SIZE)")
 elseif Sys.islinux()
     fmiCrossCheckFMUDir = joinpath(thisDir, "fmi-cross-check", "fmus", "2.0", "me", "linux$(Sys.WORD_SIZE)")
+elseif Sys.isapple()
+    fmiCrossCheckFMUDir = joinpath(thisDir, "fmi-cross-check", "fmus", "2.0", "me", "darwin$(Sys.WORD_SIZE)")
 else
-    error("OS not supportet for this tests.")
+    error("OS not supported for this tests.")
 end
 
 
