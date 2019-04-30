@@ -10,8 +10,10 @@ if Sys.iswindows()
     fmuTestDir = joinpath(thisDir, "winFMU")
 elseif Sys.islinux()
     fmuTestDir = joinpath(thisDir, "linuxFMU")
+elseif Sys.isapple()
+    fmuTestDir = joinpath(thisDir, "darwinFMU")
 else
-    error("OS not supportet for this tests.")
+    error("OS not supported for this tests.")
 end
 
 """
