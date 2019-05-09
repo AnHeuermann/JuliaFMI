@@ -777,7 +777,9 @@ function main(pathToFMU::String)
 
         # Get types platform
         typesPlatform = fmi2GetTypesPlatform(fmu)
-        println("typesPlatform: $typesPlatform")
+        if typesPlatform != "default"
+            error("Definitions of FMU types are not default. Can't simulate.")
+        end
 
         # Get version of fmi
         fmiVersion = fmi2GetVersion(fmu)
