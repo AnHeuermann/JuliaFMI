@@ -115,18 +115,18 @@ mutable struct RealVariable
 end
 
 mutable struct IntVariable
-    value::Int64
+    value::Int32            # C int (default for fmi2Integer) is 32 bit
     valueReference::UInt
     name::String
 
     # attributes
-    min::Int64
-    max::Int64
+    min::Int32
+    max::Int32
 
     # Inner constructors
     IntVariable()=new()
     function IntVariable(value, valueReference, name)
-        new(value, valueReference, name, -(2^63 - 1), 2^63 - 1)
+        new(value, valueReference, name, -(2^31 - 1), 2^31 - 1) # TODO Min and max value depend on word size (32 or 64 bit)
     end
 end
 
@@ -273,8 +273,8 @@ end
 
 struct IntegerAttributes
     quantity::String
-    min::Int
-    max::Int
+    min::Int32
+    max::Int32
 
     # Inner constructors
     IntegerAttributes()=new()
@@ -308,7 +308,7 @@ end
 struct IntegerProperties
     declaredType::String
     variableAttributes::IntegerAttributes
-    start::Int
+    start::Int32
 
     # Inner constructors
     IntegerProperies() = new()

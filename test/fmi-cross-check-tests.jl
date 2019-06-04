@@ -65,10 +65,12 @@ end
 
 Run and test all fmi-cross-test that are supportet on current system.
 """
-function runFMICrossTests()
+function runFMICrossTests(update=true::Bool)
 
     # Check if repository is up to date
-    updateFmiCrossCheck()
+    if update
+        updateFmiCrossCheck()
+    end
 
     @testset "FMI Cross Check" begin
         # Windows tests
