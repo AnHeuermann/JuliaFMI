@@ -340,9 +340,9 @@ struct ScalarVariable
     # Inner constructors
     function ScalarVariable(name, valueReference, description, typeSpecificProperties)
         if isempty(strip(name))
-            error("ScalarVariable not valid: name can't be empty or only whitespace")
+            error("ScalarVariable $name not valid: name can't be empty or only whitespace")
         elseif valueReference < 0
-            error("ScalarVariable not valid: valueReference=$valueReference not unsigned")
+            error("ScalarVariable $name not valid: valueReference=$valueReference not unsigned")
         end
         new(name, Unsigned(valueReference), description, "local", "continous", "", false, typeSpecificProperties)
     end
@@ -352,44 +352,44 @@ struct ScalarVariable
 
         # Check name
         if isempty(strip(name))
-            error("ScalarVariable not valid: name can't be empty or only whitespace")
+            error("ScalarVariable $name not valid: name can't be empty or only whitespace")
         end
 
         # Check valueReference
         if valueReference < 0
-            error("ScalarVariable not valid: valueReference=$valueReference not unsigned")
+            error("ScalarVariable $name not valid: valueReference=$valueReference not unsigned")
         end
 
         # Check causality
         if isempty(causality)
             causality = "local"
         elseif !in(causality,["parameter", "calculatedParameter","input", "output", "local", "independent"])
-            error("ScalarVariable not valid: causality has to be one of \"parameter\", \"calculatedParameter\", \"input\", \"output\", \"local\", \"independent\" but is \"$causality\"")
+          error("ScalarVariable $name not valid: causality has to be one of \"parameter\", \"calculatedParameter\", \"input\", \"output\", \"local\", \"independent\" but is \"$causality\"")
         elseif causality=="parameter"
             if (variability!="fixed" && variability!="tunable")
-                error("ScalarVariable not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
+                error("ScalarVariable $name not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
             end
             if isempty(initial)
                 initial = "exact"
             elseif initial!="exact"
-                error("ScalarVariable not valid: causality is \"parameter\", so initial has to be \"exact\" or empty but is \"$initial\"")
+                error("ScalarVariable $name not valid: causality is \"parameter\", so initial has to be \"exact\" or empty but is \"$initial\"")
             end
         elseif causality=="calculatedParameter"
             if (variability!="fixed" && variability!="tunable")
-                error("ScalarVariable not valid: causality is \"calculatedParameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$causality\"")
+                error("ScalarVariable $name not valid: causality is \"calculatedParameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$causality\"")
             end
             if isempty(initial)
                 initial = "calculated"
             elseif !in(initial, ["approx", "calculated"])
-                error("ScalarVariable not valid: causality is \"calculatedParameter\", so initial has to be \"approx\", \"calculated\" or empty but is \"$initial\"")
+                error("ScalarVariable $name not valid: causality is \"calculatedParameter\", so initial has to be \"approx\", \"calculated\" or empty but is \"$initial\"")
             end
         elseif causality=="input"
             if !isempty(initial)
-                error("ScalarVariable not valid: causality is \"input\", so initial has to be empty but is \"$initial\"")
+                error("ScalarVariable $name not valid: causality is \"input\", so initial has to be empty but is \"$initial\"")
             end
         elseif causality=="independent"
             if variability!="continuous"
-                error("ScalarVariable not valid: causality is \"independent\", so variability has to be \"continuous\" but is \"$causality\"")
+                error("ScalarVariable $name not valid: causality is \"independent\", so variability has to be \"continuous\" but is \"$causality\"")
             end
         end
 
@@ -397,7 +397,7 @@ struct ScalarVariable
         if isempty(variability)
             variability = "continous"
         elseif !in(variability, ["constant", "fixed","tunable", "discrete", "continuous"])
-            error("ScalarVariable not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
+            error("ScalarVariable $name not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
         end
 
         new(name, Unsigned(valueReference), description, causality, variability, initial, canHandleMultipleSetPerTimelnstant, typeSpecificProperties)
