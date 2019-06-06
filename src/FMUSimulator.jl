@@ -451,8 +451,9 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.eventInfo = EventInfo()
 
     # Open result and log file
-    fmu.csvFile = open("$(fmu.modelName)_results.csv", "w")
-    fmu.logFile = open("$(fmu.modelName).log", "w")
+    saveFolder = openDialog(thisDir)
+    fmu.csvFile = open(string(saveFolder, "/$(fmu.modelName)_results.csv"), "w")
+    fmu.logFile = open(string(saveFolder, "/$(fmu.modelName).log"), "w")
 
     # load shared library with FMU
     # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
@@ -868,7 +869,7 @@ function main(pathToFMU::String)
         # Free FMU
         # ToDo: Fix function
         #fmi2FreeInstance(fmu)
-    finally
+    #finally
         # Unload FMU
         println("Unload FMU")
         unloadFMU(fmu)
