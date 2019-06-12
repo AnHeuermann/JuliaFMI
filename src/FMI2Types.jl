@@ -360,12 +360,17 @@ struct ScalarVariable
             error("ScalarVariable $name not valid: valueReference=$valueReference not unsigned")
         end
 
-        # Check causality
+
+
+
+
+        #check if causality and variability are correct
+
         if isempty(causality)
             causality = "local"
         elseif !in(causality,["parameter", "calculatedParameter","input", "output", "local", "independent"])
           error("ScalarVariable $name not valid: causality has to be one of \"parameter\", \"calculatedParameter\", \"input\", \"output\", \"local\", \"independent\" but is \"$causality\"")
-        elseif causality=="parameter"
+        elseif causality == "parameter"
             if (variability!="fixed" && variability!="tunable")
                 error("ScalarVariable $name not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
             end
@@ -376,10 +381,10 @@ struct ScalarVariable
             end
         elseif causality=="calculatedParameter"
             if (variability!="fixed" && variability!="tunable")
-                error("ScalarVariable $name not valid: causality is \"calculatedParameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$causality\"")
+                error("ScalarVariable $name not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
             end
             if isempty(initial)
-                initial = "calculated"
+                initial == "calculated"
             elseif !in(initial, ["approx", "calculated"])
                 error("ScalarVariable $name not valid: causality is \"calculatedParameter\", so initial has to be \"approx\", \"calculated\" or empty but is \"$initial\"")
             end
@@ -388,17 +393,57 @@ struct ScalarVariable
                 error("ScalarVariable $name not valid: causality is \"input\", so initial has to be empty but is \"$initial\"")
             end
         elseif causality=="independent"
-            if variability!="continuous"
+            if isempty(variability)
+                variability == "continuous"
+            elseif variability!="continuous"
                 error("ScalarVariable $name not valid: causality is \"independent\", so variability has to be \"continuous\" but is \"$causality\"")
             end
         end
-
-        # Check variability
         if isempty(variability)
             variability = "continous"
         elseif !in(variability, ["constant", "fixed","tunable", "discrete", "continuous"])
             error("ScalarVariable $name not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
         end
+
+        # Check causality
+        #if isempty(causality)
+        #    causality = "local"
+        #elseif !in(causality,["parameter", "calculatedParameter","input", "output", "local", "independent"])
+        #  error("ScalarVariable $name not valid: causality has to be one of \"parameter\", \"calculatedParameter\", \"input\", \"output\", \"local\", \"independent\" but is \"$causality\"")
+        #elseif causality=="parameter"
+        #    if (variability!="fixed" && variability!="tunable")
+        #        error("ScalarVariable $name not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
+        #    end
+        #    if isempty(initial)
+        #        initial = "exact"
+        #    elseif initial!="exact"
+        #        error("ScalarVariable $name not valid: causality is \"parameter\", so initial has to be \"exact\" or empty but is \"$initial\"")
+        #    end
+        #elseif causality=="calculatedParameter"
+        #    if (variability!="fixed" && variability!="tunable")
+        #        error("ScalarVariable $name not valid: causality is \"calculatedParameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$causality\"")
+        #    end
+        #    if isempty(initial)
+        #        initial = "calculated"
+        #    elseif !in(initial, ["approx", "calculated"])
+        #        error("ScalarVariable $name not valid: causality is \"calculatedParameter\", so initial has to be \"approx\", \"calculated\" or empty but is \"$initial\"")
+        #    end
+        #elseif causality=="input"
+        #    if !isempty(initial)
+        #        error("ScalarVariable $name not valid: causality is \"input\", so initial has to be empty but is \"$initial\"")
+        #    end
+        #lseif causality=="independent"
+        #    if variability!="continuous"
+        #        error("ScalarVariable $name not valid: causality is \"independent\", so variability has to be \"continuous\" but is \"$causality\"")
+        #    end
+        #end
+
+        # Check variability
+        #if isempty(variability)
+        #    variability = "continous"
+        #elseif !in(variability, ["constant", "fixed","tunable", "discrete", "continuous"])
+        #    error("ScalarVariable $name not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
+        #end
 
         new(name, Unsigned(valueReference), description, causality, variability, initial, canHandleMultipleSetPerTimelnstant, typeSpecificProperties)
     end
