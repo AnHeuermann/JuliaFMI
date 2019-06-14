@@ -277,7 +277,7 @@ function readModelDescription(pathToModelDescription::String)
                         if tmp_start == nothing
                             tmp_start = Int(0)
                         else
-                            tmp_start = parse(String, tmp_start)
+                            tmp_start = parse(Int, tmp_start)
                         end
                         tmp_typeSpecificProperties = EnumerationProperties(tmp_declaredType, tmp_quantity, tmp_min, tmp_max, tmp_start)
                     else

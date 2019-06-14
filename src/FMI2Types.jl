@@ -354,7 +354,7 @@ struct ScalarVariable
     canHandleMultipleSetPerTimelnstant::Bool
 
     # Type specific properties of ScalarVariable
-    typeSpecificProperties::Union{RealProperties, IntegerProperties, BooleanProperties}
+    typeSpecificProperties::Union{RealProperties, IntegerProperties, BooleanProperties, StringProperties, EnumerationProperties}
 
     # Inner constructors
     function ScalarVariable(name, valueReference, description, typeSpecificProperties)

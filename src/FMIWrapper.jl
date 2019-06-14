@@ -598,7 +598,7 @@ function fmi2GetInteger!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{
     value::Array{Int64,1})
 
     return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component,
-        convert(Array{UInt32,1},valueReference), length(valueReference), value)
+        convert(Array{UInt32,1},valueReference), length(valueReference), convert(Array{Int32,1},value))
 end
 
 """
