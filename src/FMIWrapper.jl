@@ -562,7 +562,7 @@ function fmi2GetInteger!(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
