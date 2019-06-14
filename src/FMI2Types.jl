@@ -323,6 +323,25 @@ struct BooleanProperties
     BooleanProperties(declaredType, start) = new(declaredType, start)
 end
 
+struct StringProperties
+    declaredType::String
+    start::String
+
+    StringProperties() = new()
+    StringProperties(declaredType, start) = new(declaredType, start)
+end
+
+struct EnumerationProperties
+    declaredType::String
+    quantity::String
+    min::Int
+    max::Int
+    start::Int
+
+    EnumerationProperties() = new()
+    EnumerationProperties(declaredType, quantity, min, max, start) = new(declaredType, quantity, min, max, start)
+end
+
 struct ScalarVariable
     name::String
     valueReference::Unsigned
@@ -366,6 +385,13 @@ struct ScalarVariable
 
         #check if causality and variability are correct
 
+
+        if isempty(variability)
+            variability = "continous"
+        elseif !in(variability, ["constant", "fixed", "tunable", "discrete", "continuous"])
+            error("ScalarVariable $name not valid: variability has to be one of \"constant\", \"fixed\", \"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
+        end
+
         if isempty(causality)
             causality = "local"
         elseif !in(causality,["parameter", "calculatedParameter","input", "output", "local", "independent"])
@@ -384,7 +410,7 @@ struct ScalarVariable
                 error("ScalarVariable $name not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
             end
             if isempty(initial)
-                initial == "calculated"
+                initial = "calculated"
             elseif !in(initial, ["approx", "calculated"])
                 error("ScalarVariable $name not valid: causality is \"calculatedParameter\", so initial has to be \"approx\", \"calculated\" or empty but is \"$initial\"")
             end
@@ -393,17 +419,11 @@ struct ScalarVariable
                 error("ScalarVariable $name not valid: causality is \"input\", so initial has to be empty but is \"$initial\"")
             end
         elseif causality=="independent"
-            if isempty(variability)
-                variability == "continuous"
-            elseif variability!="continuous"
+            if variability!="continuous"
                 error("ScalarVariable $name not valid: causality is \"independent\", so variability has to be \"continuous\" but is \"$causality\"")
             end
         end
-        if isempty(variability)
-            variability = "continous"
-        elseif !in(variability, ["constant", "fixed","tunable", "discrete", "continuous"])
-            error("ScalarVariable $name not valid: variability has to be one of \"constant\", \"fixed\",\"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
-        end
+
 
         # Check causality
         #if isempty(causality)

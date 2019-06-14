@@ -243,7 +243,43 @@ function readModelDescription(pathToModelDescription::String)
                         end
                         tmp_typeSpecificProperties = BooleanProperties(tmp_declaredType, tmp_start)
                     elseif name(child)=="String"
-                        error("Type \"String\" not implemented.")
+                        #error("Type \"String\" not implemented.")
+                        tmp_declaredType = "String"
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = false
+                        else
+                            tmp_start = parse(String, tmp_start)
+                        end
+                        tmp_typeSpecificProperties = StringProperties(tmp_declaredType, tmp_start)
+                    elseif name(child)=="Enumeration"
+                        #error("Type \"String\" not implemented.")
+                        tmp_declaredType = "Enumeration"
+                        tmp_quantity = attribute(child, "quantity"; required=false)
+                        if tmp_quantity == nothing
+                            tmp_quantity = false
+                        else
+                            tmp_quantity = parse(String, tmp_quantity)
+                        end
+                        tmp_min = attribute(child, "min"; required=false)
+                        if tmp_min == nothing
+                            tmp_min = false
+                        else
+                            tmp_min = parse(String, tmp_min)
+                        end
+                        tmp_max = attribute(child, "max"; required=false)
+                        if tmp_max == nothing
+                            tmp_max = false
+                        else
+                            tmp_max = parse(String, tmp_max)
+                        end
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = false
+                        else
+                            tmp_start = parse(String, tmp_start)
+                        end
+                        tmp_typeSpecificProperties = EnumerationProperties(tmp_declaredType, tmp_quantity, tmp_min, tmp_max, tmp_start)
                     else
                         error("Unknown type \"$(name(child))\" of ScalarVariable")
                     end
