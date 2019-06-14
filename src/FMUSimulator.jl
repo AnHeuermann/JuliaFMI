@@ -247,7 +247,7 @@ function readModelDescription(pathToModelDescription::String)
                         tmp_declaredType = "String"
                         tmp_start = attribute(child, "start"; required=false)
                         if tmp_start == nothing
-                            tmp_start = false
+                            tmp_start = ""
                         else
                             tmp_start = parse(String, tmp_start)
                         end
@@ -257,25 +257,25 @@ function readModelDescription(pathToModelDescription::String)
                         tmp_declaredType = "Enumeration"
                         tmp_quantity = attribute(child, "quantity"; required=false)
                         if tmp_quantity == nothing
-                            tmp_quantity = false
+                            tmp_quantity = ""
                         else
                             tmp_quantity = parse(String, tmp_quantity)
                         end
                         tmp_min = attribute(child, "min"; required=false)
                         if tmp_min == nothing
-                            tmp_min = false
+                            tmp_min = Int(0)
                         else
                             tmp_min = parse(String, tmp_min)
                         end
                         tmp_max = attribute(child, "max"; required=false)
                         if tmp_max == nothing
-                            tmp_max = false
+                            tmp_max = Int(0)
                         else
                             tmp_max = parse(String, tmp_max)
                         end
                         tmp_start = attribute(child, "start"; required=false)
                         if tmp_start == nothing
-                            tmp_start = false
+                            tmp_start = Int(0)
                         else
                             tmp_start = parse(String, tmp_start)
                         end

@@ -387,7 +387,7 @@ struct ScalarVariable
 
 
         if isempty(variability)
-            variability = "continous"
+            variability = "continuous"
         elseif !in(variability, ["constant", "fixed", "tunable", "discrete", "continuous"])
             error("ScalarVariable $name not valid: variability has to be one of \"constant\", \"fixed\", \"tunable\", \"discrete\" or \"continuous\" but is \"$variability\"")
         end
