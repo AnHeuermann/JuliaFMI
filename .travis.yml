@@ -3,7 +3,7 @@
 
 language: julia
 julia:
-  - 1.0.2
+  - 1.1.1
 
 coveralls: true
 
