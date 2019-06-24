@@ -243,35 +243,33 @@ function readModelDescription(pathToModelDescription::String)
                         end
                         tmp_typeSpecificProperties = BooleanProperties(tmp_declaredType, tmp_start)
                     elseif name(child)=="String"
-                        #error("Type \"String\" not implemented.")
                         tmp_declaredType = "String"
                         tmp_start = attribute(child, "start"; required=false)
                         if tmp_start == nothing
                             tmp_start = ""
-                        else
-                            tmp_start = parse(String, tmp_start)
+                        #else
+                        #    tmp_start = parse(String, tmp_start)
                         end
                         tmp_typeSpecificProperties = StringProperties(tmp_declaredType, tmp_start)
                     elseif name(child)=="Enumeration"
-                        #error("Type \"String\" not implemented.")
                         tmp_declaredType = "Enumeration"
                         tmp_quantity = attribute(child, "quantity"; required=false)
                         if tmp_quantity == nothing
                             tmp_quantity = ""
-                        else
-                            tmp_quantity = parse(String, tmp_quantity)
+                        #else
+                        #    tmp_quantity = parse(String, tmp_quantity)
                         end
                         tmp_min = attribute(child, "min"; required=false)
                         if tmp_min == nothing
                             tmp_min = Int(0)
-                        else
-                            tmp_min = parse(String, tmp_min)
+                        #else
+                        #    tmp_min = parse(String, tmp_min)
                         end
                         tmp_max = attribute(child, "max"; required=false)
                         if tmp_max == nothing
                             tmp_max = Int(0)
-                        else
-                            tmp_max = parse(String, tmp_max)
+                        #else
+                        #    tmp_max = parse(String, tmp_max)
                         end
                         tmp_start = attribute(child, "start"; required=false)
                         if tmp_start == nothing

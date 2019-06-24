@@ -205,6 +205,7 @@ mutable struct ModelData
     numberOfInts::Int
     numberOfBools::Int
     numberOfStrings::Int
+    numberOfEnumerations::Int
     numberOfExterns::Int
 
     numberOfEventIndicators::Int
