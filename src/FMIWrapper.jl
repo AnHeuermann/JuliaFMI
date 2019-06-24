@@ -759,7 +759,7 @@ function fmi2GetString!(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cstring}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -954,7 +954,7 @@ function fmi2SetInteger(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -1033,7 +1033,7 @@ function fmi2SetBoolean(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -1119,7 +1119,7 @@ function fmi2SetString(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cstring}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
