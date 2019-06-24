@@ -262,14 +262,14 @@ function readModelDescription(pathToModelDescription::String)
                         tmp_min = attribute(child, "min"; required=false)
                         if tmp_min == nothing
                             tmp_min = Int(0)
-                        #else
-                        #    tmp_min = parse(String, tmp_min)
+                        else
+                            tmp_min = parse(Int, tmp_min)
                         end
                         tmp_max = attribute(child, "max"; required=false)
                         if tmp_max == nothing
                             tmp_max = Int(0)
-                        #else
-                        #    tmp_max = parse(String, tmp_max)
+                        else
+                            tmp_max = parse(Int, tmp_max)
                         end
                         tmp_start = attribute(child, "start"; required=false)
                         if tmp_start == nothing
