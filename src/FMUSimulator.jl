@@ -329,6 +329,8 @@ function modelDescriptionToModelData(modelDescription::ModelDescription)
             modelData.numberOfBools += 1
         elseif typeof(var.typeSpecificProperties)==StringProperties
             modelData.numberOfStrings += 1
+        elseif typeof(var.typeSpecificProperties)==EnumerationProperties
+            modelData.numberOfEnumerations += 1
         else
             error()
         end
