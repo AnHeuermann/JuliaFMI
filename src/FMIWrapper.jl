@@ -786,6 +786,14 @@ function fmi2GetString!(fmu::FMU, valueReference::Array{UInt32,1},
         numberOfValueReference, value)
 end
 
+function fmi2GetString!(fmu::FMU, valueReference::Array{UInt64,1},
+    numberOfValueReference::Int, value::Array{String,1})
+
+    return fmi2GetString!(fmu.libHandle, fmu.fmi2Component,
+            convert(Array{UInt32,1},valueReference),
+        numberOfValueReference, value)
+end
+
 function fmi2GetString!(fmu::FMU, valueReference::Array{UInt32,1},
     value::Array{String,1})
 
