@@ -804,8 +804,8 @@ function main(pathToFMU::String)
         fmi2Instantiate!(fmu)
         fmu.modelState = modelInstantiated
 
-        # Set debug logging to true for all categories
-        fmi2SetDebugLogging(fmu, true)
+        # Set debug logging to false for all categories
+        fmi2SetDebugLogging(fmu, false)
 
         # Get types platform
         typesPlatform = fmi2GetTypesPlatform(fmu)
