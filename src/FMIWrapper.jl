@@ -562,7 +562,7 @@ function fmi2GetInteger!(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -592,6 +592,13 @@ function fmi2GetInteger!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{
 
     return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component,
         convert(Array{UInt32,1},valueReference), length(valueReference), value)
+end
+
+function fmi2GetInteger!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
+    value::Array{Int64,1})
+
+    return fmi2GetInteger!(fmu.libHandle, fmu.fmi2Component,
+        convert(Array{UInt32,1},valueReference), length(valueReference), convert(Array{Int32,1},value))
 end
 
 """
@@ -752,7 +759,7 @@ function fmi2GetString!(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cstring}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -779,11 +786,27 @@ function fmi2GetString!(fmu::FMU, valueReference::Array{UInt32,1},
         numberOfValueReference, value)
 end
 
+function fmi2GetString!(fmu::FMU, valueReference::Array{UInt64,1},
+    numberOfValueReference::Int, value::Array{String,1})
+
+    return fmi2GetString!(fmu.libHandle, fmu.fmi2Component,
+            convert(Array{UInt32,1},valueReference),
+        numberOfValueReference, value)
+end
+
 function fmi2GetString!(fmu::FMU, valueReference::Array{UInt32,1},
     value::Array{String,1})
 
     return fmi2GetString!(fmu.libHandle, fmu.fmi2Component, valueReference,
         length(valueReference), value)
+end
+
+function fmi2GetString!(fmu::FMU, valueReference::Array{UInt64,1},
+    value::Array{String,1})
+
+    return fmi2GetString!(fmu.libHandle, fmu.fmi2Component,
+            convert(Array{UInt32,1},valueReference),
+         length(valueReference), value)
 end
 
 """
@@ -931,7 +954,7 @@ function fmi2SetInteger(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -1010,7 +1033,7 @@ function fmi2SetBoolean(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cint}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0
@@ -1096,7 +1119,7 @@ function fmi2SetString(libHandle::Ptr{Nothing},
         func,
         Cuint,
         (Ptr{Cvoid}, Ref{Cuint}, Csize_t, Ref{Cstring}),
-        fmi2Component, valueReference, numberOfValeReference, value
+        fmi2Component, valueReference, numberOfValueReference, value
         )
 
     if status != 0

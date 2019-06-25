@@ -243,7 +243,37 @@ function readModelDescription(pathToModelDescription::String)
                         end
                         tmp_typeSpecificProperties = BooleanProperties(tmp_declaredType, tmp_start)
                     elseif name(child)=="String"
-                        error("Type \"String\" not implemented.")
+                        tmp_declaredType = "String"
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = ""
+                        end
+                        tmp_typeSpecificProperties = StringProperties(tmp_declaredType, tmp_start)
+                    elseif name(child)=="Enumeration"
+                        tmp_declaredType = "Enumeration"
+                        tmp_quantity = attribute(child, "quantity"; required=false)
+                        if tmp_quantity == nothing
+                            tmp_quantity = ""
+                        end
+                        tmp_min = attribute(child, "min"; required=false)
+                        if tmp_min == nothing
+                            tmp_min = Int(0)
+                        else
+                            tmp_min = parse(Int, tmp_min)
+                        end
+                        tmp_max = attribute(child, "max"; required=false)
+                        if tmp_max == nothing
+                            tmp_max = Int(0)
+                        else
+                            tmp_max = parse(Int, tmp_max)
+                        end
+                        tmp_start = attribute(child, "start"; required=false)
+                        if tmp_start == nothing
+                            tmp_start = Int(0)
+                        else
+                            tmp_start = parse(Int, tmp_start)
+                        end
+                        tmp_typeSpecificProperties = EnumerationProperties(tmp_declaredType, tmp_quantity, tmp_min, tmp_max, tmp_start)
                     else
                         error("Unknown type \"$(name(child))\" of ScalarVariable")
                     end
@@ -293,6 +323,8 @@ function modelDescriptionToModelData(modelDescription::ModelDescription)
             modelData.numberOfBools += 1
         elseif typeof(var.typeSpecificProperties)==StringProperties
             modelData.numberOfStrings += 1
+        elseif typeof(var.typeSpecificProperties)==EnumerationProperties
+            modelData.numberOfEnumerations += 1
         else
             error()
         end
