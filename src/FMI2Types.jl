@@ -392,7 +392,7 @@ struct ScalarVariable
         elseif !in(causality,["parameter", "calculatedParameter","input", "output", "local", "independent"])
           error("ScalarVariable $name not valid: causality has to be one of \"parameter\", \"calculatedParameter\", \"input\", \"output\", \"local\", \"independent\" but is \"$causality\"")
         elseif causality == "parameter"
-            if (variability!="fixed" && variability!="tunable")
+            if (variability!="fixed" && variability!="tunable" && variability!="constant")
                 error("ScalarVariable $name not valid: causality is \"parameter\", so variability has to be \"fixed\" or \"tunable\" but is \"$variability\"")
             end
             if isempty(initial)
