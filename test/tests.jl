@@ -67,3 +67,9 @@ function testBouncingBall()
     main(bouncingBall)
     return true
 end
+
+function testCauerLowPassAnalog()
+    cauerLowPass = joinpath(fmuTestDir,"Modelica_Electrical_Analog_Examples_CauerLowPassAnalog.fmu")
+    main(cauerLowPass)
+    return true
+end
