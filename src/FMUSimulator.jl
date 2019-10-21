@@ -449,13 +449,15 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
         error("FMU does not support modelExchange")
     end
 
+    modelIdentifier = fmu.modelDescription.modelIdentifier
+
     # pathToDLL
     if Sys.iswindows()
-        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "win$(Sys.WORD_SIZE)", string(name, ".dll"))
+        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "win$(Sys.WORD_SIZE)", string(modelIdentifier, ".dll"))
     elseif Sys.islinux()
-        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "linux$(Sys.WORD_SIZE)", string(name, ".so"))
+        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "linux$(Sys.WORD_SIZE)", string(modelIdentifier, ".so"))
     elseif Sys.isapple()
-        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "darwin$(Sys.WORD_SIZE)", string(name, ".dylib"))
+        pathToDLL = joinpath(fmu.tmpFolder, "binaries", "darwin$(Sys.WORD_SIZE)", string(modelIdentifier, ".dylib"))
         println(pathToDLL)
     else
         error("OS not supported!")
@@ -463,11 +465,11 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     if !isfile(pathToDLL)
         if Sys.iswindows()
-            error("No shared library found matching $(Sys.WORD_SIZE) bit Windows.")
+            error("No shared library found matching $(Sys.WORD_SIZE) bit Windows.\n Looking for $pathToDLL.")
         elseif Sys.islinux()
-            error("No shared library found matching $(Sys.WORD_SIZE) bit Linux.")
+            error("No shared library found matching $(Sys.WORD_SIZE) bit Linux.\n Looking for $pathToDLL.")
         elseif Sys.isapple()
-            error("No shared library found matching $(Sys.WORD_SIZE) bit macOS.")
+            error("No shared library found matching $(Sys.WORD_SIZE) bit macOS.\n Looking for $pathToDLL.")
         end
     end
 
