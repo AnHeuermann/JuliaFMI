@@ -11,7 +11,9 @@ include("fmi-cross-check-tests.jl")
     @testset "Simulating simple FMUs" begin
         @testset "Without events" begin
             @test testHelloFMI20World()
-            @test testCauerLowPassAnalog()
+            if Sys.islinux()
+                @test testCauerLowPassAnalog()
+            end
         end;
         @testset "With events" begin
             @test testBouncingBall()
