@@ -822,10 +822,7 @@ function main(pathToFMU::String)
         println("FMI version: $fmiVersion")
 
         # Set up experiment
-        fmi2SetupExperiment(fmu, 0)
-
-        # Set start time
-        setTime!(fmu, fmu.experimentData.startTime, true)
+        fmi2SetupExperiment(fmu, true, fmu.experimentData.tolerance, fmu.experimentData.startTime, true, fmu.experimentData.stopTime)
         nextTime = fmu.experimentData.stopTime
 
         # Set initial variables with intial="exact" or "approx"
