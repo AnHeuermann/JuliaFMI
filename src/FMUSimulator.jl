@@ -797,6 +797,10 @@ end
 Main function to simulate a FMU
 """
 function main(pathToFMU::String)
+
+    # Convert path to absolute path
+    pathToFMU = abspath(pathToFMU)
+
     # load FMU
     fmu = loadFMU(pathToFMU)
     writeNamesToCSV(fmu)
