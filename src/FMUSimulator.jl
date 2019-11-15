@@ -92,7 +92,7 @@ function readModelDescription(pathToModelDescription::String)
             end
         end
 
-        if elementCoSimulation == nothing && elementModelExchange == nothing
+        if elementCoSimulation === nothing && elementModelExchange === nothing
             error("modelDescription.xml is missing ModelExchange and CoSimulation tags.")
         end
 
@@ -110,9 +110,9 @@ function readModelDescription(pathToModelDescription::String)
             md.logCategories = Array{LogCategory}(undef, numCategories)
 
             for (index, element) in enumerate(child_elements(elementLogCategories))
-                tmp_name = attribute(element, "name"; required=false)
+                tmp_name = attribute(element, "name"; required=true)
                 tmp_description = attribute(element, "description"; required=false)
-                if tmp_description == nothing
+                if tmp_description === nothing
                     md.logCategories[index] = LogCategory(tmp_name)
                 else
                     md.logCategories[index] = LogCategory(tmp_name, tmp_description)
@@ -160,7 +160,7 @@ function readModelDescription(pathToModelDescription::String)
 
         # Get attributes of tag ModelVariables
         elementModelVariables = find_element(xroot, "ModelVariables")
-        if elementModelVariables == nothing
+        if elementModelVariables === nothing
             error("modelDescription.xml is missing ModelVariables tag")
         end
 
@@ -176,23 +176,23 @@ function readModelDescription(pathToModelDescription::String)
             tmp_valueReference = parse(Int, attribute(element, "valueReference"; required=true))
 
             tmp_description = attribute(element, "description"; required=false)
-            if tmp_description == nothing
+            if tmp_description === nothing
                 tmp_description=""
             end
             tmp_variability = attribute(element, "variability"; required=false)
-            if tmp_variability == nothing
+            if tmp_variability === nothing
                 tmp_variability=""
             end
             tmp_causality = attribute(element, "causality"; required=false)
-            if tmp_causality == nothing
+            if tmp_causality === nothing
                 tmp_causality=""
             end
             tmp_initial = attribute(element, "initial"; required=false)
-            if tmp_initial == nothing
+            if tmp_initial === nothing
                 tmp_initial=""
             end
             tmp_canHandleMultipleSetPerTimelnstant = attribute(element, "canHandleMultipleSetPerTimelnstant"; required=false)
-            if tmp_canHandleMultipleSetPerTimelnstant == nothing
+            if tmp_canHandleMultipleSetPerTimelnstant === nothing
                 tmp_canHandleMultipleSetPerTimelnstant = false
             else
                 tmp_canHandleMultipleSetPerTimelnstant = parse(Bool,
@@ -207,19 +207,19 @@ function readModelDescription(pathToModelDescription::String)
                         tmp_declaredType = "Real"
                         tmp_variableAttributes = RealAttributes()   # TODO implement
                         tmp_start = attribute(child, "start"; required=false)
-                        if tmp_start == nothing
+                        if tmp_start === nothing
                             tmp_start = Float64(0)
                         else
                             tmp_start = parse(Float64, tmp_start)
                         end
                         tmp_derivative = attribute(child, "derivative"; required=false)
-                        if tmp_derivative == nothing
+                        if tmp_derivative === nothing
                             tmp_derivative = UInt(0)
                         else
                             tmp_derivative = parse(UInt, tmp_derivative)
                         end
                         tmp_reinit = attribute(child, "reinit"; required=false)
-                        if tmp_reinit == nothing
+                        if tmp_reinit === nothing
                             tmp_reinit = false
                         end
                         tmp_typeSpecificProperties = RealProperties(tmp_declaredType, tmp_variableAttributes, tmp_start, tmp_derivative, tmp_reinit)
@@ -227,7 +227,7 @@ function readModelDescription(pathToModelDescription::String)
                         tmp_declaredType = "Integer"
                         tmp_variableAttributes = IntegerAttributes()   # TODO implement
                         tmp_start = attribute(child, "start"; required=false)
-                        if tmp_start == nothing
+                        if tmp_start === nothing
                             tmp_start = Int(0)
                         else
                             tmp_start = parse(Int, tmp_start)
@@ -236,7 +236,7 @@ function readModelDescription(pathToModelDescription::String)
                     elseif name(child)=="Boolean"
                         tmp_declaredType = "Boolean"
                         tmp_start = attribute(child, "start"; required=false)
-                        if tmp_start == nothing
+                        if tmp_start === nothing
                             tmp_start = false
                         else
                             tmp_start = parse(Bool, tmp_start)
@@ -245,30 +245,30 @@ function readModelDescription(pathToModelDescription::String)
                     elseif name(child)=="String"
                         tmp_declaredType = "String"
                         tmp_start = attribute(child, "start"; required=false)
-                        if tmp_start == nothing
+                        if tmp_start === nothing
                             tmp_start = ""
                         end
                         tmp_typeSpecificProperties = StringProperties(tmp_declaredType, tmp_start)
                     elseif name(child)=="Enumeration"
                         tmp_declaredType = "Enumeration"
                         tmp_quantity = attribute(child, "quantity"; required=false)
-                        if tmp_quantity == nothing
+                        if tmp_quantity === nothing
                             tmp_quantity = ""
                         end
                         tmp_min = attribute(child, "min"; required=false)
-                        if tmp_min == nothing
+                        if tmp_min === nothing
                             tmp_min = Int(0)
                         else
                             tmp_min = parse(Int, tmp_min)
                         end
                         tmp_max = attribute(child, "max"; required=false)
-                        if tmp_max == nothing
+                        if tmp_max === nothing
                             tmp_max = Int(0)
                         else
                             tmp_max = parse(Int, tmp_max)
                         end
                         tmp_start = attribute(child, "start"; required=false)
-                        if tmp_start == nothing
+                        if tmp_start === nothing
                             tmp_start = Int(0)
                         else
                             tmp_start = parse(Int, tmp_start)
@@ -306,7 +306,13 @@ function readModelDescription(pathToModelDescription::String)
 end
 
 
-function modelDescriptionToModelData(modelDescription::ModelDescription)
+"""
+    function createEmptyModelData(modelDescription::ModelDescription)
+
+Create empty `modelData::ModelData`.
+Use numbers of variables from `modelDescription`.
+"""
+function createEmptyModelData(modelDescription::ModelDescription)
 
     modelData = ModelData()
 
@@ -473,8 +479,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
         end
     end
 
-    # Fill model data
-    fmu.modelData = modelDescriptionToModelData(fmu.modelDescription)
+    # Create empty model data
+    fmu.modelData = createEmptyModelData(fmu.modelDescription)
 
     # Fill Simulation Data
     fmu.simulationData = initializeSimulationData(fmu.modelDescription, fmu.modelData)
@@ -660,6 +666,12 @@ function getVariable!(fmu::FMU, variable::StringVariable)
     return variable.value
 end
 
+"""
+Get all variables from FMU and update saved falues in fmu.simulationData.modelVariables
+
+Get all real, integer, boolean and string variables by calling the appropiate
+fmi2GetXXX! function.
+"""
 function getAllVariables!(fmu::FMU)
 
     for realVar in fmu.simulationData.modelVariables.reals
