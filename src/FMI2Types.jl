@@ -154,11 +154,16 @@ mutable struct StringVariable
     end
 end
 
-
 mutable struct EnumerationVariable
-    #TODO Add
+    value::UInt     # Holds a number representig an enumeration
+    valueReference::UInt
+    name::String
 
+    # Inner constructors
     EnumerationVariable() = new()
+    function EnumerationVariable(value, valueReference, name)
+        new(value, valueReference, name)
+    end
 end
 
 mutable struct ModelVariables
@@ -280,6 +285,34 @@ struct IntegerAttributes
     # Inner constructors
     IntegerAttributes()=new()
     IntegerAttributes(quantity, min, max)=new(quantity, min, max)
+end
+
+"""
+Item of an enumeartion attribute
+"""
+struct EnumerationItemAttribute
+    name::String
+    "Unique number in the same enumeration"
+    value::Int
+    description::String
+
+    # Constructor
+    EnumerationItemAttribute() = new()
+    EnumerationItemAttribute(name, value, description) = new(name, value, description)
+end
+
+"""
+Attributes for simpleType enumeration
+"""
+struct EnumerationAttributes
+    "Physical quantity of the variable"
+    quantity::String
+    "Items of an enumeration"
+    items::Array{EnumerationItemAttribute}
+
+    # Constructor
+    EnumerationAttributes() = new()
+    EnumerationAttributes(quantity, items) = new(quantity, items)
 end
 
 
@@ -423,6 +456,22 @@ struct ScalarVariable
     end
 end
 
+"""
+Definition of a simple type according to fmi2SimpleType
+"""
+struct SimpleType
+    "Unique name with respect to all other element of TypeDefinitions in ModelDescription"
+    name::String
+    description::String
+
+    # ToDo: Add Bool and String to this, maybe as empty Attributes?
+    attributes::Union{RealAttributes, IntegerAttributes, EnumerationAttributes}
+
+    # Constructor
+    SimpleType() = new()
+    SimpleType(name, description, attributes)=new(name, description, attributes)
+end
+
 struct LogCategory
     name::String
     description::String
@@ -457,9 +506,9 @@ mutable struct ModelDescription
 
     # Unit definitions
     # Type definitions
-    # TODO: add here
+    typeDefinitions::Union{Array{SimpleType}, Nothing}
 
-    logCategories::Array{LogCategory}
+    logCategories::Union{Array{LogCategory}, Nothing}
 
     # Default experiment
     defaultExperiment::ExperimentData
