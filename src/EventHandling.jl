@@ -8,7 +8,9 @@ include("FMICallbackFunctions.jl") # Callbacks for logging and memory handling
 
 
 """
-Checks if signs of two arrays are different component-wise.
+    arrayDiffSign(array1::Array{Float64,1}, array2::Array{Float64,1})
+
+Checks if signs of two arrays are different component-wise and returns index of difference.
 Helper function for bisection.
 """
 function arrayDiffSign(array1::Array{Float64,1}, array2::Array{Float64,1})
@@ -19,11 +21,11 @@ function arrayDiffSign(array1::Array{Float64,1}, array2::Array{Float64,1})
 
     for i in 1:length(array1)
         if sign(array1[i]) != sign(array2[i])
-            return true
+            return (true,i)
         end
     end
 
-    return false
+    return (false,-1)
 end
 
 
@@ -61,7 +63,8 @@ function findEventSimple(fmu::FMU)
     leftEventIndicators = copy(fmu.simulationData.eventIndicators)
     getEventIndicators!(fmu)
     rightEventIndicators = copy(fmu.simulationData.eventIndicators)
-    if arrayDiffSign(leftEventIndicators, rightEventIndicators)
+    (hasDiffSigns, index) = arrayDiffSign(leftEventIndicators, rightEventIndicators)
+    if hasDiffSigns
         return true
     else
         return false

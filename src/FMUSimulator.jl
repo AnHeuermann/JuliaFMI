@@ -87,9 +87,9 @@ function readModelDescription(pathToModelDescription::String)
             error("modelDescription.xml is missing ModelExchange and CoSimulation tags.")
         end
 
-        # ToDo: Add stuff for tag UnitDefinitions
+        # TODO: Add stuff for tag UnitDefinitions
 
-        # ToDo: Add stuff for tag TypeDefinitions
+        # TODO: Add stuff for tag TypeDefinitions
 
         # Get attributes of tag LogCategories
         elementLogCategories = find_element(xroot, "LogCategories")
@@ -147,7 +147,7 @@ function readModelDescription(pathToModelDescription::String)
             md.defaultExperiment = ExperimentData()
         end
 
-        # ToDo: Add stuff for tag VendorAnnotations
+        # TODO: Add stuff for tag VendorAnnotations
 
         # Get attributes of tag ModelVariables
         elementModelVariables = find_element(xroot, "ModelVariables")
@@ -806,7 +806,9 @@ function main(pathToFMU::String)
             timeEvent = abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize       # TODO add handling of time events
 
             # Detect events
-            (eventFound, eventTime, leftStates) = findEvent(fmu)
+            #(eventFound, eventTime, leftStates) = findEvent(fmu)   #TODO: Bisection is getting stuck at first event
+            eventFound = findEventSimple(fmu)
+            eventTime = fmu.simulationData.time
 
             # Inform the model abaut an accepted step
             (enterEventMode, terminateSimulation) = fmi2CompletedIntegratorStep(fmu, true)
@@ -815,6 +817,7 @@ function main(pathToFMU::String)
             end
 
             # Handle events
+            # TODO: With findEventSimple every event is found twice. This can be done better.
             if timeEvent || eventFound || enterEventMode
                 if timeEvent
                     eventName = "time"
@@ -823,8 +826,6 @@ function main(pathToFMU::String)
                 else
                     eventName = "step"
                 end
-                println("Handling an $eventName event.")
-                println("Enter Event Mode at time $(fmu.simulationData.time)")
 
                 # Save variable values to csv
                 # TODO Add
@@ -858,7 +859,7 @@ function main(pathToFMU::String)
                     println("Next event time defined")
                     nextTime = min(fmu.eventInfo.nextEventTime, fmu.experimentData.stopTime)
                 else
-                    nextTime = fmu.simulationData.lastStepTime+fmu.experimentData.stepSize
+                    nextTime = fmu.experimentData.stopTime + fmu.experimentData.stepSize
                 end
                 println("fmu.simulationData.time = $(fmu.simulationData.time)")
                 println("eventTime = $eventTime")
