@@ -852,6 +852,7 @@ function main(pathToFMU::String)
                 # Check if nominals changed
                 if fmu.eventInfo.nominalsOfContinuousStatesChanged
                     error("Nominals not handled at the moment")
+                    # TODO handel nominals
                     # getNominalsOfContinuousStates(fmu)
                 end
 
@@ -861,10 +862,6 @@ function main(pathToFMU::String)
                 else
                     nextTime = fmu.experimentData.stopTime + fmu.experimentData.stepSize
                 end
-                println("fmu.simulationData.time = $(fmu.simulationData.time)")
-                println("eventTime = $eventTime")
-                println("nextTime = $nextTime")
-
             end
 
             # save results
