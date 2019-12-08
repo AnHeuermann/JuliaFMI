@@ -1,3 +1,8 @@
+# This file is part of JuliaFMI.
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
+
+# This file contains type definitions and constructores for those types.
+
 """
 Declaration of FMI2 Types
 """

@@ -1,7 +1,7 @@
 # This file is part of JuliaFMI.
-# License is MIT: https://servant-om.fh-bielefeld.de/gitlab/AnHeuermann/FMU_JL_Simulator/blob/master/LICENSE.txt
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
 
-# This file contains wrapper to call FMI functions
+# This file contains wrapper to call FMI functions.
 
 include("FMI2Types.jl")
 include("FMICallbackFunctions.jl") # Callbacks for logging and memory handling

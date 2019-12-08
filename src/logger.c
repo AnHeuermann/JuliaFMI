@@ -1,5 +1,9 @@
-/*
- * Logger function in C, since Julia 1.0.2 can't handle variadic arguments of
+/* This file is part of JuliaFMI.
+ * Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
+ *
+ * This file contains a C logger function as a callback given to a FMU.
+ *
+ * Implemented in C, since Julia 1.0.2 can't handle variadic arguments of
  * different types, like in printf("%s %u", string, unsignedInt)
  *
  * Compile with:
