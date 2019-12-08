@@ -1,3 +1,9 @@
+# This file is part of JuliaFMI.
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
+
+# This file contains functionalities to test FMI Cross-Check 
+# See fmi-cross-check on Github for more details: https://github.com/modelica/fmi-cross-check
+
 """
 Run tests from fmi-cross-check Git repository.
 """

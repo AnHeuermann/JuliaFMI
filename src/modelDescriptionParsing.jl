@@ -1,4 +1,7 @@
+# This file is part of JuliaFMI.
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
 
+# This file contains function to parse the modelDecription.xml of a FMU.
 
 """
 Dynamicaly create symbols from array of EnumerationItemAttribute

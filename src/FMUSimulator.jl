@@ -1,3 +1,8 @@
+# This file is part of JuliaFMI.
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
+
+# This file contains the main function to simulate a FMU.
+
 """
 Simulator for FMUs of
 FMI 2.0 for Model Exchange Standard

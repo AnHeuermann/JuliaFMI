@@ -1,3 +1,8 @@
+# This file is part of JuliaFMI.
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
+
+# This file contains functions to be exported for JuliaFMI package.
+
 module JuliaFMI
 
 # Dependecies
