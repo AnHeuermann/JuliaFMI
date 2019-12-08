@@ -796,7 +796,7 @@ function main(pathToFMU::String)
 
             # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
             for i=1:fmu.modelData.numberOfStates
-                fmu.simulationData.modelVariables.oldStates[i] = fmu.simulationData.modelVariables.reals[i].value
+                #fmu.simulationData.modelVariables.oldStates[i] = fmu.simulationData.modelVariables.reals[i].value # TODO What is this needed for?
                 fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
             end
             setContinuousStates!(fmu)
@@ -806,7 +806,7 @@ function main(pathToFMU::String)
             timeEvent = abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize       # TODO add handling of time events
 
             # Detect events
-            #(eventFound, eventTime, leftStates) = findEvent(fmu)   #TODO: Bisection is getting stuck at first event
+            #(eventFound, eventTime, leftStates) = findEvent(fmu)   #TODO: Bisection is getting stuck on first event
             eventFound = findEventSimple(fmu)
             eventTime = fmu.simulationData.time
 
@@ -828,15 +828,17 @@ function main(pathToFMU::String)
                 end
 
                 # Save variable values to csv
-                # TODO Add
+                writeValuesToCSV(fmu)
 
                 fmi2EnterEventMode(fmu)
 
                 # Event iteration
                 fmu.eventInfo = eventIteration!(fmu)
 
-                # Update changed continuous states
+                # Update changed continuous states and derivatives
                 getContinuousStates!(fmu)
+                getDerivatives!(fmu)
+
 
                 # Enter continuous-time mode
                 fmi2EnterContinuousTimeMode(fmu)
@@ -845,8 +847,7 @@ function main(pathToFMU::String)
                 # Retrieve solution at simulation restart
                 getAllVariables!(fmu)
                 if fmu.eventInfo.valuesOfContinuousStatesChanged
-                    # TODO check if this is working correctly
-                    getContiuousStates(fmu)
+                    getContinuousStates!(fmu)
                 end
 
                 # Check if nominals changed
@@ -857,7 +858,6 @@ function main(pathToFMU::String)
                 end
 
                 if fmu.eventInfo.nextEventTimeDefined
-                    println("Next event time defined")
                     nextTime = min(fmu.eventInfo.nextEventTime, fmu.experimentData.stopTime)
                 else
                     nextTime = fmu.experimentData.stopTime + fmu.experimentData.stepSize
@@ -865,7 +865,7 @@ function main(pathToFMU::String)
             end
 
             # save results
-            getAllVariables!(fmu) # TODO check if this is working correctly
+            getAllVariables!(fmu) # TODO check if this is working correctly. Maybe add getDerivatives!(fmu)
             writeValuesToCSV(fmu)
         end
 

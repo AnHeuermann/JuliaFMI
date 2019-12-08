@@ -20,7 +20,7 @@ function arrayDiffSign(array1::Array{Float64,1}, array2::Array{Float64,1})
     end
 
     for i in 1:length(array1)
-        if sign(array1[i]) != sign(array2[i])
+        if (array1[i] > 0 && array2[i] <= 0) || (array1[i] <= 0 && array2[i] > 0)
             return (true,i)
         end
     end
