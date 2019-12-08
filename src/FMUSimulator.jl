@@ -8,6 +8,7 @@ Simulator for FMUs of
 FMI 2.0 for Model Exchange Standard
 """
 
+
 # Macro to identify logger library
 macro libLogger()
     if Sys.iswindows()
@@ -131,7 +132,7 @@ end
 """
 `loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)`
 
-Unzips an FMU and returns handle to dynamic library containing FMI functions.
+Unzips a FMU and returns handle to dynamic library containing FMI functions.
 
 ## Example calls
 ```
@@ -212,8 +213,6 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.logFile = open("$(fmu.modelName).log", "w")
 
     # load shared library with FMU
-    # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
-    # push!(DL_LOAD_PATH, "/usr/lib/x86_64-linux-gnu") maybe???
     fmu.libHandle = dlopen(pathToDLL)
 
     # Load hared library with logger function
@@ -414,75 +413,6 @@ function setTime!(fmu::FMU, time::Float64, saveLastStepTime=true::Bool)
     fmi2SetTime(fmu, fmu.simulationData.time)
 end
 
-"""
-Checks if signs of two arrays are different component-wise.
-Helper function for bisection.
-"""
-function arrayDiffSign(array1::Array{Float64,1}, array2::Array{Float64,1})
-
-    if length(array1) != length(array2)
-        throw(DimensionMismatch("Left and right array of event indicators have different sizes."))
-    end
-
-    for i in 1:length(array1)
-        if sign(array1[i]) != sign(array2[i])
-            return true
-        end
-    end
-
-    return false
-end
-
-"""
-Find event time with bisection method for `eventIndicators` for given `fmu`.
-"""
-function findEvent(fmu::FMU)
-
-    leftTime = fmu.simulationData.lastStepTime
-    rightTime = fmu.simulationData.time
-
-    leftEventIndicators = copy(fmu.simulationData.eventIndicators)
-    getEventIndicators!(fmu)
-    rightEventIndicators = copy(fmu.simulationData.eventIndicators)
-
-    # Check if there are any events
-    if !arrayDiffSign(leftEventIndicators, rightEventIndicators)
-        return (false, 0)
-    end
-
-    steps = 0
-    minimumStepSize = 1e-8      # TODO: Read mimimumStepSize from fmu experiment data
-    maxSteps = ceil(log2((rightTime-leftTime)/minimumStepSize)) + 1
-    centerTime = 0
-
-    while rightTime - leftTime > minimumStepSize && steps < maxSteps
-        steps += 1
-
-        # Evaluate eventIndicators in center of intervall
-        centerTime = 0.5*(rightTime - leftTime)
-        setTime!(fmu, centerTime, false)
-        getEventIndicators!(fmu)
-        centerEventIndicators = copy(fmu.simulationData.eventIndicators)     # TODO Do I need to copy here?
-
-        # TODO Check what happens when event is on leftTime, centerTime or rightTime
-        # Check for event in first half of intervall [leftTime, centerTime]
-        if arrayDiffSign(leftEventIndicators, centerEventIndicators)
-            rightTime = centerTime
-            rightEventIndicators = centerEventIndicators        # This does not copy memory, right?
-
-        # Check for event in second half of intervall [centerTime, rightTime]
-        else
-            leftTime = centerTime
-            leftEventIndicators = centerEventIndicators
-        end
-    end
-
-    if steps == maxSteps
-        error("Event was not found in maximum number of Steps!")
-    end
-
-    return (true, centerTime)
-end
 
 function writeNamesToCSV(fmu::FMU)
 
@@ -563,13 +493,8 @@ function main(pathToFMU::String)
         fmi2ExitInitializationMode(fmu)
 
         # Event iteration
-        fmu.eventInfo.newDiscreteStatesNeeded = true
-        while fmu.eventInfo.newDiscreteStatesNeeded
-            fmi2NewDiscreteStates!(fmu)
-            if fmu.eventInfo.terminateSimulation
-                error("FMU was terminated in Event at time $(fmu.simulationData.time)")
-            end
-        end
+        fmu.eventInfo = eventIteration!(fmu)
+
         # Initialize event indicators
         getEventIndicators!(fmu)
 
@@ -589,48 +514,47 @@ function main(pathToFMU::String)
         k_max = 1000
         while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
             k += 1
-            getDerivatives!(fmu)
 
-            # Compute next step size
-            if fmu.eventInfo.nextEventTimeDefined
-                h = min(fmu.experimentData.stepSize, fmu.eventInfo.nextEventTime - fmu.simulationData.time)
-            else
-                h = min(fmu.experimentData.stepSize, fmu.experimentData.stopTime - fmu.simulationData.time)
-            end
-
-            # Update time
+            # Compute next step size and update time
+            h = min(fmu.experimentData.stepSize, nextTime - fmu.simulationData.time)
             setTime!(fmu, fmu.simulationData.time + h)
 
             # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
             for i=1:fmu.modelData.numberOfStates
+                #fmu.simulationData.modelVariables.oldStates[i] = fmu.simulationData.modelVariables.reals[i].value # TODO What is this needed for?
                 fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
             end
             setContinuousStates!(fmu)
+            getDerivatives!(fmu)
 
-            # Get event indicators and check for events
+            # Detect time events
+            timeEvent = abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize       # TODO add handling of time events
+
+            # Detect events
+            eventFound = findEventSimple(fmu)
+            eventTime = fmu.simulationData.time
 
             # Inform the model abaut an accepted step
             (enterEventMode, terminateSimulation) = fmi2CompletedIntegratorStep(fmu, true)
-            if enterEventMode
-                error("Should now enter Event mode...")
+            if terminateSimulation
+                error("FMU was terminated after completed integrator step at time $(fmu.simulationData.time)")
             end
 
-            if terminateSimulation
-                error("Solution got terminated before reaching end time.")
+            # Handle events
+            if timeEvent || eventFound || enterEventMode
+                handleEvent!(fmu)
             end
 
             # save results
-            getAllVariables!(fmu)
+            getAllVariables!(fmu) # TODO check if this is working correctly. Maybe add getDerivatives!(fmu)
             writeValuesToCSV(fmu)
-
-            # Handle events
         end
 
         # Terminate Simulation
         fmi2Terminate(fmu)
 
         # Free FMU
-        # ToDo: Fix function
+        # TODO: Fix function
         #fmi2FreeInstance(fmu)
     finally
         # Unload FMU
