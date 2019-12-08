@@ -171,7 +171,7 @@ function getDefaultExperiment(xroot::XMLElement)
         if stepSize != nothing
             stepSize = parse(Float64, stepSize)
         else
-            stepSize = 2e-3
+            stepSize = round((stopTime - startTime)/500, digits=6)
         end
 
         defaultExperiment = ExperimentData(startTime, stopTime, tolerance, stepSize)

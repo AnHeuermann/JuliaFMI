@@ -594,7 +594,7 @@ function main(pathToFMU::String)
 
         # Iterate with explicit euler method
         k = 0
-        k_max = 1000
+        k_max = 1000000
         while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
             k += 1
             getDerivatives!(fmu)
@@ -632,6 +632,10 @@ function main(pathToFMU::String)
             writeValuesToCSV(fmu)
 
             # Handle events
+        end
+
+        if k>=k_max
+            error("Maximum number of allowed steps ($k_max) reached.")
         end
 
         # Terminate Simulation
