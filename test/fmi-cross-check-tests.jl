@@ -78,23 +78,26 @@ function runFMICrossTests()
     updateFmiCrossCheck()
 
     # Collect all tests for current system
-    df = DataFrame(toolName=String[], version=String[], test=String[], pathToTestFMU=String[])
+    df = DataFrame(toolName=String[], version=String[], test=String[], isCompliant=Bool[], pathToTestFMU=String[])
 
     for (root, dirs, files) in walkdir(fmiCrossCheckFMUDir)
         for dir in dirs
             fmuFiles = searchdir(joinpath(root,dir),r".fmu")
             if (length(fmuFiles) > 0)
-                pathToFmu = joinpath(root,first(fmuFiles))
+                pathToFmu = joinpath(joinpath(root,dir),first(fmuFiles))
 
-                toolName = basename(dirname(dirname(pathToFmu)))
-                version = basename(dirname(pathToFmu))
-                test = first(splitext(basename(pathToFmu)))
+                toolName = basename(dirname(dirname(dirname((pathToFmu)))))
+                version = basename(dirname(dirname(pathToFmu)))
+                test = basename(first(splitext(pathToFmu)))
 
-                push!(df, (toolName, version, test, pathToFmu))
+                # Check if test is compliant with latest fmi-cross-check rules
+                isCompliant = !isfile(joinpath(dirname(pathToFmu),"notCompliantWithLatestRules"))
+
+                # Add test to data frame
+                push!(df, (toolName, version, test, isCompliant, pathToFmu))
             end
         end
     end
-
 
     # Run tests
     @testset "FMI Cross Check" begin
@@ -103,12 +106,15 @@ function runFMICrossTests()
                 versions = unique(df[df.toolName.==toolName,:].version)
                 tests = Array{String}(undef, length(versions), 10)          # ToDo: Replace 10 with maximum number of tests of all versions for current tool
                 tests[:,:].=""
+                compliances = Array{Bool}(undef, length(versions), 10)
                 for (index,version) in enumerate(versions)
                     testOfVersion = df[(df.toolName.==toolName) .& (df.version.==version),:].test
+                    compliance = df[(df.toolName.==toolName) .& (df.version.==version),:].isCompliant
                     tests[index,1:length(testOfVersion)] = testOfVersion
+                    compliances[index,1:length(testOfVersion)] = compliance
                 end
 
-                testTool(toolName, versions, tests)
+                testTool(toolName, versions, tests, compliances)
             end;
         end
     end;
@@ -134,21 +140,31 @@ Heler function to test for generic tools, versions and test cases.
 ```julia
 julia> toolName = "CATIA"
 julia> versions = ["R2015x", "R2016x"]
-julia> tests = ["BooleanNetwork1" "ControlledTemperature" "CoupledClutches" "DFFREG" "" "Rectifier";
+julia> tests = ["BooleanNetwork1" "ControlledTemperature" "CoupledClutches" "DFFREG" "Rectifier" "";
                 "BooleanNetwork1" "ControlledTemperature" "CoupledClutches" "DFFREG" "MixtureGases" "Rectifier"]
-julia> testTool(toolName, versions, tests)
+julia> compliances = ["false" "false" "false" "false" "false" undef;
+                     "true" "true" "true" "true" "true" "true"]
+julia> testTool(toolName, versions, tests, compliances)
 ```
 """
-function testTool(toolName::String, versions::Array{String,1}, tests)
+function testTool(toolName::String, versions::Array{String,1}, tests, compliances)
 
     for (i,version) in enumerate(versions)
         @testset "$version" begin
-            for test in tests[i,:]
+            for (j,test) in enumerate(tests[i,:])
                 if test != ""
-                    @test begin
-                        model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
-                        main(model)
-                    end;
+                    model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
+                    if compliances[i,j]
+                        @test main(model)
+                    else
+                        try
+                            main(model)
+                        catch
+                            @test_broken main(model)
+                            continue
+                        end
+                        @test main(model)
+                    end
                 end
             end
         end;
