@@ -12,6 +12,11 @@ using Test
 include("tests.jl")
 include("fmi-cross-check-tests.jl")
 
+if !isdir("runtests")
+    mkdir("runtests")
+end
+cd("runtests")
+
 @testset "All Tests" begin
     @testset "Simulating simple FMUs" begin
         @testset "Without events" begin
@@ -27,3 +32,6 @@ include("fmi-cross-check-tests.jl")
 
     runFMICrossTests()
 end;
+
+cd("..")
+rm("runtests", true, true)

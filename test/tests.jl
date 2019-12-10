@@ -9,6 +9,7 @@ Define tests for unit testing
 
 thisDir = dirname(Base.source_path())
 include("$(dirname(thisDir))/src/FMUSimulator.jl")
+include("checkResults.jl")
 
 
 if Sys.iswindows()
@@ -39,7 +40,8 @@ FMU generated for Modelica model:
 function testHelloFMI20World()
     helloFMI20World = joinpath(fmuTestDir,"HelloFMI20World.fmu")
     main(helloFMI20World)
-    return true
+    referenceFile = joinpath(fmuTestDir,"$(dirname(thisDir))//test//modelicaSource//HelloFMI20World_ref.csv")
+    return diffSimulationResults("HelloFMI20World_results.csv", referenceFile, "HelloFMI20World")
 end
 
 
@@ -70,11 +72,20 @@ FMU generated from Modelica model:
 function testBouncingBall()
     bouncingBall = joinpath(fmuTestDir,"BouncingBallFMI20.fmu")
     main(bouncingBall)
-    return true
+    referenceFile = joinpath(fmuTestDir,"$(dirname(thisDir))//test//modelicaSource//BouncingBallFMI20_ref.csv")
+    return diffSimulationResults("BouncingBallFMI20_results.csv", referenceFile, "BouncingBallFMI20")
 end
 
+
+"""
+    testCauerLowPassAnalog()
+
+Run test simulating Modelica.Electrical.Analog.Examples.CauerLowPassAnalog of
+Modelica Standard Library 3.2.3
+"""
 function testCauerLowPassAnalog()
     cauerLowPass = joinpath(fmuTestDir,"Modelica_Electrical_Analog_Examples_CauerLowPassAnalog.fmu")
     main(cauerLowPass)
-    return true
+    referenceFile = joinpath(fmuTestDir,"$(dirname(thisDir))//test//modelicaSource//CauerLowPass_ref.csv")
+    return diffSimulationResults("Modelica.Electrical.Analog.Examples.CauerLowPassAnalog_results.csv", referenceFile, "Modelica_Electrical_Analog_Examples_CauerLowPassAnalog")
 end

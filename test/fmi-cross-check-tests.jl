@@ -1,7 +1,7 @@
 # This file is part of JuliaFMI.
 # Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
 
-# This file contains functionalities to test FMI Cross-Check 
+# This file contains functionalities to test FMI Cross-Check
 # See fmi-cross-check on Github for more details: https://github.com/modelica/fmi-cross-check
 
 """
@@ -154,8 +154,12 @@ function testTool(toolName::String, versions::Array{String,1}, tests, compliance
             for (j,test) in enumerate(tests[i,:])
                 if test != ""
                     model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
+                    refFile = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$(test)_ref.csv")
                     if compliances[i,j]
-                        @test main(model)
+                        @test begin
+                            main(model)
+                            diffSimulationResults("$(test)_results.csv", refFile, test)
+                        end;
                     else
                         try
                             main(model)
@@ -163,7 +167,10 @@ function testTool(toolName::String, versions::Array{String,1}, tests, compliance
                             @test_broken main(model)
                             continue
                         end
-                        @test main(model)
+                        @test begin
+                            main(model)
+                            diffSimulationResults("$(test)_results.csv", refFile, test)
+                        end;
                     end
                 end
             end
