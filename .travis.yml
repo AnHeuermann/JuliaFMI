@@ -20,6 +20,7 @@ before_install:
   - sudo apt-get install libblas-dev liblapack-dev
   - sudo apt-get install -y build-essential
   - docker pull openmodelica/openmodelica:v1.13.2-minimal
+  - docker run -it openmodelica/openmodelica:v1.13.2-minimal omc --version
   - script: eval $omc --version
 
 before_script:
