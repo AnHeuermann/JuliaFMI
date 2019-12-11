@@ -1,23 +1,26 @@
 # This file is part of JuliaFMI.
-# License is MIT: https://servant-om.fh-bielefeld.de/gitlab/AnHeuermann/FMU_JL_Simulator/blob/master/LICENSE.txt
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
 
 language: julia
 julia:
   - 1.0.5
-  - 1.3.0
+#  - 1.3.0
 
 services:
   - docker
 
 coveralls: true
 
+env:
+  global:
+    - omc='docker run -it openmodelica/openmodelica:v1.13.2-minimal omc'
+
 before_install:
   - sudo apt-get update
   - sudo apt-get install libblas-dev liblapack-dev
   - sudo apt-get install -y build-essential
   - docker pull openmodelica/openmodelica:v1.13.2-minimal
-  - alias omc="docker run -it openmodelica/openmodelica:v1.13.2-minimal omc"
-  - omc --version
+  - script: eval $omc --version
 
 before_script:
   - cd test && git clone https://github.com/modelica/fmi-cross-check.git
