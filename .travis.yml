@@ -3,7 +3,11 @@
 
 language: julia
 julia:
-  - 1.0.2
+  - 1.0.5
+  - 1.3.0
+
+services:
+  - docker
 
 coveralls: true
 
@@ -11,6 +15,9 @@ before_install:
   - sudo apt-get update
   - sudo apt-get install libblas-dev liblapack-dev
   - sudo apt-get install -y build-essential
+  - docker pull openmodelica/openmodelica:v1.13.2-minimal
+  - alias omc="docker run -it openmodelica/openmodelica:v1.13.2-minimal omc"
+  - omc --version
 
 before_script:
   - cd test && git clone https://github.com/modelica/fmi-cross-check.git
