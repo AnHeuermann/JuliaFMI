@@ -20,9 +20,6 @@ before_script:
 
 job:
   script:
-    - using Pkg
-    - Pkg.build()
-    - Pkg.test(coverage=true)
-
+    - julia -e "using Pkg; Pkg.build(); Pkg.test(coverage=true)"
 notifications:
   email: false
