@@ -5,12 +5,18 @@
 
 module JuliaFMI
 
+include("FMUSimulator.jl")
+
 # Dependecies
 using Libdl         # For using dlopen, dlclose and so on
 using LightXML      # For parsing XML files
 
 export simulateFMU
 
+
+"""
+Main function to simulate a FMU
+"""
 function simulateFMU(pathToFMU::String)
     main(pathToFMU)
 end

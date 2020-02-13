@@ -1,2 +1,3 @@
 .DS_Store
 test/fmi-cross-check
+deps/build.log

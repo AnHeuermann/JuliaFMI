@@ -1,21 +1,20 @@
 # This file is part of JuliaFMI.
 # Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
 
-# This file contains functionalities to test FMI Cross-Check 
+# This file contains functionalities to test FMI Cross-Check
 # See fmi-cross-check on Github for more details: https://github.com/modelica/fmi-cross-check
 
 """
 Run tests from fmi-cross-check Git repository.
 """
 
+using JuliaFMI
 using Test
 using LibGit2
 using DataFrames
 
 thisDir = dirname(Base.source_path())
 fmiCrossCheckDir = joinpath(thisDir,"fmi-cross-check")
-
-include("$(dirname(thisDir))/src/FMUSimulator.jl")
 
 if Sys.iswindows()
     fmiCrossCheckFMUDir = joinpath(thisDir, "fmi-cross-check", "fmus", "2.0", "me", "win$(Sys.WORD_SIZE)")
@@ -155,15 +154,15 @@ function testTool(toolName::String, versions::Array{String,1}, tests, compliance
                 if test != ""
                     model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
                     if compliances[i,j]
-                        @test main(model)
+                        @test simulateFMU(model)
                     else
                         try
-                            main(model)
+                            simulateFMU(model)
                         catch
-                            @test_broken main(model)
+                            @test_broken simulateFMU(model)
                             continue
                         end
-                        @test main(model)
+                        @test simulateFMU(model)
                     end
                 end
             end

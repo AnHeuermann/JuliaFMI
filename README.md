@@ -8,9 +8,20 @@ Julia simulator for [Functional Mockup Interface (FMI)](https://fmi-standard.org
 ## Getting started
 
 ### Installing JuliaFMI
-```
+```julia
+julia> import Pkg
 julia> Pkg.clone("https://github.com/AnHeuermann/JuliaFMI.git")
 ```
+You can force rebuilding with
+```julia
+(v1.2) pkg> build JuliaFMI
+```
+
+### Run the tests
+```julia
+(v1.2) pkg> test JuliaFMI
+```
+Note: Cloning all tests from [modelica/fmi-cross-check][https://github.com/modelica/fmi-cross-check] needs a lot of time.
 
 ## FMI
 Functional Mock-up Interface (FMI) is a tool independent standard to support
