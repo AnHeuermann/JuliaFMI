@@ -3,12 +3,13 @@
 
 # This file contains simple tests to validate JuliaFMI simulations.
 
-"""
+#=
 Define tests for unit testing
-"""
+=#
+
+using JuliaFMI
 
 thisDir = dirname(Base.source_path())
-include("$(dirname(thisDir))/src/FMUSimulator.jl")
 
 
 if Sys.iswindows()
@@ -38,7 +39,7 @@ FMU generated for Modelica model:
 """
 function testHelloFMI20World()
     helloFMI20World = joinpath(fmuTestDir,"HelloFMI20World.fmu")
-    main(helloFMI20World)
+    simulateFMU(helloFMI20World)
     return true
 end
 
@@ -69,12 +70,12 @@ FMU generated from Modelica model:
 """
 function testBouncingBall()
     bouncingBall = joinpath(fmuTestDir,"BouncingBallFMI20.fmu")
-    main(bouncingBall)
+    simulateFMU(bouncingBall)
     return true
 end
 
 function testCauerLowPassAnalog()
     cauerLowPass = joinpath(fmuTestDir,"Modelica_Electrical_Analog_Examples_CauerLowPassAnalog.fmu")
-    main(cauerLowPass)
+    simulateFMU(cauerLowPass)
     return true
 end
