@@ -531,11 +531,20 @@ function writeValuesToCSV(fmu::FMU)
     write(fmu.csvFile,"\r\n")
 end
 
+# function jac_calc()
+# end
 
-function differential_equation!(du,u,fmu,t)
-    setTime!(fmu, t)
+function differential_equation!(du,u,fmu::FMU,t)
+    if typeof(t)==Float64
+        setTime!(fmu, t)
+    end
     for i=1:fmu.modelData.numberOfStates
-        fmu.simulationData.modelVariables.reals[i].value = u[i]
+        # println("Hello: ", t)
+        # println(typeof(u[i]))
+        # println(fmu.simulationData.modelVariables.reals[i].value)
+        if typeof(u[i])==Float64
+           fmu.simulationData.modelVariables.reals[i].value = u[i]
+        end
     end
     setContinuousStates!(fmu)
     getDerivatives!(fmu)
@@ -548,6 +557,7 @@ end
 Main function to simulate a FMU
 """
 function main(pathToFMU::String)
+    
 
     # Convert path to absolute path
     pathToFMU = abspath(pathToFMU)
@@ -627,15 +637,20 @@ function main(pathToFMU::String)
             for i=1:fmu.modelData.numberOfStates
                 u0[i] = fmu.simulationData.modelVariables.reals[i].value
             end
-            tspan =(fmu.simulationData.time, fmu.simulationData.time + h)
-            prob = ODEProblem(differential_equation!, u0, tspan, fmu)           #define Problem
-            sol = solve(prob, Euler(), dt = h)                                  #perform step
+            tspan = (fmu.simulationData.time, fmu.simulationData.time + h)
+            # define Problem
+            prob = ODEProblem(differential_equation!, u0, tspan, fmu)
+            # perform step
+            # sol = solve(prob, Euler(), dt=h)
+            # sol = solve(prob, ImplicitEuler(), reltol=1e-10, abstol=1e-10)
+            # sol = solve(prob, Rodas4(), reltol=1e-10, abstol=1e-10)
+            sol = solve(prob, Rodas5(), reltol=1e-10, abstol=1e-10)
             
             # Set state
             for i=1:fmu.modelData.numberOfStates
                 fmu.simulationData.modelVariables.reals[i].value = sol.u[end][i] 
             end
-            # Update time and states
+            # Update states
             setContinuousStates!(fmu)
 
             # Get event indicators and check for events
