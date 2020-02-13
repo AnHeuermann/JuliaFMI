@@ -8,8 +8,10 @@ Simulator for FMUs of
 FMI 2.0 for Model Exchange Standard
 """
 
-using Libdl         # For using dlopen, dlclose and so on
-using LightXML      # For parsing XML files
+using Libdl                 # For using dlopen, dlclose and so on
+using LightXML              # For parsing XML files
+using DifferentialEquations # For solve Problem
+using OrdinaryDiffEq
 
 export main
 
@@ -530,6 +532,18 @@ function writeValuesToCSV(fmu::FMU)
 end
 
 
+function differential_equation!(du,u,fmu,t)
+    setTime!(fmu, t)
+    for i=1:fmu.modelData.numberOfStates
+        fmu.simulationData.modelVariables.reals[i].value = u[i]
+    end
+    setContinuousStates!(fmu)
+    getDerivatives!(fmu)
+    for i=1:fmu.modelData.numberOfStates
+        du[i]=fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
+    end
+end
+
 """
 Main function to simulate a FMU
 """
@@ -587,6 +601,7 @@ function main(pathToFMU::String)
         # retrieve initial states
         getContinuousStates!(fmu)
 
+        getDerivatives!(fmu)
         # retrive solution
         getAllVariables!(fmu)       # TODO Is not returning der(x) correctly
                                     # Needs to call fmi2GetXXX of course...
@@ -595,9 +610,10 @@ function main(pathToFMU::String)
         # Iterate with explicit euler method
         k = 0
         k_max = 1000
+        u0 = zeros(fmu.modelData.numberOfStates)
         while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
             k += 1
-            getDerivatives!(fmu)
+            # getDerivatives!(fmu)
 
             # Compute next step size
             if fmu.eventInfo.nextEventTimeDefined
@@ -606,13 +622,20 @@ function main(pathToFMU::String)
                 h = min(fmu.experimentData.stepSize, fmu.experimentData.stopTime - fmu.simulationData.time)
             end
 
-            # Update time
-            setTime!(fmu, fmu.simulationData.time + h)
 
-            # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
+            # Set states and perform euler step with DifferentialEquations.jl
             for i=1:fmu.modelData.numberOfStates
-                fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
+                u0[i] = fmu.simulationData.modelVariables.reals[i].value
             end
+            tspan =(fmu.simulationData.time, fmu.simulationData.time + h)
+            prob = ODEProblem(differential_equation!, u0, tspan, fmu)           #define Problem
+            sol = solve(prob, Euler(), dt = h)                                  #perform step
+            
+            # Set state
+            for i=1:fmu.modelData.numberOfStates
+                fmu.simulationData.modelVariables.reals[i].value = sol.u[end][i] 
+            end
+            # Update time and states
             setContinuousStates!(fmu)
 
             # Get event indicators and check for events
