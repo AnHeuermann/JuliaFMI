@@ -7,6 +7,8 @@
 # Inquire Platform and Version Number of Header Files
 # ##############################################################################
 
+using Libdl
+
 """
 ```
     fmi2GetTypesPlatform(libHandle::Ptr{Nothing}) -> String

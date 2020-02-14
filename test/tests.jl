@@ -3,16 +3,11 @@
 
 # This file contains simple tests to validate JuliaFMI simulations.
 
-#=
-Define tests for unit testing
-=#
-
 using JuliaFMI
 
 include("../src/compare_CSV.jl")
 
 thisDir = dirname(Base.source_path())
-
 
 if Sys.iswindows()
     fmuTestDir = joinpath(thisDir, "winFMU")
