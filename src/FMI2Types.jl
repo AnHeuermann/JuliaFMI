@@ -16,10 +16,10 @@ end
     flat
     structured
 end
-function NamingConvention(in::String)
-    if in=="flat"
+function str2NamingConvention(inStr::String)
+    if inStr =="flat"
         return flat
-    elseif in == "structured"
+    elseif inStr == "structured"
         return structured
     else
         error("Can not convert String \"$in\" to NamingConvention.")
@@ -39,34 +39,39 @@ end
 
 # FMI2 Errors
 struct FMI2Warning <: Exception
-    msg::String
+    msg::AbstractString
 end
-FMI2Warning() = FMI2Warning("")
-Base.showerror(io::IO, e::FMI2Warning) = print(io, "fmi2Warning", isempty(e.msg) ? "" : ": ", e.msg)
+function Base.showerror(io::IO, e::FMI2Warning)
+    print(io, "fmi2Warning", isempty(e.msg) ? "" : ": ", e.msg)
+end
 
 struct FMI2Discard <: Exception
-    msg::String
+    msg::AbstractString
 end
-FMI2Discard() = FMI2Discard("")
-Base.showerror(io::IO, e::FMI2Discard) = print(io, "fmi2Discard", isempty(e.msg) ? "" : ": ", e.msg)
+function Base.showerror(io::IO, e::FMI2Discard)
+    print(io, "fmi2Discard", isempty(e.msg) ? "" : ": ", e.msg)
+end
 
 struct FMI2Error <: Exception
-    msg::String
+    msg::AbstractString
 end
-FMI2Error() = FMI2Error("")
-Base.showerror(io::IO, e::FMI2Error) = print(io, "fmi2Error", isempty(e.msg) ? "" : ": ", e.msg)
+function Base.showerror(io::IO, e::FMI2Error)
+    print(io, "fmi2Error", isempty(e.msg) ? "" : ": ", e.msg)
+end
 
 struct FMI2Fatal <: Exception
-    msg::String
+    msg::AbstractString
 end
-FMI2Fatal() = FMI2Fatal("")
-Base.showerror(io::IO, e::FMI2Fatal) = print(io, "fmi2Fatal", isempty(e.msg) ? "" : ": ", e.msg)
+function Base.showerror(io::IO, e::FMI2Fatal)
+    print(io, "fmi2Fatal", isempty(e.msg) ? "" : ": ", e.msg)
+end
 
 struct FMI2Pending <: Exception
-    msg::String
+    msg::AbstractString
 end
-FMI2Pending() = FMI2Pending("")
-Base.showerror(io::IO, e::FMI2Pending) = print(io, "fmi2Pending", isempty(e.msg) ? "" : ": ", e.msg)
+function Base.showerror(io::IO, e::FMI2Pending)
+    print(io, "fmi2Pending", isempty(e.msg) ? "" : ": ", e.msg)
+end
 
 function fmiError(fmi2Status::Union{Unsigned, Integer}, message::String="")
     if fmi2Status == 1

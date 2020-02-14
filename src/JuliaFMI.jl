@@ -5,11 +5,15 @@
 
 module JuliaFMI
 
-include("FMUSimulator.jl")
-
 # Dependecies
 using Libdl         # For using dlopen, dlclose and so on
 using LightXML      # For parsing XML files
+
+include("FMI2Types.jl")
+include("FMICallbackFunctions.jl")
+include("modelDescriptionParsing.jl")
+include("FMIWrapper.jl")
+include("FMUSimulator.jl")
 
 export simulateFMU
 

@@ -8,14 +8,6 @@ Simulator for FMUs of
 FMI 2.0 for Model Exchange Standard
 """
 
-using Libdl         # For using dlopen, dlclose and so on
-using LightXML      # For parsing XML files
-
-export main
-
-include("FMIWrapper.jl")
-include("modelDescriptionParsing.jl")
-
 # Macro to identify logger library
 macro libLogger()
     if Sys.iswindows()

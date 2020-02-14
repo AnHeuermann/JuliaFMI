@@ -357,7 +357,7 @@ function readModelDescription(pathToModelDescription::String)
         md.license = get(attributes, "license", "")
         md.generationTool = get(attributes, "generationTool", "")
         md.generationDateAndTime = get(attributes, "generationDateAndTime", "")
-        md.variableNamingConvention = NamingConvention(get(attributes, "variableNamingConvention", "flat"))
+        md.variableNamingConvention = str2NamingConvention(get(attributes, "variableNamingConvention", "flat"))
         md.numberOfEventIndicators = parse(Int, attributes["numberOfEventIndicators"])
 
         # Get attributes of tag <ModelExchange>
