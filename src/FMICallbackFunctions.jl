@@ -7,8 +7,6 @@
 Callback functions for logging and memory managment passed to FMU instance.
 """
 
-include("FMI2Types.jl")
-
 # Logger for error and information messages
 function fmi2CallbackLogger(componentEnvironment,
     instanceName, status, category,
