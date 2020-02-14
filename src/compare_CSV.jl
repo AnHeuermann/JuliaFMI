@@ -1,7 +1,11 @@
-using Trajectories
-using CSV
-using DataFrames
+# This file is part of JuliaFMI.
+# Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
 
+# This file contains tools to verify results from a csv file.
+
+import DataFrames
+import Trajectories
+import CSV
 
 """
     csvFilesEqual(csvFile1Path::String, csvFile1Path::String, epsilon::Real)
@@ -24,6 +28,7 @@ function csvFilesEqual(csvFile1Path::String, csvFile2Path::String,
     return csvCompareVars(csvData1, csvData2, checkvars, epsilon)
 end
 
+
 """
     csvFilesEqual(csvFile1Path::String, csvFile2Path::String, checkVars::Array{String,1}, epsilon::Real)
 
@@ -39,6 +44,7 @@ function csvFilesEqual(csvFile1Path::String, csvFile2Path::String,
     # Compare trajectories for specified variables
     return csvCompareVars(csvData1, csvData2, checkVars, epsilon)
 end
+
 
 """
     csvFilesEqual(csvFile1Path::String, csvFile2Path::String, checkVars::Array{String,1})
@@ -56,6 +62,7 @@ function csvFilesEqual(csvFile1Path::String, csvFile2Path::String,
     # Compare trajectories for specified variables
     return csvCompareVars(csvData1, csvData2, checkVars, epsilon)
 end
+
 
 """
     csvFilesEqual(csvFile1Path::String, csvFile2Path::String)
@@ -78,8 +85,6 @@ function csvFilesEqual(csvFile1Path::String, csvFile2Path::String)
     # Compare trajectories for specified variables
     return csvCompareVars(csvData1, csvData2, checkvars, epsilon)
 end
-
-
 
 
 """
@@ -114,10 +119,10 @@ function csvCompareVars(csvData1::DataFrames.DataFrame,
     # Compare trajectories for each specified variables
     for varName in checkVars
         print("Checking Trajectories for Variable: $varName...  ")
-        trajectory1 = trajectory(csvData1.time, csvData1[Symbol(varName)])
-        trajectory2 = trajectory(csvData2.time, csvData2[Symbol(varName)])
+        trajectory1 = Trajectories.trajectory(csvData1.time, csvData1[Symbol(varName)])
+        trajectory2 = Trajectories.trajectory(csvData2.time, csvData2[Symbol(varName)])
 
-        debug = trajectoriesEqual(trajectory1::Trajectory, trajectory2::Trajectory, epsilon)
+        debug = trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Trajectories.Trajectory, epsilon)
         #debug = @enter trajectoriesEqual(trajectory1::Trajectory, trajectory2::Trajectory, epsilon)
         if !debug
             return false
@@ -137,7 +142,7 @@ end
 Compares if two trajectories are equal by linear interpolation and comparing to
 definded error ϵ.
 """
-function trajectoriesEqual(trajectory1::Trajectory, trajectory2::Trajectory,
+function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Trajectories.Trajectory,
     epsilon::Real)
 
     time1, values1 = Pair(trajectory1)
@@ -147,7 +152,7 @@ function trajectoriesEqual(trajectory1::Trajectory, trajectory2::Trajectory,
     if intersectionTime[1] >= intersectionTime[end]
         error("Can't compare trajectories. Time intervalls not intersecting")
     end
-    
+
     #find Events and check if equal in both files
     events_1 = []
     for (i, t) in enumerate(time1)

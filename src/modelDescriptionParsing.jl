@@ -3,6 +3,8 @@
 
 # This file contains function to parse the modelDecription.xml of a FMU.
 
+using LightXML
+
 """
 Dynamicaly create symbols from array of EnumerationItemAttribute
 """
