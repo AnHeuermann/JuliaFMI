@@ -35,9 +35,15 @@ FMU generated for Modelica model:
 ```
 """
 function testHelloFMI20World()
-    helloFMI20World = joinpath(fmuTestDir,"HelloFMI20World.fmu")
-    simulateFMU(helloFMI20World)
-    return csvFilesEqual("HelloFMI20World_results.csv", "test/modelicaSource/HelloFMI20World_ref.csv")
+    @testset "Simulation" begin
+        @info("simulatin model: helloFMI20World")
+        helloFMI20World = joinpath(fmuTestDir,"HelloFMI20World.fmu")
+        @test simulateFMU(helloFMI20World)
+    end
+    @testset "Verify Results" begin
+        @info("compare results of model: HelloFMI20World")
+        @test csvFilesEqual("HelloFMI20World_results.csv", joinpath("modelicaSource", "HelloFMI20World_ref.csv"))
+    end
 end
 
 
@@ -66,13 +72,24 @@ FMU generated from Modelica model:
 ```
 """
 function testBouncingBall()
-    bouncingBall = joinpath(fmuTestDir,"BouncingBallFMI20.fmu")
-    simulateFMU(bouncingBall)
-    return csvFilesEqual("BouncingBallFMI20_results.csv", "test/modelicaSource/BouncingBallFMI20_ref.csv")
+    @testset "Simulation" begin
+        @info("simulatin model: BouncingBallFMI20")
+        bouncingBall = joinpath(fmuTestDir,"BouncingBallFMI20.fmu")
+        @test simulateFMU(bouncingBall)
+    end
+    @testset "Verify Results" begin
+        @info("compare results of model: BouncingBallFMI20")
+        @test csvFilesEqual("BouncingBallFMI20_results.csv", joinpath("modelicaSource", "BouncingBallFMI20_ref.csv"))
+    end
 end
 
 function testCauerLowPassAnalog()
-    cauerLowPass = joinpath(fmuTestDir,"Modelica_Electrical_Analog_Examples_CauerLowPassAnalog.fmu")
-    simulateFMU(cauerLowPass)
-    return true
+    @testset "Simulation" begin
+        @info("simulatin model: Modelica_Electrical_Analog_Examples_CauerLowPassAnalog")
+        cauerLowPass = joinpath(fmuTestDir,"Modelica_Electrical_Analog_Examples_CauerLowPassAnalog.fmu")
+        @test simulateFMU(cauerLowPass)
+    end
+    @testset "Verify Results" begin
+        @test_broken false
+    end
 end

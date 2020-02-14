@@ -152,23 +152,30 @@ function testTool(toolName::String, versions::Array{String,1}, tests, compliance
         @testset "$version" begin
             for (j,test) in enumerate(tests[i,:])
                 if test != ""
-                    model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
-                    if compliances[i,j]
-                        @test simulateFMU(model)
-                    else
-                        try
-                            simulateFMU(model)
-                        catch
-                            @test_broken simulateFMU(model)
-                            continue
+                    @testset "Simulation" begin
+                        model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
+                        if compliances[i,j]
+                            @info("simulatin compliante model: $model")
+                            @test simulateFMU(model)
+                        else
+                            try
+                                @info("simulate non compliante model: $model")
+                                @test simulateFMU(model)
+                            catch
+                                @warn("simulate non compiante model: $model")
+                                @test_broken false
+                                continue
+                            end
                         end
-                        @test simulateFMU(model)
                     end
-                    result = string("$test", "_results.csv")
-                    reference = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", string("$test",  "_ref.csv"))
-                    csvFilesEqual(result,reference)
+                    @testset "Verify Results" begin
+                        result = string("$test", "_results.csv")
+                        reference = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", string("$test",  "_ref.csv"))
+                        @info("Compare results of model: $model")
+                        @test csvFilesEqual(result,reference)
+                    end
                 end
             end
-        end;
+        end
     end
 end
