@@ -8,11 +8,16 @@ module JuliaFMI
 # Dependecies
 using Libdl         # For using dlopen, dlclose and so on
 using LightXML      # For parsing XML files
+using DifferentialEquations
 
 export simulateFMU
 
 function simulateFMU(pathToFMU::String)
-    main(pathToFMU)
+    main(pathToFMU, Euler())
+end
+
+function simulateFMU(pathToFMU::String, intergrator::String)
+    main(pathToFMU, intergrator)
 end
 
 end # module

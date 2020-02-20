@@ -38,7 +38,7 @@ FMU generated for Modelica model:
 """
 function testHelloFMI20World()
     helloFMI20World = joinpath(fmuTestDir,"HelloFMI20World.fmu")
-    main(helloFMI20World)
+    main(helloFMI20World, "Euler()")
     return true
 end
 
