@@ -97,8 +97,11 @@ function csvCompareVars(csvData1::DataFrames.DataFrame,
     csvData2::DataFrames.DataFrame, checkVars::Array{Symbol,1},
     epsilon::Real)
 
+    isEqual = true
+
     if  isempty(checkVars)
-        error("Cannot compare Files. They not have any same Variables.")
+        @error "Cannot compare Files. They not have any same Variables."
+        return false
     end
 
     # rename variables like der(x) to der_x_
@@ -113,26 +116,33 @@ function csvCompareVars(csvData1::DataFrames.DataFrame,
 
     # Check if comparable
     if unique(names(csvData1)) != names(csvData1)
-        error("Got duplicate names in csv file. Can't compare.")
+        @error "Got duplicate names in csv file. Can't compare."
+        return false
     end
 
     # Compare trajectories for each specified variables
     for varName in checkVars
-        print("Checking Trajectories for Variable: $varName...  ")
-        trajectory1 = Trajectories.trajectory(csvData1.time, csvData1[Symbol(varName)])
-        trajectory2 = Trajectories.trajectory(csvData2.time, csvData2[Symbol(varName)])
+        infoStr = "Checking Trajectories for Variable: $varName  \t"
+        trajectory1 = Trajectories.trajectory(csvData1.time, csvData1[!,Symbol(varName)])
+        trajectory2 = Trajectories.trajectory(csvData2.time, csvData2[!,Symbol(varName)])
 
-        debug = trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Trajectories.Trajectory, epsilon)
-        #debug = @enter trajectoriesEqual(trajectory1::Trajectory, trajectory2::Trajectory, epsilon)
-        if !debug
-            return false
+        try
+            if trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Trajectories.Trajectory, epsilon)
+                infoStr *= "true"
+            else
+                infoStr *= "false"
+                isEqual = false
+            end
+
+        catch
+            infoStr *= "false"
+            isEqual = false
         end
-        print("true\n")
+        @info infoStr
     end
 
-    # TODO unload?
-    println("Check complete.\n")
-    return true
+    @info "Check complete."
+    return isEqual
 end
 
 
@@ -188,7 +198,7 @@ function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Tr
         if intersectionTime[i] in events_1
                 continue
         end
-        if abs(interpolate(Linear(), trajectory2, t) - intersection_time_values1[i]) > epsilon
+        if abs(Trajectories.interpolate(Trajectories.Linear(), trajectory2, t) - intersection_time_values1[i]) > epsilon
             return false
         end
     end

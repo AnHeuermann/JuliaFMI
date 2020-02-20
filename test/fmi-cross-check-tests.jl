@@ -152,8 +152,8 @@ function testTool(toolName::String, versions::Array{String,1}, tests, compliance
         @testset "$version" begin
             for (j,test) in enumerate(tests[i,:])
                 if test != ""
+                    model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
                     @testset "Simulation" begin
-                        model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
                         if compliances[i,j]
                             @info("simulatin compliante model: $model")
                             @test simulateFMU(model)
