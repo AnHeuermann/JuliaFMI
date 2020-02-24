@@ -3,10 +3,6 @@
 
 # This file contains wrapper to call FMI functions.
 
-include("FMI2Types.jl")
-include("FMICallbackFunctions.jl") # Callbacks for logging and memory handling
-
-
 # ##############################################################################
 # Inquire Platform and Version Number of Header Files
 # ##############################################################################
@@ -683,13 +679,6 @@ function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{
 
     return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
         convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
-end
-
-function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
-    value::Union{Array{Int32,1}, Array{Bool,1}})
-
-    return fmi2GetBoolean!(fmu.libHandle, fmu.fmi2Component,
-        convert(Array{UInt32,1},valueReference), length(valueReference), value)
 end
 
 function fmi2GetBoolean!(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
@@ -1674,13 +1663,6 @@ function fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing},
     end
 
     return x_nominal
-end
-
-function fmi2GetNominalsOfContinuousStates!(libHandle::Ptr{Nothing},
-    fmi2Component::Ptr{Nothing}, x_nominal::Array{Float64,1}, n_nominal::Int)
-
-    return fmi2GetNominalsOfContinuousStates!(libHandle, fmi2Component,
-        x_nominal, length(x_nominal))
 end
 
 function fmi2GetNominalsOfContinuousStates!(fmu::FMU,
