@@ -19,11 +19,11 @@ include("fmi-cross-check-tests.jl")
             if Sys.islinux()
                 @test testCauerLowPassAnalog()
             end
-        end;
+        end
         @testset "With events" begin
             @test testBouncingBall()
-        end;
-    end;
+        end
+    end
 
     runFMICrossTests()
-end;
+end

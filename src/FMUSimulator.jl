@@ -546,7 +546,7 @@ end
 """
 Main function to simulate a FMU
 """
-function main(pathToFMU::String, sol_alg::String)
+function main(pathToFMU::String, sol_alg::Any)
     # Convert path to absolute path
     pathToFMU = abspath(pathToFMU)
 
@@ -629,16 +629,14 @@ function main(pathToFMU::String, sol_alg::String)
             # define Problem
             prob = ODEProblem(differential_equation!, u0, tspan, fmu)
             # perform step
-            # sol = solve(prob, sol_alg(), dt=h, reltol=1e-10, abstol=1e-10)
-            test = "solve(prob, " * sol_alg * ", reltol=1e-10, abstol=1e-10)"
-            sol = @eval $Symbol(test)
+            sol = solve(prob, sol_alg, dt=h, reltol=1e-10, abstol=1e-10)
             # sol = solve(prob, ImplicitEuler(), reltol=1e-10, abstol=1e-10)
             # sol = solve(prob, Rodas4(), reltol=1e-10, abstol=1e-10)
             # sol = solve(prob, Rodas5(), reltol=1e-10, abstol=1e-10)
             
             # Set state
             for i=1:fmu.modelData.numberOfStates
-                fmu.simulationData.modelVariables.reals[i].value = @eval $sol.u[end][i] 
+                fmu.simulationData.modelVariables.reals[i].value = sol.u[end][i] 
             end
             # Update states
             setContinuousStates!(fmu)

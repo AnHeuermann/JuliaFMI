@@ -23,10 +23,10 @@ export simulateFMU
 Main function to simulate a FMU
 """
 function simulateFMU(pathToFMU::String)
-    main(pathToFMU, Euler())
+    main(pathToFMU, Rodas4())
 end
 
-function simulateFMU(pathToFMU::String, intergrator::String)
+function simulateFMU(pathToFMU::String, intergrator::Function)
     main(pathToFMU, intergrator)
 end
 

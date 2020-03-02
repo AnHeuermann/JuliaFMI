@@ -112,11 +112,10 @@ function runFMICrossTests()
                     tests[index,1:length(testOfVersion)] = testOfVersion
                     compliances[index,1:length(testOfVersion)] = compliance
                 end
-
                 testTool(toolName, versions, tests, compliances)
-            end;
+            end
         end
-    end;
+    end
 end
 
 
