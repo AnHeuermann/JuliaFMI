@@ -14,7 +14,7 @@ using LibGit2
 using DataFrames
 
 thisDir = dirname(Base.source_path())
-fmiCrossCheckDir = joinpath(thisDir,"fmi-cross-check")
+fmiCrossCheckDir = joinpath(thisDir, "fmi-cross-check")
 
 if Sys.iswindows()
     fmiCrossCheckFMUDir = joinpath(thisDir, "fmi-cross-check", "fmus", "2.0", "me", "win$(Sys.WORD_SIZE)")
@@ -29,7 +29,6 @@ end
 
 """
     updateFMICrossTest()
-
 Clone or fetch and pull modelica/fmi-cross-check repository from
 https://github.com/modelica/fmi-cross-check.git.
 """
@@ -40,20 +39,19 @@ function updateFmiCrossCheck()
         println("Updating repository modelica/fmi-cross-check.")
         repo = GitRepo(fmiCrossCheckDir)
         LibGit2.fetch(repo)
-        LibGit2.merge!(repo, fastforward=true)
+        LibGit2.merge!(repo, fastforward = true)
 
     else
         # Clone repository
         println("Cloning repository modelica/fmi-cross-check.")
         println("This may take some minutes.")
-        LibGit2.clone("https://github.com/modelica/fmi-cross-check.git", fmiCrossCheckDir )
+        LibGit2.clone("https://github.com/modelica/fmi-cross-check.git", fmiCrossCheckDir)
         println("Cloned modelica/fmi-cross-check successfully.")
     end
 end
 
 """
     cleanFmiCrossCheck()
-
 Resets fmi-cross-check repository. All changes will get lost!
 """
 function cleanFmiCrossCheck()
@@ -69,7 +67,6 @@ end
 
 """
     runFMICrossTests()
-
 Run and test all fmi-cross-test that are supportet on current system.
 """
 function runFMICrossTests()
@@ -77,20 +74,20 @@ function runFMICrossTests()
     updateFmiCrossCheck()
 
     # Collect all tests for current system
-    df = DataFrame(toolName=String[], version=String[], test=String[], isCompliant=Bool[], pathToTestFMU=String[])
+    df = DataFrame(toolName = String[], version = String[], test = String[], isCompliant = Bool[], pathToTestFMU = String[])
 
     for (root, dirs, files) in walkdir(fmiCrossCheckFMUDir)
         for dir in dirs
-            fmuFiles = searchdir(joinpath(root,dir),r".fmu")
+            fmuFiles = searchdir(joinpath(root, dir), r".fmu")
             if (length(fmuFiles) > 0)
-                pathToFmu = joinpath(joinpath(root,dir),first(fmuFiles))
+                pathToFmu = joinpath(joinpath(root, dir), first(fmuFiles))
 
                 toolName = basename(dirname(dirname(dirname((pathToFmu)))))
                 version = basename(dirname(dirname(pathToFmu)))
                 test = basename(first(splitext(pathToFmu)))
 
                 # Check if test is compliant with latest fmi-cross-check rules
-                isCompliant = !isfile(joinpath(dirname(pathToFmu),"notCompliantWithLatestRules"))
+                isCompliant = !isfile(joinpath(dirname(pathToFmu), "notCompliantWithLatestRules"))
 
                 # Add test to data frame
                 push!(df, (toolName, version, test, isCompliant, pathToFmu))
@@ -102,38 +99,36 @@ function runFMICrossTests()
     @testset "FMI Cross Check" begin
         for toolName in unique(df.toolName)
             @testset "$toolName" begin
-                versions = unique(df[df.toolName.==toolName,:].version)
+                versions = unique(df[df.toolName .== toolName,:].version)
                 tests = Array{String}(undef, length(versions), 10)          # ToDo: Replace 10 with maximum number of tests of all versions for current tool
-                tests[:,:].=""
+                tests[:,:] .= ""
                 compliances = Array{Bool}(undef, length(versions), 10)
-                for (index,version) in enumerate(versions)
-                    testOfVersion = df[(df.toolName.==toolName) .& (df.version.==version),:].test
-                    compliance = df[(df.toolName.==toolName) .& (df.version.==version),:].isCompliant
+                for (index, version) in enumerate(versions)
+                    testOfVersion = df[(df.toolName .== toolName) .& (df.version .== version),:].test
+                    compliance = df[(df.toolName .== toolName) .& (df.version .== version),:].isCompliant
                     tests[index,1:length(testOfVersion)] = testOfVersion
                     compliances[index,1:length(testOfVersion)] = compliance
                 end
+
                 testTool(toolName, versions, tests, compliances)
-            end
+            end;
         end
-    end
+    end;
 end
 
 
 """
     searchdir(path,key)
-
 Searches path for expression key and returns found files and folders.
 """
-function searchdir(path,key)
-    return filter(x->occursin(key,x), readdir(path))
+function searchdir(path, key)
+    return filter(x->occursin(key, x), readdir(path))
 end
 
 
 """
     function testTool(toolName::String, versions::Array{String,1}, tests)
-
 Heler function to test for generic tools, versions and test cases.
-
 #Example
 ```julia
 julia> toolName = "CATIA"
@@ -147,24 +142,36 @@ julia> testTool(toolName, versions, tests, compliances)
 """
 function testTool(toolName::String, versions::Array{String,1}, tests, compliances)
 
-    for (i,version) in enumerate(versions)
+    for (i, version) in enumerate(versions)
         @testset "$version" begin
-            for (j,test) in enumerate(tests[i,:])
+            for (j, test) in enumerate(tests[i,:])
                 if test != ""
                     model = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", "$test.fmu")
-                    if compliances[i,j]
-                        @test simulateFMU(model)
-                    else
-                        try
-                            simulateFMU(model)
-                        catch
-                            @test_broken simulateFMU(model)
-                            continue
+                    @testset "$test" begin
+                        @testset "Simulation" begin
+                            if compliances[i,j]
+                                @info("simulatin compliante model: $model")
+                                @test simulateFMU(model)
+                            else
+                                try
+                                    @info("simulate non compliante model: $model")
+                                    @test simulateFMU(model)
+                                catch
+                                    @warn("simulate non compiante model: $model")
+                                    @test_broken false
+                                    continue
+                                end
+                            end
                         end
-                        @test simulateFMU(model)
+                        @testset "Verify Results" begin
+                            result = string("$test", "_results.csv")
+                            reference = joinpath(fmiCrossCheckFMUDir, "$toolName", "$version", "$test", string("$test",  "_ref.csv"))
+                            @info("Compare results of model: $model")
+                            @test csvFilesEqual(result, reference)
+                        end
                     end
                 end
             end
-        end;
+        end
     end
 end
