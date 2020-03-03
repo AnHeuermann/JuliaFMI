@@ -3,9 +3,6 @@
 
 # This file contains functions for event handling.
 
-include("FMI2Types.jl")
-include("FMICallbackFunctions.jl") # Callbacks for logging and memory handling
-
 
 """
     handleEvent!(fmu::FMU)

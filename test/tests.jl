@@ -5,8 +5,6 @@
 
 using JuliaFMI
 
-include("../src/compare_CSV.jl")
-
 thisDir = dirname(Base.source_path())
 
 if Sys.iswindows()
