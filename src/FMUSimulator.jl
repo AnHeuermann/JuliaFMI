@@ -578,10 +578,10 @@ function main(pathToFMU::String)
 
         # retrieve initial states
         getContinuousStates!(fmu)
+        getDerivatives!(fmu)
 
         # retrive solution
-        getAllVariables!(fmu)       # TODO Is not returning der(x) correctly
-                                    # Needs to call fmi2GetXXX of course...
+        getAllVariables!(fmu)
         writeValuesToCSV(fmu)
 
         # Iterate with explicit euler method
