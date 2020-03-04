@@ -4,6 +4,7 @@
 # This file contains simple tests to validate JuliaFMI simulations.
 
 using JuliaFMI
+using Test
 
 thisDir = dirname(Base.source_path())
 
@@ -40,7 +41,7 @@ function testHelloFMI20World()
     end
     @testset "Verify Results" begin
         @info("compare results of model: HelloFMI20World")
-        @test csvFilesEqual("HelloFMI20World_results.csv", joinpath("modelicaSource", "HelloFMI20World_ref.csv"))
+        @test csvFilesEqual("HelloFMI20World_results.csv", joinpath(thisDir, "modelicaSource", "HelloFMI20World_ref.csv"))
     end
 end
 
@@ -77,7 +78,7 @@ function testBouncingBall()
     end
     @testset "Verify Results" begin
         @info("compare results of model: BouncingBallFMI20")
-        @test csvFilesEqual("BouncingBallFMI20_results.csv", joinpath("modelicaSource", "BouncingBallFMI20_ref.csv"))
+        @test csvFilesEqual("BouncingBallFMI20_results.csv", joinpath(thisDir, "modelicaSource", "BouncingBallFMI20_ref.csv"))
     end
 end
 

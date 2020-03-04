@@ -100,17 +100,17 @@ function csvCompareVars(csvData1::DataFrames.DataFrame,
     isEqual = true
 
     if  isempty(checkVars)
-        @error "Cannot compare Files. They not have any same Variables."
+        @error "Can't compare Files, they don't have the same Variables."
         return false
     end
 
     # rename variables like der(x) to der_x_
     newNames = [replaceNames!(names(csvData1)), replaceNames!(names(csvData2))]
     for (i, t) in enumerate(newNames[1])
-        rename!(csvData1, names(csvData1)[i] => newNames[1][i])
+        DataFrames.rename!(csvData1, names(csvData1)[i] => newNames[1][i])
     end
     for (i, t) in enumerate(newNames[2])
-        rename!(csvData2, names(csvData2)[i] => newNames[2][i])
+        DataFrames.rename!(csvData2, names(csvData2)[i] => newNames[2][i])
     end
     checkVars = replaceNames!(checkVars)
 
@@ -120,6 +120,12 @@ function csvCompareVars(csvData1::DataFrames.DataFrame,
         return false
     end
 
+    # Check events
+    (eventsEqual, events_1, events_2) = collectAndCheckEvents(csvData1.time, csvData2.time, epsilon)
+    if !eventsEqual
+        isEqual = false
+    end
+
     # Compare trajectories for each specified variables
     for varName in checkVars
         infoStr = "Checking Trajectories for Variable: $varName  \t"
@@ -127,15 +133,17 @@ function csvCompareVars(csvData1::DataFrames.DataFrame,
         trajectory2 = Trajectories.trajectory(csvData2.time, csvData2[!,Symbol(varName)])
 
         try
-            if trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Trajectories.Trajectory, epsilon)
+            (isEqual, maxError) = trajectoriesEqual(trajectory1, trajectory2, events_1, events_2, epsilon)
+            if isEqual
                 infoStr *= "true"
             else
-                infoStr *= "false"
-                isEqual = false
+                infoStr *= "false\n"
+                infoStr *= "Absolut error: $maxError"
             end
 
-        catch
+        catch e
             infoStr *= "false"
+            rethrow(e)
             isEqual = false
         end
         @info infoStr
@@ -152,8 +160,9 @@ end
 Compares if two trajectories are equal by linear interpolation and comparing to
 definded error ϵ.
 """
-function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Trajectories.Trajectory,
-    epsilon::Real)
+function trajectoriesEqual(trajectory1::Trajectories.Trajectory,
+    trajectory2::Trajectories.Trajectory, events_1::Array{Float64,1},
+    evemts_2::Array{Float64,1}, epsilon::Float64)::Tuple{Bool,Float64}
 
     time1, values1 = Pair(trajectory1)
     time2, values2 = Pair(trajectory2)
@@ -163,8 +172,38 @@ function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Tr
         error("Can't compare trajectories. Time intervalls not intersecting")
     end
 
-    #find Events and check if equal in both files
-    events_1 = []
+    # filter values
+    intersection_time_values1 = values1[findall(x->x == intersectionTime[1], time1)[1]:findall(x->x == intersectionTime[end], time1)[1]]
+    for (i, t) in enumerate(intersectionTime)
+        if intersectionTime[i] in events_1
+                continue
+        end
+        absError = abs(Trajectories.interpolate(Trajectories.Linear(), trajectory2, t) - intersection_time_values1[i])
+        if  absError > epsilon
+            return (false, absError)
+        end
+    end
+
+    return (true, -1.0)
+end
+
+
+"""
+Find the events from two time series and compare them.
+
+A event is defied as two equal time points directly after each other in a
+serie of time values.
+Check if they have the same number of events and if the events are around the
+same time point.
+"""
+function collectAndCheckEvents(time1::CSV.Column{Float64,Float64}, time2::CSV.Column{Float64,Float64},
+     epsilon::Float64)::Tuple{Bool, Array{Float64,1} ,Array{Float64,1}}
+
+    events_1 = Float64[]
+    events_2 = Float64[]
+    eventsEqual = true
+
+    # Find events from time1 and time2
     for (i, t) in enumerate(time1)
         if i != 1
             if time1[i - 1] == time1[i]
@@ -173,7 +212,6 @@ function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Tr
         end
     end
     events_1 = unique(events_1)
-    events_2 = []
     for (i, t) in enumerate(time2)
         if i != 1
             if time2[i - 1] == time2[i]
@@ -183,27 +221,20 @@ function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Tr
     end
     events_2 = unique(events_2)
 
+    # Check if events are equal
     if length(events_1) != length(events_2)
-        error("Files have not the same number of events")
-    elseif length(events_1) != 0
-        for i in length(events_1)
-            if abs(events_1[i] - events_2[i]) > epsilon
-                error("Events have not the same timestamps.")
+        @info "Files have not the same number of events"
+        eventsEqual = false
+    else
+        for (i,event) in enumerate(events_1)
+            if abs(event - events_2[i]) > epsilon
+                @info "Events have not the same timestamps."
+                eventsEqual = false
             end
         end
     end
-    # filter values
-    intersection_time_values1 = values1[findall(x->x == intersectionTime[1], time1)[1]:findall(x->x == intersectionTime[end], time1)[1]]
-    for (i, t) in enumerate(intersectionTime)
-        if intersectionTime[i] in events_1
-                continue
-        end
-        if abs(Trajectories.interpolate(Trajectories.Linear(), trajectory2, t) - intersection_time_values1[i]) > epsilon
-            return false
-        end
-    end
 
-    return true
+    return (eventsEqual, events_1, events_2)
 end
 
 

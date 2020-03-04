@@ -483,6 +483,7 @@ function main(pathToFMU::String)
         # Set up experiment
         fmi2SetupExperiment(fmu, true, fmu.experimentData.tolerance, fmu.experimentData.startTime, true, fmu.experimentData.stopTime)
         nextTime = fmu.experimentData.stopTime
+        nextTimeEventDefined = false
 
         # Set initial variables with intial="exact" or "approx"
 
@@ -521,14 +522,13 @@ function main(pathToFMU::String)
 
             # Set states and perform euler step (x_k+1 = x_k + d/dx x_k*h)
             for i=1:fmu.modelData.numberOfStates
-                #fmu.simulationData.modelVariables.oldStates[i] = fmu.simulationData.modelVariables.reals[i].value # TODO What is this needed for?
                 fmu.simulationData.modelVariables.reals[i].value = fmu.simulationData.modelVariables.reals[i].value + h*fmu.simulationData.modelVariables.reals[i+fmu.modelData.numberOfStates].value
             end
             setContinuousStates!(fmu)
             getDerivatives!(fmu)
 
             # Detect time events
-            timeEvent = abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize       # TODO add handling of time events
+            timeEvent = nextTimeEventDefined && (abs(fmu.simulationData.time - nextTime) <= fmu.experimentData.stepSize)        # TODO add handling of time events
 
             # Detect events
             eventFound = findEventSimple(fmu)
