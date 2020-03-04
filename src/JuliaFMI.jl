@@ -9,6 +9,7 @@ include("FMI2Types.jl")
 include("FMICallbackFunctions.jl")
 include("modelDescriptionParsing.jl")
 include("FMIWrapper.jl")
+include("EventHandling.jl")
 include("FMUSimulator.jl")
 include("compare_CSV.jl")
 
