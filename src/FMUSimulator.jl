@@ -208,8 +208,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.eventInfo = EventInfo()
 
     # Open result and log file
-    fmu.csvFile = open("$(fmu.modelName)_results.csv", "w")
-    fmu.logFile = open("$(fmu.modelName).log", "w")
+    fmu.csvFile = open("results/$(fmu.modelName)_results.csv", "w")
+    fmu.logFile = open("results/$(fmu.modelName).log", "w")
 
     # load shared library with FMU
     # TODO export DL_LOAD_PATH="/usr/lib/x86_64-linux-gnu" on unix systems
@@ -609,6 +609,7 @@ function main(pathToFMU::String, sol_alg::Any)
         k = 0
         k_max = 1000
         u0 = zeros(fmu.modelData.numberOfStates)
+        du0 = zeros(fmu.modelData.numberOfStates)
         while (fmu.simulationData.time < fmu.experimentData.stopTime) && (k < k_max)
             k += 1
             # getDerivatives!(fmu)
@@ -624,19 +625,18 @@ function main(pathToFMU::String, sol_alg::Any)
             # Set states and perform euler step with DifferentialEquations.jl
             for i=1:fmu.modelData.numberOfStates
                 u0[i] = fmu.simulationData.modelVariables.reals[i].value
+                du0[i] = fmu.simulationData.modelVariables.reals[i + fmu.modelData.numberOfStates].value
             end
             tspan = (fmu.simulationData.time, fmu.simulationData.time + h)
+            p_is = fmu
             # define Problem
-            prob = ODEProblem(differential_equation!, u0, tspan, fmu)
+            prob = DAEProblem(differential_equation!, du0, u0, tspan, p_is)
             # perform step
             sol = solve(prob, sol_alg, dt=h, reltol=1e-10, abstol=1e-10)
-            # sol = solve(prob, ImplicitEuler(), reltol=1e-10, abstol=1e-10)
-            # sol = solve(prob, Rodas4(), reltol=1e-10, abstol=1e-10)
-            # sol = solve(prob, Rodas5(), reltol=1e-10, abstol=1e-10)
-            
+
             # Set state
             for i=1:fmu.modelData.numberOfStates
-                fmu.simulationData.modelVariables.reals[i].value = sol.u[end][i] 
+                fmu.simulationData.modelVariables.reals[i].value = sol.u[end][i]
             end
             # Update states
             setContinuousStates!(fmu)

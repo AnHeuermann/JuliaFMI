@@ -111,9 +111,9 @@ function runFMICrossTests()
                 end
 
                 testTool(toolName, versions, tests, compliances)
-            end;
+            end
         end
-    end;
+    end
 end
 
 

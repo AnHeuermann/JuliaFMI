@@ -6,9 +6,10 @@
 module JuliaFMI
 
 # Dependecies
-using Libdl         # For using dlopen, dlclose and so on
-using LightXML      # For parsing XML files
-using DifferentialEquations
+using Libdl                     # For using dlopen, dlclose and so on
+using LightXML                  # For parsing XML files
+using DifferentialEquations     # For Integrators
+using Sundials                  # For IDA Solver
 
 include("FMI2Types.jl")
 include("FMICallbackFunctions.jl")
@@ -23,7 +24,7 @@ export simulateFMU
 Main function to simulate a FMU
 """
 function simulateFMU(pathToFMU::String)
-    main(pathToFMU, Rodas4())
+    main(pathToFMU, IDA())
 end
 
 function simulateFMU(pathToFMU::String, intergrator::Function)
