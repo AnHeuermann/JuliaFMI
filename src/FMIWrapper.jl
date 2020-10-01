@@ -89,7 +89,7 @@ modelExchange, fmu.fmuGUID, fmu.fmuResourceLocation, fmu.callbackFunctions, fals
 ```
 """
 function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
-    fmuType::fmuType, fmuGUID::String, fmuResourceLocation::String,
+    fmuType::JuliaFMI.fmuType, fmuGUID::String, fmuResourceLocation::String,
     functions::CallbackFunctions, visible::Bool=true, loggingOn::Bool=false)
 
     func = dlsym(libHandle, :fmi2Instantiate)
@@ -1043,7 +1043,7 @@ end
 function fmi2SetBoolean(fmu::FMU, valueReference::Union{Array{UInt32,1}, Array{UInt64,1}, Array{Int,1}},
     numberOfValueReference::Int, value::Array{Int32,1})
 
-    fmiSGetBoolean(fmu.libHandle, fmu.fmi2Component,
+    fmi2SetBoolean(fmu.libHandle, fmu.fmi2Component,
         convert(Array{UInt32,1},valueReference), numberOfValueReference, value)
 end
 

@@ -155,8 +155,10 @@ definded error ϵ.
 function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Trajectories.Trajectory,
     epsilon::Real)
 
-    time1, values1 = Pair(trajectory1)
-    time2, values2 = Pair(trajectory2)
+    time1 = trajectory1.t
+    values1 = trajectory1.x
+    time2 = trajectory2.t
+    values2 = trajectory2.x
 
     intersectionTime = vcat(max(time1[1], time2[1]), time1[max(time1[1], time2[1]) .< time1 .< min(time1[end], time2[end])], min(time1[end], time2[end]))
     if intersectionTime[1] >= intersectionTime[end]
@@ -186,7 +188,7 @@ function trajectoriesEqual(trajectory1::Trajectories.Trajectory, trajectory2::Tr
     if length(events_1) != length(events_2)
         error("Files have not the same number of events")
     elseif length(events_1) != 0
-        for i in length(events_1)
+        for i in 1:lastindex(events_1)
             if abs(events_1[i] - events_2[i]) > epsilon
                 error("Events have not the same timestamps.")
             end

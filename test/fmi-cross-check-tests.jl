@@ -133,7 +133,7 @@ end
 """
     function testTool(toolName::String, versions::Array{String,1}, tests)
 
-Heler function to test for generic tools, versions and test cases.
+Helper function to test for generic tools, versions and test cases.
 
 #Example
 ```julia

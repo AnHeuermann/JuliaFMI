@@ -1,6 +1,6 @@
 name = "JuliaFMI"
 uuid = "32430f9e-34ed-11e9-2e7d-ffb2dc54003b"
-authors = ["AnHeuermann <andreas.heuermann@fh-bielefeld.de>", "JustusBachmann <justus.bachmann@uni-bielefeld.de>"]
+authors = ["AnHeuermann <andreas.heuermann@liu.se>", "JustusBachmann <justus.bachmann@uni-bielefeld.de>"]
 version = "0.0.1"
 
 [deps]

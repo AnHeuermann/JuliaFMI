@@ -1,7 +1,7 @@
 # This file is part of JuliaFMI.
 # Licensed under MIT: https://github.com/AnHeuermann/JuliaFMI/blob/master/LICENSE.txt
 
-# This file contains does the unit testing.
+# This file contains the unit testing.
 
 """
 Run all tests for simulating FMU's

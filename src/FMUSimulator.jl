@@ -632,12 +632,12 @@ function main(pathToFMU::String)
         # Free FMU
         # ToDo: Fix function
         #fmi2FreeInstance(fmu)
+    catch
+        rethrow()
     finally
         # Unload FMU
         println("Unload FMU")
         unloadFMU(fmu)
-    catch
-        rethrow()
     end
 
     return true

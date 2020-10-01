@@ -25,7 +25,7 @@ Returns Array{SimpleType} with typeDefinitions
 function getTypeDefinitions(xroot::XMLElement)
 
     elementTypeDefinitions = find_element(xroot, "TypeDefinitions")
-    if elementTypeDefinitions != nothing
+    if elementTypeDefinitions !== nothing
         # Loop over tag <SimpleType name="name" description="description">
         num_typeDefinitions = 0
         for element in child_elements(elementTypeDefinitions)
@@ -116,7 +116,7 @@ Returns Array{LogCategory} with logCategories if found, otherwise nothing.
 function getLogCategories(xroot::XMLElement)
 
     elementLogCategories = find_element(xroot, "LogCategories")
-    if elementLogCategories != nothing
+    if elementLogCategories !== nothing
         numCategories = 0
         for element in child_elements(elementLogCategories)
             numCategories += 1
@@ -147,30 +147,30 @@ Returns ExperimentData.
 """
 function getDefaultExperiment(xroot::XMLElement)
     elementDefaultExperiment = find_element(xroot, "DefaultExperiment")
-    if elementDefaultExperiment != nothing
+    if elementDefaultExperiment !== nothing
         startTime = attribute(elementDefaultExperiment, "startTime"; required=false)
-        if startTime != nothing
+        if startTime !== nothing
             startTime = parse(Float64, startTime)
         else
             startTime = 0
         end
 
         stopTime = attribute(elementDefaultExperiment, "stopTime"; required=false)
-        if startTime != nothing
+        if startTime !== nothing
             stopTime = parse(Float64, stopTime)
         else
             stopTime = startTime+1
         end
 
         tolerance = attribute(elementDefaultExperiment, "tolerance"; required=false)
-        if tolerance != nothing
+        if tolerance !== nothing
             tolerance = parse(Float64, tolerance)
         else
             tolerance = 1e-6
         end
 
         stepSize = attribute(elementDefaultExperiment, "stepSize"; required=false)
-        if stepSize != nothing
+        if stepSize !== nothing
             stepSize = parse(Float64, stepSize)
         else
             stepSize = 2e-3
@@ -369,7 +369,7 @@ function readModelDescription(pathToModelDescription::String)
         elementCoSimulation = find_element(xroot, "CoSimulation")
 
         try
-            if elementModelExchange != nothing
+            if elementModelExchange !== nothing
                 md.isModelExchange = true
                 md.modelIdentifier = attribute(elementModelExchange, "modelIdentifier"; required=true)
             else
@@ -378,7 +378,7 @@ function readModelDescription(pathToModelDescription::String)
                     FMU does not support ModelExchange.")
             end
 
-            if elementCoSimulation != nothing
+            if elementCoSimulation !== nothing
                 md.isCoSimulation = true
                 md.modelIdentifier = attribute(elementModelExchange, "modelIdentifier"; required=true)
             else
