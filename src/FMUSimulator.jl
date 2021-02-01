@@ -284,7 +284,7 @@ function my_unzip(target::String, destinationDir::String)
 
     try
         #use unzip
-        run(Cmd(`unzip -qo $target`, dir = destinationDir))
+        run(`unzip -qo $target -d $destinationDir`)
         println("Extracted FMU to $destinationDir")
     catch
         try
