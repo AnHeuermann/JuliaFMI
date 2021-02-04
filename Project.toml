@@ -14,6 +14,9 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 Trajectories = "2c80a279-213e-54d7-a557-e9a14725db56"
 
+[compat]
+CSV = "0.6"
+
 [extras]
 LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
