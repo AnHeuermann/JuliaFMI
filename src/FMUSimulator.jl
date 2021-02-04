@@ -166,7 +166,7 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.modelDescription = readModelDescription(joinpath(fmu.tmpFolder, "modelDescription.xml"))
     fmu.modelName = fmu.modelDescription.modelName
     fmu.instanceName = fmu.modelDescription.modelName
-    if (fmu.modelDescription.isModelExchange)
+    if (fmu.modelDescription.isModelExchange == true)
         fmu.fmuType = modelExchange
     else
         error("FMU does not support modelExchange")
@@ -564,9 +564,9 @@ function main(pathToFMU::String)
 
         # Event iteration
         fmu.eventInfo.newDiscreteStatesNeeded = true
-        while fmu.eventInfo.newDiscreteStatesNeeded
+        while fmu.eventInfo.newDiscreteStatesNeeded == true
             fmi2NewDiscreteStates!(fmu)
-            if fmu.eventInfo.terminateSimulation
+            if fmu.eventInfo.terminateSimulation == true
                 error("FMU was terminated in Event at time $(fmu.simulationData.time)")
             end
         end
@@ -592,7 +592,7 @@ function main(pathToFMU::String)
             getDerivatives!(fmu)
 
             # Compute next step size
-            if fmu.eventInfo.nextEventTimeDefined
+            if fmu.eventInfo.nextEventTimeDefined == true
                 h = min(fmu.experimentData.stepSize, fmu.eventInfo.nextEventTime - fmu.simulationData.time)
             else
                 h = min(fmu.experimentData.stepSize, fmu.experimentData.stopTime - fmu.simulationData.time)
