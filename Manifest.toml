@@ -25,7 +25,7 @@ version = "1.0.6+5"
 deps = ["CategoricalArrays", "DataFrames", "Dates", "FilePathsBase", "Mmap", "Parsers", "PooledArrays", "Tables", "Unicode", "WeakRefStrings"]
 git-tree-sha1 = "8fe77a5478781d59a9ba17f0ac47dda2be5f8ae7"
 repo-rev = "0.6"
-repo-url = "git@github.com:JuliaData/CSV.jl.git"
+repo-url = "https://github.com/JuliaData/CSV.jl.git"
 uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 version = "0.6.1"
 
