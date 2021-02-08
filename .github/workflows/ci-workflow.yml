@@ -34,7 +34,7 @@ jobs:
       # Temporary work-around to avoid ERROR: AssertionError: sourcepath !== nothing
       - name: "Pkg registry"
         run: |
-             julia --project -e 'using Pkg; Pkg.Registry.add("General")'
+             julia --project -e 'using Pkg.Registry; Registry.add("General")'
 
       - name: "Build package"
         uses: julia-actions/julia-buildpkg@latest
