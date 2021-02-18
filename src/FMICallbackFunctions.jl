@@ -9,8 +9,7 @@ Callback functions for logging and memory managment passed to FMU instance.
 
 # Logger for error and information messages
 function fmi2CallbackLogger(componentEnvironment,
-    instanceName, status, category,
-    message...)
+    instanceName, status, category, message...)
 
     try
         println("[", string(status), "][", unsafe_string(category), "] ", unsafe_string(message))
@@ -55,3 +54,18 @@ function fmi2StatusToString(status::Real)
         "Unknown fmi2Status"
     end
 end
+
+# Macro to identify logger library
+macro libLogger()
+    if Sys.iswindows()
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "win64", "logger.dll")
+    elseif Sys.islinux()
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "unix64", "logger.so")
+    elseif Sys.isapple()
+        return joinpath(dirname(dirname(Base.source_path())),"bin", "darwin64", "logger.dylib")
+    else
+        error("OS not supported")
+    end
+end
+
+

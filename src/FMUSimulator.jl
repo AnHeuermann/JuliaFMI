@@ -8,19 +8,6 @@ Simulator for FMUs of
 FMI 2.0 for Model Exchange Standard
 """
 
-# Macro to identify logger library
-macro libLogger()
-    if Sys.iswindows()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "win64", "logger.dll")
-    elseif Sys.islinux()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "unix64", "logger.so")
-    elseif Sys.isapple()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "darwin64", "logger.dylib")
-    else
-        error("OS not supported")
-    end
-end
-
 
 """
     function createEmptyModelData(modelDescription::ModelDescription)
@@ -235,7 +222,7 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     # Fill FMU with remaining data
     fmu.fmuResourceLocation = joinpath(string("file:///", fmu.tmpFolder), "resources")
     fmu.fmuGUID = fmu.modelDescription.guid
-    fmu.fmiCallbackFunctions = fmi2Functions
+    fmu.functions = fmi2Functions
 
     fmu.modelState = modelUninstantiated
 
@@ -632,8 +619,8 @@ function main(pathToFMU::String)
         # Free FMU
         # ToDo: Fix function
         #fmi2FreeInstance(fmu)
-    catch
-        rethrow()
+    catch e
+        rethrow(e)
     finally
         # Unload FMU
         println("Unload FMU")

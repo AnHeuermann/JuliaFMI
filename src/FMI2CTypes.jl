@@ -3,31 +3,23 @@
 
 # This file contains type definitions and constructores for those types.
 
-# The Spec talks about Booleans, which are implemented in c as
-#   `#DEFINE FALSE = 0`
-#   `#DEFINE TRUE = 1`
-# Which are 32 bit integers. Hence the c code expects Booleans to take up 32 bits of space
-# The Julia codebase so far has implemented Bools (1 bit integers) and uses them as such.
-# Swap out Bools for Cints, but make it obvious so it can be refactored later; TODO!
-const CintThatIsActuallyABoolean = Cint
-
-"""
-Declaration of FMI2 Types
-"""
-
-
 using CBinding
 
 """
 Declaration of FMI2 Types
 """
 
-@cenum FMUType {
+@cenum CFMUType {
     modelExchange,
     coSimulation
 }
 
-@cenum ModelState {
+@cenum CNamingConvention {
+    flat,
+    structured
+}
+
+@cenum CModelState {
     modelUninstantiated,
     modelInstantiated,
     modelInitializationMode,
@@ -42,7 +34,7 @@ Declaration of FMI2 Types
     modelFatal
 }
 
-@cenum FMI2Status {
+@cenum  CFMI2Status {
     fmi2OK,
     fmi2Warning,
     fmi2Discard,
@@ -52,7 +44,13 @@ Declaration of FMI2 Types
 }
 
 
-@ctypedef DynamicPointersCTypedef @cstruct DynamicPointersC {
+
+
+
+
+
+
+@ctypedef DynamicPointersCType @cstruct CDynamicPointers {
     realValues::Ptr{Nothing} # Vector of Float64
     instanceName::Ptr{Nothing} # Vector of Char
     eventIndicators::Ptr{Nothing} # Vector of CintThatIsActuallyABoolean
@@ -60,9 +58,9 @@ Declaration of FMI2 Types
     # is checked for logging.
     categoriesToLogLookup::Ptr{Nothing} # Vector of CintThatIsActuallyABoolean
 }
-DynamicPointersC() = DynamicPointersC(zero)
+DynamicPointers() = DynamicPointers(zero)
 
-@ctypedef CallbackFunctionsCTypedef @cstruct CallbackFunctionsC {
+@ctypedef CCallbackFunctions @cstruct CCallbackFunctions {
     logger::Ptr{Nothing}
     allocateMemory::Ptr{Nothing}
     freeMemory::Ptr{Nothing}
@@ -70,9 +68,9 @@ DynamicPointersC() = DynamicPointersC(zero)
 
     componentEnvironment::Ptr{Nothing}
 }
-CallbackFunctionsC() = CallbackFunctionsC(zero)
+CCallbackFunctions() = CCallbackFunctions(zero)
 
-@ctypedef EventInfoCTypedef @cstruct EventInfoC {
+@ctypedef EventInfoCType @cstruct CEventInfo {
     newDiscreteStatesNeeded::Cint
     terminateSimulation::Cint
     nominalsOfContinuousStatesChanged::Cint
@@ -80,8 +78,8 @@ CallbackFunctionsC() = CallbackFunctionsC(zero)
     nextEventTimeDefined::Cint
     nextEventTime::Cdouble
 }
-function EventInfoC()
-  ceventinfo = EventInfoC(zero)
+function CEventInfo()
+  ceventinfo = CEventInfo(zero)
   ceventinfo.newDiscreteStatesNeeded = 1
   ceventinfo.terminateSimulation = 1
   ceventinfo.nominalsOfContinuousStatesChanged = 1
@@ -92,11 +90,11 @@ function EventInfoC()
 end
 
 
-## Forward reference to FMI2Component
+## Forward reference to FMUComponent
 ## Pointed to by the fmi2Component void pointer.
-@ctypedef FMI2ComponentCType @cstruct FMI2Component {
+@ctypedef FMUComponentCType @cstruct FMUComponent {
     #const fmi2CallbackFunctions* functions;
-    functions::Cconst{Ptr{CallbackFunctionsC}}
+    functions::Cconst{Ptr{CCallbackFunctions}}
 
     # A structure containing all the pointers
     # that point to dynamically allocated memory.
@@ -118,7 +116,6 @@ end
         categoriesToLogLookup::Ptr{Cint} # Vector of CintThatIsActuallyABoolean
     }
 
-    #= Commented out in the c
     # A list of real values of size NUMBER_REALS
     #fmi2Real* realValues;
     realValues::Ptr{Cdouble}
@@ -128,14 +125,13 @@ end
     instanceName::Ptr{Cchar}
     #fmi2Boolean* eventIndicators; // Indicates whether an event has occured.
     eventIndicators::Ptr{Cint}
-    =#
 
     #fmi2EventInfo eventInfo;
-    eventInfo::EventInfoC
+    eventInfo::CEventInfo
 
     # Caches the status of the do step routines
     #fmi2Status doStepStatus;
-    doStepStatus::FMI2Status;
+    doStepStatus::CFMI2Status;
 
     #fmi2Real time;
     time::Cdouble
@@ -158,15 +154,11 @@ end
     loggingOnFlag::Cint
 
     #enum FMUMode state;
-    state::ModelState
+    state::CModelState
     #fmi2Type type;
-    type::FMUType
+    type::CFMUType
 }
 
-@cenum NamingConvention {
-    flat
-    structured
-}
 function str2NamingConvention(inStr::String)
     if inStr =="flat"
         return flat
@@ -176,39 +168,6 @@ function str2NamingConvention(inStr::String)
         error("Can not convert String \"$in\" to NamingConvention.")
     end
 end
-
-#@enum ModelState begin
-#    modelUninstantiated
-#    modelInstantiated
-#    modelInitializationMode
-#    modelEventMode
-#    modelContinuousTimeMode
-#    modelStepComplete
-#    modelStepProgress
-#    modelStepFailed
-#    modelStepCancelled
-#    modelTerminated
-#    modelError
-#    modelFatal
-#end
-
-# FMU_MODE_START_END = 1,
-# FMU_MODE_INSTANTIATED = 1 << 1,
-# FMU_MODE_INITIALISED = 1 << 2,
-#
-# // Model Exchange
-# FMU_MODE_EVENT = 1 << 3,
-# FMU_MODE_CONTINUOUS_TIME = 1 << 4,
-#
-# // Cosim
-# FMU_MODE_STEP_COMPLETE = 1 << 5,
-# FMU_MODE_STEP_PROGRESS = 1 << 6,
-# FMU_MODE_STEP_FAILED = 1 << 7,
-# FMU_MODE_STEP_CANCELLED = 1 << 8,
-#
-# FMU_MODE_TERMINATED = 1 << 9,
-# FMU_MODE_ERROR = 1 << 10,
-# FMU_MODE_FATAL = 1 << 11,
 
 # FMI2 Errors
 struct FMI2Warning <: Exception
@@ -272,19 +231,6 @@ mutable struct CallbackFunctions
 
     componentEnvironment::Ptr{Nothing}
 end
-
-function CallbackFunctions()
-    fmi2CallbacLogger_Cfunc = dlsym(dlopen(@libLogger), :logger)
-    fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, (Csize_t, Csize_t))
-    fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
-    return CallbackFunctions(
-        fmi2CallbacLogger_Cfunc,            # Logger in C
-        fmi2AllocateMemory_funcWrapC,
-        fmi2FreeMemory_funcWrapC,
-        C_NULL,
-        C_NULL)
-end
-
 
 mutable struct fmi2ComponentEnvironment
     logFile::String     # if not empty location of file to write logger messages
@@ -747,47 +693,6 @@ struct DynamicPointers
 
     DynamicPointers() = new()
 end
-
-
-#mutable struct FMI2Component
-#    # Pointers to functions in the sim environment that we can call from the
-#    # fmu environment.
-#    functions::Ptr{Nothing}
-#
-#    # A structure containing all the pointers
-#    # that point to dynamically allocated memory.
-#    dynPtrs::DynamicPointers
-#
-#    # A list of real values of size NUMBER_REALS
-#    #fmi2Real* realValues; # this is commented out in the c
-#
-#    # A null terminated char string of the instance name
-#    #fmi2Char* instanceName; # this is commented out in the c
-#    #fmi2Boolean* eventIndicators; // Indicates whether an event has occured. # this is commented out in the c
-#
-#    eventInfo::EventInfo
-#
-#    # Caches the status of the do step routines
-#    doStepStatus::FMI2Warning
-#
-#    time::Float64
-#    startTime::Float64
-#
-#    stopTime::Float64
-#    stopTimeDefinedFlag::CintThatIsActuallyABoolean
-#
-#    tolerance::Float64
-#    toleranceDefinedFlag::CintThatIsActuallyABoolean
-#
-#    # A flag that when true, updates the variables. e.g calculates all the derivatives
-#    computeVarFlag::CintThatIsActuallyABoolean
-#    loggingOnFlag::CintThatIsActuallyABoolean
-#
-#    state::ModelState
-#    type::FMUType
-#
-#    FMI2Component() = new()
-#end
 
 
 """
