@@ -102,9 +102,6 @@ function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
       Ref(functions), visible, loggingOn
       )
 
-    component = unsafe_load(convert(Ptr{FMI2Component}, fmi2Component))
-    @show component.type, fmuType
-
     if fmi2Component == C_NULL
         throw(FMI2Error("Could not instantiate FMU"))
     end
@@ -430,6 +427,52 @@ function fmi2Reset(fmu::FMU)
 
     return fmi2Reset(fmu.libHandle, fmu.fmi2Component)
 end
+
+
+"""
+    fmi2DoStep(libhandle::Ptr{Nothing},component::Ptr,currentCommunicationPoint::Cdouble,communicationStepSize::Cdouble,fmi2Boolean::Integer,noSetFMUStatePriorToCurrentPoint::Integer=true)
+
+description
+
+...
+# Arguments
+- `libhandle::Ptr{Nothing}`:
+- `component::Ptr`:
+- `currentCommunicationPoint::Cdouble`:
+- `communicationStepSize::Cdouble`:
+- `fmi2Boolean::Integer`:
+- `noSetFMUStatePriorToCurrentPoint::Integer=true`:
+...
+
+# Example
+'''
+'''
+"""
+function fmi2DoStep(libHandle::Ptr{Nothing}, component::Ptr, currentCommunicationPoint::Cdouble,
+    communicationStepSize::Cdouble, noSetFMUStatePriorToCurrentPoint::Integer=true)
+
+    func = dlsym(libHandle, :fmi2DoStep)
+
+    status = ccall(
+        func,
+        Cuint,
+        (FMI2Component, Cdouble, Cdouble, Cint),
+        unsafe_load(convert(Ptr{FMI2Component}, component)), currentCommunicationPoint,
+        communicationStepSize, noSetFMUStatePriorToCurrentPoint)
+
+    if status != 0
+        throw(fmiError(status))
+    end
+
+    return status
+end
+function fmi2DoStep(fmu::FMU, currentCommunicationPoint::Cdouble,
+    communicationStepSize::Cdouble, noSetFMUStatePriorToCurrentPoint::Integer=true)
+    return fmi2DoStep(fmu.libHandle, fmu.fmi2Component, currentCommunicationPoint, communicationStepSize,
+        noSetFMUStatePriorToCurrentPoint)
+end
+
+
 
 
 # ##############################################################################

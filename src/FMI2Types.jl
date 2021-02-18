@@ -11,204 +11,12 @@
 # Swap out Bools for Cints, but make it obvious so it can be refactored later; TODO!
 const CintThatIsActuallyABoolean = Cint
 
-"""
-Declaration of FMI2 Types
-"""
-
-
-using CBinding
+"Allow users to configure their own fmi2Component2Environment"
+abstract type AbstractFMI2ComponentEnvironment <: Function end
 
 """
 Declaration of FMI2 Types
 """
-
-@cenum FMUType {
-    modelExchange,
-    coSimulation
-}
-
-@cenum ModelState {
-    modelUninstantiated,
-    modelInstantiated,
-    modelInitializationMode,
-    modelEventMode,
-    modelContinuousTimeMode,
-    modelStepComplete,
-    modelStepProgress,
-    modelStepFailed,
-    modelStepCancelled,
-    modelTerminated,
-    modelError,
-    modelFatal
-}
-
-@cenum FMI2Status {
-    fmi2OK,
-    fmi2Warning,
-    fmi2Discard,
-    fmi2Error,
-    fmi2Fatal,
-    fmi2Pending
-}
-
-
-@ctypedef DynamicPointersCTypedef @cstruct DynamicPointersC {
-    realValues::Ptr{Nothing} # Vector of Float64
-    instanceName::Ptr{Nothing} # Vector of Char
-    eventIndicators::Ptr{Nothing} # Vector of CintThatIsActuallyABoolean
-    # A lookup that checks if the inputted index (corresponding to a category)
-    # is checked for logging.
-    categoriesToLogLookup::Ptr{Nothing} # Vector of CintThatIsActuallyABoolean
-}
-DynamicPointersC() = DynamicPointersC(zero)
-
-@ctypedef CallbackFunctionsCTypedef @cstruct CallbackFunctionsC {
-    logger::Ptr{Nothing}
-    allocateMemory::Ptr{Nothing}
-    freeMemory::Ptr{Nothing}
-    stepFinished::Ptr{Nothing}
-
-    componentEnvironment::Ptr{Nothing}
-}
-CallbackFunctionsC() = CallbackFunctionsC(zero)
-
-@ctypedef EventInfoCTypedef @cstruct EventInfoC {
-    newDiscreteStatesNeeded::Cint
-    terminateSimulation::Cint
-    nominalsOfContinuousStatesChanged::Cint
-    valuesOfContinuousStatesChanged::Cint
-    nextEventTimeDefined::Cint
-    nextEventTime::Cdouble
-}
-function EventInfoC()
-  ceventinfo = EventInfoC(zero)
-  ceventinfo.newDiscreteStatesNeeded = 1
-  ceventinfo.terminateSimulation = 1
-  ceventinfo.nominalsOfContinuousStatesChanged = 1
-  ceventinfo.valuesOfContinuousStatesChanged = 1
-  ceventinfo.nextEventTimeDefined = 1
-  ceventinfo.nextEventTime = -1.0
-  return ceventinfo
-end
-
-
-## Forward reference to FMI2Component
-## Pointed to by the fmi2Component void pointer.
-@ctypedef FMI2ComponentCType @cstruct FMI2Component {
-    #const fmi2CallbackFunctions* functions;
-    functions::Cconst{Ptr{CallbackFunctionsC}}
-
-    # A structure containing all the pointers
-    # that point to dynamically allocated memory.
-    # struct {
-    #     fmi2Real* realValues;
-    #     fmi2Char* instanceName;
-    #     fmi2Boolean* eventIndicators;
-    #     # A lookup that checks if the inputted index (corresponding to a category)
-    #     # is checked for logging.
-    #     fmi2Boolean* categoriesToLogLookup;
-    # } dynPtrs;
-
-   (dynPtrs)::@cstruct {
-        realValues::Ptr{Cdouble} # Vector of Float64
-        instanceName::Ptr{Cchar} # Vector of Char
-        eventIndicators::Ptr{Cint} # Vector of CintThatIsActuallyABoolean
-        # A lookup that checks if the inputted index (corresponding to a category)
-        # is checked for logging.
-        categoriesToLogLookup::Ptr{Cint} # Vector of CintThatIsActuallyABoolean
-    }
-
-    #= Commented out in the c
-    # A list of real values of size NUMBER_REALS
-    #fmi2Real* realValues;
-    realValues::Ptr{Cdouble}
-
-    # A null terminated char string of the instance name
-    #fmi2Char* instanceName;
-    instanceName::Ptr{Cchar}
-    #fmi2Boolean* eventIndicators; // Indicates whether an event has occured.
-    eventIndicators::Ptr{Cint}
-    =#
-
-    #fmi2EventInfo eventInfo;
-    eventInfo::EventInfoC
-
-    # Caches the status of the do step routines
-    #fmi2Status doStepStatus;
-    doStepStatus::FMI2Status;
-
-    #fmi2Real time;
-    time::Cdouble
-    #fmi2Real startTime;
-    startTime::Cdouble
-
-    #fmi2Real stopTime;
-    stopTime::Cdouble
-    #fmi2Boolean stopTimeDefinedFlag;
-    stopTimeDefinedFlag::Cint
-
-    #fmi2Real tolerance;
-    tolerance::Cdouble
-    #fmi2Boolean toleranceDefinedFlag;
-    toleranceDefinedFlag::Cint
-
-    #fmi2Boolean computeVarFlag; # A flag that when true, updates the variables. e.g calculates all the derivatives
-    computeVarFlag::Cint
-    #fmi2Boolean loggingOnFlag;
-    loggingOnFlag::Cint
-
-    #enum FMUMode state;
-    state::ModelState
-    #fmi2Type type;
-    type::FMUType
-}
-
-@cenum NamingConvention {
-    flat
-    structured
-}
-function str2NamingConvention(inStr::String)
-    if inStr =="flat"
-        return flat
-    elseif inStr == "structured"
-        return structured
-    else
-        error("Can not convert String \"$in\" to NamingConvention.")
-    end
-end
-
-#@enum ModelState begin
-#    modelUninstantiated
-#    modelInstantiated
-#    modelInitializationMode
-#    modelEventMode
-#    modelContinuousTimeMode
-#    modelStepComplete
-#    modelStepProgress
-#    modelStepFailed
-#    modelStepCancelled
-#    modelTerminated
-#    modelError
-#    modelFatal
-#end
-
-# FMU_MODE_START_END = 1,
-# FMU_MODE_INSTANTIATED = 1 << 1,
-# FMU_MODE_INITIALISED = 1 << 2,
-#
-# // Model Exchange
-# FMU_MODE_EVENT = 1 << 3,
-# FMU_MODE_CONTINUOUS_TIME = 1 << 4,
-#
-# // Cosim
-# FMU_MODE_STEP_COMPLETE = 1 << 5,
-# FMU_MODE_STEP_PROGRESS = 1 << 6,
-# FMU_MODE_STEP_FAILED = 1 << 7,
-# FMU_MODE_STEP_CANCELLED = 1 << 8,
-#
-# FMU_MODE_TERMINATED = 1 << 9,
-# FMU_MODE_ERROR = 1 << 10,
-# FMU_MODE_FATAL = 1 << 11,
 
 # FMI2 Errors
 struct FMI2Warning <: Exception
@@ -262,37 +70,14 @@ function fmiError(fmi2Status::Union{Unsigned, Integer}, message::String="")
     end
 end
 
-
-# Pointers to functions provided by the environment to be used by the FMU
-mutable struct CallbackFunctions
-    logger::Ptr{Nothing}
-    allocateMemory::Ptr{Nothing}
-    freeMemory::Ptr{Nothing}
-    stepFinished::Ptr{Nothing}
-
-    componentEnvironment::Ptr{Nothing}
-end
-
-function CallbackFunctions()
-    fmi2CallbacLogger_Cfunc = dlsym(dlopen(@libLogger), :logger)
-    fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, (Csize_t, Csize_t))
-    fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
-    return CallbackFunctions(
-        fmi2CallbacLogger_Cfunc,            # Logger in C
-        fmi2AllocateMemory_funcWrapC,
-        fmi2FreeMemory_funcWrapC,
-        C_NULL,
-        C_NULL)
-end
-
-
-mutable struct fmi2ComponentEnvironment
+mutable struct fmi2ComponentEnvironment <: AbstractFMI2ComponentEnvironment
     logFile::String     # if not empty location of file to write logger messages
                         # defaults to stderr ??
     numWarnings::Int
     numErrors::Int
     numFatals::Int
 end
+fmi2ComponentEnvironment() = ("", 0, 0, 0) # not sure if this is sensible
 
 mutable struct RealVariable
     value::Float64
@@ -725,69 +510,6 @@ mutable struct ModelDescription
         return md
     end
 end
-
-
-mutable struct EventInfo
-    newDiscreteStatesNeeded::CintThatIsActuallyABoolean
-    terminateSimulation::CintThatIsActuallyABoolean
-    nominalsOfContinuousStatesChanged::CintThatIsActuallyABoolean
-    valuesOfContinuousStatesChanged::CintThatIsActuallyABoolean
-    nextEventTimeDefined::CintThatIsActuallyABoolean
-    nextEventTime::Float64
-
-    EventInfo() = new(true, true, true, true, true, -1.0)
-end
-struct DynamicPointers
-    realValues::Ptr{Cdouble} # Vector of Float64
-    instanceName::Ptr{Cchar} # Vector of Char
-    eventIndicators::Ptr{Cint} # Vector of CintThatIsActuallyABoolean
-    # A lookup that checks if the inputted index (corresponding to a category)
-    # is checked for logging.
-    categoriesToLogLookup::Ptr{Cint} # Vector of CintThatIsActuallyABoolean
-
-    DynamicPointers() = new()
-end
-
-
-#mutable struct FMI2Component
-#    # Pointers to functions in the sim environment that we can call from the
-#    # fmu environment.
-#    functions::Ptr{Nothing}
-#
-#    # A structure containing all the pointers
-#    # that point to dynamically allocated memory.
-#    dynPtrs::DynamicPointers
-#
-#    # A list of real values of size NUMBER_REALS
-#    #fmi2Real* realValues; # this is commented out in the c
-#
-#    # A null terminated char string of the instance name
-#    #fmi2Char* instanceName; # this is commented out in the c
-#    #fmi2Boolean* eventIndicators; // Indicates whether an event has occured. # this is commented out in the c
-#
-#    eventInfo::EventInfo
-#
-#    # Caches the status of the do step routines
-#    doStepStatus::FMI2Warning
-#
-#    time::Float64
-#    startTime::Float64
-#
-#    stopTime::Float64
-#    stopTimeDefinedFlag::CintThatIsActuallyABoolean
-#
-#    tolerance::Float64
-#    toleranceDefinedFlag::CintThatIsActuallyABoolean
-#
-#    # A flag that when true, updates the variables. e.g calculates all the derivatives
-#    computeVarFlag::CintThatIsActuallyABoolean
-#    loggingOnFlag::CintThatIsActuallyABoolean
-#
-#    state::ModelState
-#    type::FMUType
-#
-#    FMI2Component() = new()
-#end
 
 
 """

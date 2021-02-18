@@ -125,7 +125,9 @@ Unzips an FMU and returns handle to dynamic library containing FMI functions.
 julia> fmu=loadFMU("path/to/fmu/helloWorld.fmu")
 ```
 """
-function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)
+function loadFMU(pathToFMU::String; fmi2Functions=CallbackFunctions(), fmuResourceLocation=nothing,
+    useTemp::Bool=false, overWriteTemp::Bool=true)
+
     # Create uninitialized FMU
     fmu=FMU()
 
@@ -155,6 +157,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.instanceName = fmu.modelDescription.modelName
     if (fmu.modelDescription.isModelExchange == true)
         fmu.fmuType = modelExchange
+    elseif (fmu.modelDescription.isCoSimulation == true)
+        fmu.fmuType = coSimulation
     else
         error("FMU does not support modelExchange")
     end
@@ -211,16 +215,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, (Csize_t, Csize_t))
     fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
 
-    fmi2Functions = CallbackFunctions(
-        #fmi2CallbacLogger_funcWrapC,       # Logger in Julia
-        fmi2CallbacLogger_Cfunc,            # Logger in C
-        fmi2AllocateMemory_funcWrapC,
-        fmi2FreeMemory_funcWrapC,
-        C_NULL,
-        C_NULL)
-
     # Fill FMU with remaining data
-    fmu.fmuResourceLocation = joinpath(string("file:///", fmu.tmpFolder), "resources")
+    fmu.fmuResourceLocation = isnothing(fmuResourceLocation) ? joinpath(fmu.tmpFolder, "resources") : fmuResourceLocation
     fmu.fmuGUID = fmu.modelDescription.guid
     fmu.functions = fmi2Functions
 
