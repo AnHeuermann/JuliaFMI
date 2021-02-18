@@ -20,7 +20,7 @@ Optional args:
 """
 function fmi2SetCallbackFunctions!(fmu::FMU; stepFinished::T=nothing,
    componentEnvironment::T=nothing) where {T<:Union{Nothing,Function}, U<:Union{Nothing,AbstractFMI2ComponentEnvironment}}
-   fmi2SetCallbackFunctions!(fmu.functions, stepFinished=stepFinished, componentEnvironment=componentEnvironment)
+   fmi2SetCallbackFunctions!(fmu.fmi2CallbackFunctions, stepFinished=stepFinished, componentEnvironment=componentEnvironment)
 end
 
 """

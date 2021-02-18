@@ -543,7 +543,7 @@ mutable struct FMU
     libLoggerHandle::Ptr{Nothing}
     tmpFolder::String
     fmuType::FMUType
-    functions::CallbackFunctions
+    fmi2CallbackFunctions::CallbackFunctions
     fmi2Component::Ptr{Nothing}
 
     # Constructor

@@ -218,7 +218,7 @@ function loadFMU(pathToFMU::String; fmi2Functions=CallbackFunctions(), fmuResour
     # Fill FMU with remaining data
     fmu.fmuResourceLocation = isnothing(fmuResourceLocation) ? joinpath(fmu.tmpFolder, "resources") : fmuResourceLocation
     fmu.fmuGUID = fmu.modelDescription.guid
-    fmu.functions = fmi2Functions
+    fmu.fmi2CallbackFunctions = fmi2Functions
 
     fmu.modelState = modelUninstantiated
 

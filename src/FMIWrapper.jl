@@ -112,7 +112,7 @@ end
 function fmi2Instantiate!(fmu::FMU; visible::Bool=true, loggingOn::Bool=false)
     fmu.fmi2Component = fmi2Instantiate(fmu.libHandle, fmu.instanceName,
         fmu.fmuType, fmu.fmuGUID, fmu.fmuResourceLocation,
-        fmu.functions,  visible, loggingOn)
+        fmu.fmi2CallbackFunctions,  visible, loggingOn)
 
     fmu.modelState = modelInstantiated
 
