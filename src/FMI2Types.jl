@@ -3,6 +3,14 @@
 
 # This file contains type definitions and constructores for those types.
 
+# The Spec talks about Booleans, which are implemented in c as
+#   `#DEFINE FALSE = 0`
+#   `#DEFINE TRUE = 1`
+# Which are 32 bit integers. Hence the c code expects Booleans to take up 32 bits of space
+# The Julia codebase so far has implemented Bools (1 bit integers) and uses them as such.
+# Swap out Bools for Cints, but make it obvious so it can be refactored later; TODO!
+const CintThatIsActuallyABoolean = Cint
+
 """
 Declaration of FMI2 Types
 """
@@ -141,7 +149,7 @@ mutable struct IntVariable
 end
 
 mutable struct BoolVariable
-    value::Bool
+    value::CintThatIsActuallyABoolean
     valueReference::UInt
     name::String
 
@@ -253,11 +261,11 @@ struct RealAttributes
     quantity::String
     unit::String            # TODO: make types for Units and functions
     displayUnit::String     #       for unit conversion
-    relativeQuantity::Bool
+    relativeQuantity::CintThatIsActuallyABoolean
     min::Real
     max::Real
     nominal::Real
-    unbound::Bool
+    unbound::CintThatIsActuallyABoolean
 
     # Inner constructor
     RealAttributes() = new()
@@ -331,7 +339,7 @@ struct RealProperties
     variableAttributes::RealAttributes
     start::Float64
     derivative::UInt
-    reinit::Bool
+    reinit::CintThatIsActuallyABoolean
 
     # Inner constructors
     RealProperties() = new()
@@ -361,7 +369,7 @@ end
 
 struct BooleanProperties
     declaredType::String
-    start::Bool
+    start::CintThatIsActuallyABoolean
 
     BooleanProperties() = new()
     BooleanProperties(declaredType, start) = new(declaredType, start)
@@ -395,7 +403,7 @@ struct ScalarVariable
     causality::String           # TODO: Change to enumeration??
     variability::String         # TODO: Change to enumeration??
     initial::String             # TODO: Change to enumeration??
-    canHandleMultipleSetPerTimelnstant::Bool
+    canHandleMultipleSetPerTimelnstant::CintThatIsActuallyABoolean
 
     # Type specific properties of ScalarVariable
     typeSpecificProperties::Union{RealProperties, IntegerProperties, BooleanProperties, StringProperties, EnumerationProperties}
@@ -509,9 +517,9 @@ mutable struct ModelDescription
     numberOfEventIndicators::Int
 
     # Model exchange
-    isModelExchange::Bool
+    isModelExchange::CintThatIsActuallyABoolean
     # Co-Simulation
-    isCoSimulation::Bool
+    isCoSimulation::CintThatIsActuallyABoolean
     modelIdentifier::String
 
     # Unit definitions
@@ -542,11 +550,11 @@ end
 
 
 mutable struct EventInfo
-    newDiscreteStatesNeeded::Bool
-    terminateSimulation::Bool
-    nominalsOfContinuousStatesChanged::Bool
-    valuesOfContinuousStatesChanged::Bool
-    nextEventTimeDefined::Bool
+    newDiscreteStatesNeeded::CintThatIsActuallyABoolean
+    terminateSimulation::CintThatIsActuallyABoolean
+    nominalsOfContinuousStatesChanged::CintThatIsActuallyABoolean
+    valuesOfContinuousStatesChanged::CintThatIsActuallyABoolean
+    nextEventTimeDefined::CintThatIsActuallyABoolean
     nextEventTime::Float64
 
     EventInfo() = new(true, true, true, true, true, -1.0)

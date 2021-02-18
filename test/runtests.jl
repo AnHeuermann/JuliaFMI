@@ -12,6 +12,7 @@ using Test
 include("tests.jl")
 include("fmi-cross-check-tests.jl")
 
+
 @testset "All Tests" begin
     @testset "Simulating simple FMUs" begin
         @testset "Without events" begin
