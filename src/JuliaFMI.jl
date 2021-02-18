@@ -5,8 +5,8 @@
 
 module JuliaFMI
 
-include("FMI2Types.jl")
 include("FMICallbackFunctions.jl")
+include("FMI2Types.jl")
 include("modelDescriptionParsing.jl")
 include("FMIWrapper.jl")
 include("FMUSimulator.jl")

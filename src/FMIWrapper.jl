@@ -71,7 +71,7 @@ end
 ```
     fmi2Instantiate(fmu::FMU)
 
-    fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String, fmuType::fmuType, fmuGUID::String, fmuResourceLocation::String, functions::CallbackFunctions, visible::Bool, loggingOn::Bool)
+    fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String, fmuType::FMUType, fmuGUID::String, fmuResourceLocation::String, functions::CallbackFunctions, visible::Bool, loggingOn::Bool)
 ```
 Returns a new instance of a FMU component.
 If a null pointer is returned instantiation failed.
@@ -89,7 +89,7 @@ modelExchange, fmu.fmuGUID, fmu.fmuResourceLocation, fmu.callbackFunctions, fals
 ```
 """
 function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
-    fmuType::JuliaFMI.fmuType, fmuGUID::String, fmuResourceLocation::String,
+    fmuType::JuliaFMI.FMUType, fmuGUID::String, fmuResourceLocation::String,
     functions::CallbackFunctions, visible::Bool=true, loggingOn::Bool=false)
 
     func = dlsym(libHandle, :fmi2Instantiate)
@@ -97,11 +97,13 @@ function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
     fmi2Component = ccall(
       func,
       Ptr{Cvoid},
-      (Cstring, Cint, Cstring, Cstring,
-      Ref{CallbackFunctions}, Cint, Cint),
+      (Cstring, Cint, Cstring, Cstring, Ptr{CallbackFunctions}, Cint, Cint),
       instanceName, fmuType, fmuGUID, fmuResourceLocation,
       Ref(functions), visible, loggingOn
       )
+
+    component = unsafe_load(convert(Ptr{FMI2Component}, fmi2Component))
+    @show component.type, fmuType
 
     if fmi2Component == C_NULL
         throw(FMI2Error("Could not instantiate FMU"))
@@ -110,10 +112,12 @@ function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
     return fmi2Component
 end
 
-function fmi2Instantiate!(fmu::FMU)
+function fmi2Instantiate!(fmu::FMU; visible::Bool=true, loggingOn::Bool=false)
     fmu.fmi2Component = fmi2Instantiate(fmu.libHandle, fmu.instanceName,
         fmu.fmuType, fmu.fmuGUID, fmu.fmuResourceLocation,
-        fmu.fmiCallbackFunctions, true, true)
+        fmu.functions,  visible, loggingOn)
+
+    fmu.modelState = modelInstantiated
 
     return fmu
 end
