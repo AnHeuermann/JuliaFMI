@@ -115,7 +115,7 @@ end
 function fmi2Instantiate!(fmu::FMU; visible::Bool=true, loggingOn::Bool=false)
     fmu.fmi2Component = fmi2Instantiate(fmu.libHandle, fmu.instanceName,
         fmu.fmuType, fmu.fmuGUID, fmu.fmuResourceLocation,
-        fmu.functions,  visible, loggingOn)
+        fmu.fmi2CallbackFunctions,  visible, loggingOn)
 
     fmu.modelState = modelInstantiated
 
@@ -430,6 +430,52 @@ function fmi2Reset(fmu::FMU)
 
     return fmi2Reset(fmu.libHandle, fmu.fmi2Component)
 end
+
+
+"""
+    fmi2DoStep(libhandle::Ptr{Nothing},component::Ptr,currentCommunicationPoint::Cdouble,communicationStepSize::Cdouble,fmi2Boolean::Integer,noSetFMUStatePriorToCurrentPoint::Integer=true)
+
+description
+
+...
+# Arguments
+- `libhandle::Ptr{Nothing}`:
+- `component::Ptr`:
+- `currentCommunicationPoint::Cdouble`:
+- `communicationStepSize::Cdouble`:
+- `fmi2Boolean::Integer`:
+- `noSetFMUStatePriorToCurrentPoint::Integer=true`:
+...
+
+# Example
+'''
+'''
+"""
+function fmi2DoStep(libHandle::Ptr{Nothing}, component::Ptr, currentCommunicationPoint::Cdouble,
+    communicationStepSize::Cdouble, noSetFMUStatePriorToCurrentPoint::Integer=true)
+
+    func = dlsym(libHandle, :fmi2DoStep)
+
+    status = ccall(
+        func,
+        Cuint,
+        (FMI2Component, Cdouble, Cdouble, Cint),
+        unsafe_load(convert(Ptr{FMI2Component}, component)), currentCommunicationPoint,
+        communicationStepSize, noSetFMUStatePriorToCurrentPoint)
+
+    if status != 0
+        throw(fmiError(status))
+    end
+
+    return status
+end
+function fmi2DoStep(fmu::FMU, currentCommunicationPoint::Cdouble,
+    communicationStepSize::Cdouble, noSetFMUStatePriorToCurrentPoint::Integer=true)
+    return fmi2DoStep(fmu.libHandle, fmu.fmi2Component, currentCommunicationPoint, communicationStepSize,
+        noSetFMUStatePriorToCurrentPoint)
+end
+
+
 
 
 # ##############################################################################
