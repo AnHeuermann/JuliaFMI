@@ -43,10 +43,10 @@ Declaration of FMI2 Types
 @ctypedef DynamicPointersCTypedef @cstruct DynamicPointers {
     realValues::Ptr{Nothing} # Vector of Float64
     instanceName::Ptr{Nothing} # Vector of Char
-    eventIndicators::Ptr{Nothing} # Vector of CintThatIsActuallyABoolean
+    eventIndicators::Ptr{Nothing} # Vector of Cint
     # A lookup that checks if the inputted index (corresponding to a category)
     # is checked for logging.
-    categoriesToLogLookup::Ptr{Nothing} # Vector of CintThatIsActuallyABoolean
+    categoriesToLogLookup::Ptr{Nothing} # Vector of Cint
 }
 DynamicPointers() = DynamicPointers(zero)
 
@@ -110,13 +110,13 @@ end
 
     functions::Cconst{Ptr{CallbackFunctions}}
 
-   (dynPtrs)::@cstruct {
+    (dynPtrs)::@cstruct {
         realValues::Ptr{Cdouble} # Vector of Float64
         instanceName::Ptr{Cchar} # Vector of Char
-        eventIndicators::Ptr{Cint} # Vector of CintThatIsActuallyABoolean
+        eventIndicators::Ptr{Cint} # Vector of Cint
         # A lookup that checks if the inputted index (corresponding to a category)
         # is checked for logging.
-        categoriesToLogLookup::Ptr{Cint} # Vector of CintThatIsActuallyABoolean
+        categoriesToLogLookup::Ptr{Cint} # Vector of Cint
     }
 
     eventInfo::EventInfo

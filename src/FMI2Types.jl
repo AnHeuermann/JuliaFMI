@@ -9,7 +9,7 @@
 # Which are 32 bit integers. Hence the c code expects Booleans to take up 32 bits of space
 # The Julia codebase so far has implemented Bools (1 bit integers) and uses them as such.
 # Swap out Bools for Cints, but make it obvious so it can be refactored later; TODO!
-const CintThatIsActuallyABoolean = Cint
+const CintThatIsUsedAsABoolean = Cint
 
 "Allow users to configure their own fmi2Component2Environment"
 abstract type AbstractFMI2ComponentEnvironment <: Function end
@@ -112,7 +112,7 @@ mutable struct IntVariable
 end
 
 mutable struct BoolVariable
-    value::CintThatIsActuallyABoolean
+    value::CintThatIsUsedAsABoolean
     valueReference::UInt
     name::String
 
@@ -224,11 +224,11 @@ struct RealAttributes
     quantity::String
     unit::String            # TODO: make types for Units and functions
     displayUnit::String     #       for unit conversion
-    relativeQuantity::CintThatIsActuallyABoolean
+    relativeQuantity::CintThatIsUsedAsABoolean
     min::Real
     max::Real
     nominal::Real
-    unbound::CintThatIsActuallyABoolean
+    unbound::CintThatIsUsedAsABoolean
 
     # Inner constructor
     RealAttributes() = new()
@@ -302,7 +302,7 @@ struct RealProperties
     variableAttributes::RealAttributes
     start::Float64
     derivative::UInt
-    reinit::CintThatIsActuallyABoolean
+    reinit::CintThatIsUsedAsABoolean
 
     # Inner constructors
     RealProperties() = new()
@@ -332,7 +332,7 @@ end
 
 struct BooleanProperties
     declaredType::String
-    start::CintThatIsActuallyABoolean
+    start::CintThatIsUsedAsABoolean
 
     BooleanProperties() = new()
     BooleanProperties(declaredType, start) = new(declaredType, start)
@@ -366,7 +366,7 @@ struct ScalarVariable
     causality::String           # TODO: Change to enumeration??
     variability::String         # TODO: Change to enumeration??
     initial::String             # TODO: Change to enumeration??
-    canHandleMultipleSetPerTimelnstant::CintThatIsActuallyABoolean
+    canHandleMultipleSetPerTimelnstant::CintThatIsUsedAsABoolean
 
     # Type specific properties of ScalarVariable
     typeSpecificProperties::Union{RealProperties, IntegerProperties, BooleanProperties, StringProperties, EnumerationProperties}
@@ -480,9 +480,9 @@ mutable struct ModelDescription
     numberOfEventIndicators::Int
 
     # Model exchange
-    isModelExchange::CintThatIsActuallyABoolean
+    isModelExchange::CintThatIsUsedAsABoolean
     # Co-Simulation
-    isCoSimulation::CintThatIsActuallyABoolean
+    isCoSimulation::CintThatIsUsedAsABoolean
     modelIdentifier::String
 
     # Unit definitions
