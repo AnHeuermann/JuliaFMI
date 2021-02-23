@@ -18,6 +18,7 @@ Trajectories = "2c80a279-213e-54d7-a557-e9a14725db56"
 CSV = "0.6"
 
 [extras]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
