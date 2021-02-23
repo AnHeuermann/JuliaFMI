@@ -7,8 +7,9 @@
 Run all tests for simulating FMU's
 """
 
-using Test
+using JuliaFMI, Test
 
+include("compare_CSV.jl")
 include("tests.jl")
 include("fmi-cross-check-tests.jl")
 

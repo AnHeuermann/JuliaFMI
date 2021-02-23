@@ -6,7 +6,6 @@ version = "0.0.1"
 [deps]
 CBinding = "d43a6710-96b8-4a2d-833c-c424785e5374"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
 Libdl = "8f399da3-3557-5675-b5ff-fb832c97cbdb"
 LightXML = "9c8b4983-aa76-5018-a973-4c85ecc9e179"
@@ -18,6 +17,7 @@ Trajectories = "2c80a279-213e-54d7-a557-e9a14725db56"
 CSV = "0.6"
 
 [extras]
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 LibGit2 = "76f85450-5226-5b5a-8eaa-529ad045b433"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
