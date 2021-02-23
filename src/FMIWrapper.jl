@@ -97,13 +97,10 @@ function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
     fmi2Component = ccall(
       func,
       Ptr{Cvoid},
-      (Cstring, Cint, Cstring, Cstring, Ptr{CallbackFunctions}, Cint, Cint),
+      (Cstring, Cint, Cstring, Cstring, Ptr{Cvoid}, Cint, Cint),
       instanceName, fmuType, fmuGUID, fmuResourceLocation,
       Ref(functions), visible, loggingOn
       )
-
-    component = unsafe_load(convert(Ptr{FMI2Component}, fmi2Component))
-    @show component.type, fmuType
 
     if fmi2Component == C_NULL
         throw(FMI2Error("Could not instantiate FMU"))
