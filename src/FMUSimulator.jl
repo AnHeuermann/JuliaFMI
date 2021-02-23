@@ -209,14 +209,13 @@ function loadFMU(pathToFMU::String; fmi2Functions=CallbackFunctions(), fmuResour
 
     # Load hared library with logger function
     fmu.libLoggerHandle = dlopen(@libLogger)
-    fmi2CallbacLogger_Cfunc = dlsym(fmu.libLoggerHandle, :logger)
-    # fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
-    #    (Ptr{Cvoid}, Cstring, Cuint, Cstring, Tuple{Cstring}))
-    fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, (Csize_t, Csize_t))
-    fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
 
-    # Fill FMU with remaining data
-    fmu.fmuResourceLocation = isnothing(fmuResourceLocation) ? joinpath(fmu.tmpFolder, "resources") : fmuResourceLocation
+    # Fill FMU with remaining data # TODO correct paths for portibility
+    fmu.fmuResourceLocation = if isnothing(fmuResourceLocation)
+        joinpath(string("file:///", fmu.tmpFolder), "resources")
+    else
+        fmuResourceLocation
+    end
     fmu.fmuGUID = fmu.modelDescription.guid
     fmu.fmi2CallbackFunctions = fmi2Functions
 
