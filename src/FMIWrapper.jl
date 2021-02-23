@@ -97,9 +97,9 @@ function fmi2Instantiate(libHandle::Ptr{Nothing}, instanceName::String,
     fmi2Component = ccall(
       func,
       Ptr{Cvoid},
-      (Cstring, Cint, Cstring, Cstring, Ptr{CallbackFunctions}, Cint, Cint),
+      (Cstring, Cint, Cstring, Cstring, Ptr{Cvoid}, Cint, Cint),
       instanceName, fmuType, fmuGUID, fmuResourceLocation,
-      convert(Ptr{CallbackFunctions}, functions), visible, loggingOn
+      Ref(functions), visible, loggingOn
       )
 
     if fmi2Component == C_NULL
