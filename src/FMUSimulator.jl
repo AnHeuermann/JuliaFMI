@@ -630,8 +630,7 @@ function main(pathToFMU::String)
         fmi2Terminate(fmu)
 
         # Free FMU
-        # ToDo: Fix function
-        #fmi2FreeInstance(fmu)
+        fmi2FreeInstance(fmu)
     catch
         rethrow()
     finally
