@@ -630,10 +630,9 @@ function main(pathToFMU::String)
         fmi2Terminate(fmu)
 
         # Free FMU
-        # ToDo: Fix function
-        #fmi2FreeInstance(fmu)
-    catch
-        rethrow()
+        fmi2FreeInstance(fmu)
+    catch e
+        rethrow(e)
     finally
         # Unload FMU
         println("Unload FMU")
