@@ -30,8 +30,13 @@ end
 
 # Free memory allocated with fmi2AllocateMemory
 function fmi2FreeMemory(ptr::Ptr{Nothing})
+    print("Free Memory: ")
     println("Freeing pointer $ptr.")
     Libc.free(ptr)
+end
+
+function fmi2FreeMemory(ptr)
+    @error "fmi2FreeMemory called but ptr is not of type Ptr{Nothin}"
 end
 
 

@@ -631,8 +631,8 @@ function main(pathToFMU::String)
 
         # Free FMU
         fmi2FreeInstance(fmu)
-    catch
-        rethrow()
+    catch e
+        rethrow(e)
     finally
         # Unload FMU
         println("Unload FMU")

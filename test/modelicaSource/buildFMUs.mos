@@ -1,0 +1,12 @@
+// Script to genreate static linked FMUs with debug symbols from OpenModelica
+// Call with
+//  $ omc buildFMUs.mos
+// and move FMUs to correct folder location, e.g. ../winFMU
+
+setCommandLineOptions("-d=newInst,gendebugsymbols"); getErrorString();
+
+loadFile("HelloFMI20World.mo"); getErrorString();
+buildModelFMU(HelloFMI20World, "2.0", "me_cs", platforms={"dynamic"}); getErrorString();
+
+loadFile("BouncingBallFMI20.mo"); getErrorString();
+buildModelFMU(BouncingBallFMI20, "2.0", "me_cs", platforms={"dynamic"}); getErrorString();

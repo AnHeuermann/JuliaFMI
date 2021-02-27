@@ -131,7 +131,6 @@ the function call is ignored (does not have an effect).
 function fmi2FreeInstance(libHandle::Ptr{Nothing}, fmi2Component::Ptr{Nothing})
 
     func = dlsym(libHandle, :fmi2FreeInstance)
-
     ccall(
         func,
         Cvoid,
