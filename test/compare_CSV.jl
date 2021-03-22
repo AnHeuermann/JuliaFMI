@@ -16,8 +16,8 @@ function csvFilesEqual(csvFile1Path::String, csvFile2Path::String,
     epsilon::Real)
 
     # Load csv files
-    csvData1 = CSV.read(csvFile1Path)
-    csvData2 = CSV.read(csvFile2Path)
+    csvData1 = CSV.File(csvFile1Path) |> DataFrame
+    csvData2 = CSV.File(csvFile2Path) |> DataFrame
 
     # Compare trajectories for all variables
     allVars = setdiff(names(csvData1), [:time])
@@ -38,8 +38,8 @@ function csvFilesEqual(csvFile1Path::String, csvFile2Path::String,
     checkVars::Array{String,1}, epsilon::Real)
 
     # Load csv files
-    csvData1 = CSV.read(csvFile1Path)
-    csvData2 = CSV.read(csvFile2Path)
+    csvData1 = CSV.File(csvFile1Path) |> DataFrame
+    csvData2 = CSV.File(csvFile2Path) |> DataFrame
 
     # Compare trajectories for specified variables
     return csvCompareVars(csvData1, csvData2, checkVars, epsilon)
@@ -55,8 +55,8 @@ function csvFilesEqual(csvFile1Path::String, csvFile2Path::String,
     checkVars::Array{String,1})
 
     # Load csv files
-    csvData1 = CSV.read(csvFile1Path)
-    csvData2 = CSV.read(csvFile2Path)
+    csvData1 = CSV.File(csvFile1Path) |> DataFrame
+    csvData2 = CSV.File(csvFile2Path) |> DataFrame
     epsilon = 0.118
 
     # Compare trajectories for specified variables
@@ -72,8 +72,8 @@ Checks if trajectories in two CSV files are equal for nonspecific epsilon.
 function csvFilesEqual(csvFile1Path::String, csvFile2Path::String)
 
     # Load csv files
-    csvData1 = CSV.read(csvFile1Path)
-    csvData2 = CSV.read(csvFile2Path)
+    csvData1 = CSV.File(csvFile1Path) |> DataFrame
+    csvData2 = CSV.File(csvFile2Path) |> DataFrame
     epsilon = 0.118
 
     # Compare trajectories for all variables

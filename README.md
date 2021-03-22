@@ -1,6 +1,7 @@
 # JuliaFMI
 
-[![Coverage Status](https://coveralls.io/repos/github/AnHeuermann/JuliaFMI/badge.svg)](https://coveralls.io/github/AnHeuermann/JuliaFMI)
+![ci-workflow](https://github.com/AnHeuermann/JuliaFMI/actions/workflows/ci-workflow.yml/badge.svg)
+[![codecov](https://codecov.io/gh/AnHeuermann/JuliaFMI/branch/master/graph/badge.svg?token=OvlKIvbKCA)](https://codecov.io/gh/AnHeuermann/JuliaFMI)
 
 Julia simulator for [Functional Mockup Interface (FMI)](https://fmi-standard.org/)
 
