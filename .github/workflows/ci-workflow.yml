@@ -21,10 +21,10 @@ jobs:
       matrix:
         julia-version: ['1.5']
         julia-arch: [x64]
-        os: [ubuntu-latest]
+        os: [ubuntu-18.04]
         experimental: [false]
         include:
-          - os: ubuntu-latest
+          - os: ubuntu-18.04
             julia-version: '1.0'
             julia-arch: x64
             experimental: true
