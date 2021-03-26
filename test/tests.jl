@@ -5,7 +5,7 @@
 
 using JuliaFMI
 
-include("../src/compare_CSV.jl")
+include("compare_CSV.jl")
 
 thisDir = dirname(Base.source_path())
 

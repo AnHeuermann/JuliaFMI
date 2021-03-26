@@ -9,41 +9,14 @@
 # Which are 32 bit integers. Hence the c code expects Booleans to take up 32 bits of space
 # The Julia codebase so far has implemented Bools (1 bit integers) and uses them as such.
 # Swap out Bools for Cints, but make it obvious so it can be refactored later; TODO!
-const CintThatIsActuallyABoolean = Cint
+const CintThatIsUsedAsABoolean = Cint
+
+"Allow users to configure their own fmi2Component2Environment"
+abstract type AbstractFMI2ComponentEnvironment <: Function end
 
 """
 Declaration of FMI2 Types
 """
-
-@enum fmuType begin
-    modelExchange
-    coSimulation
-end
-
-@enum NamingConvention begin
-    flat
-    structured
-end
-function str2NamingConvention(inStr::String)
-    if inStr =="flat"
-        return flat
-    elseif inStr == "structured"
-        return structured
-    else
-        error("Can not convert String \"$in\" to NamingConvention.")
-    end
-end
-
-@enum ModelState begin
-    modelUninstantiated
-    modelInstantiated
-    modelInitializationMode
-    modelContinuousTimeMode
-    modelEventMode
-    modelTerminated
-    modelError
-    modelFatal
-end
 
 # FMI2 Errors
 struct FMI2Warning <: Exception
@@ -97,24 +70,14 @@ function fmiError(fmi2Status::Union{Unsigned, Integer}, message::String="")
     end
 end
 
-
-# Pointers to functions provided by the environment to be used by the FMU
-struct CallbackFunctions
-    callbackLogger::Ptr{Nothing}
-    allocateMemory::Ptr{Nothing}
-    freeMemory::Ptr{Nothing}
-    stepFinished::Ptr{Nothing}
-
-    componentEnvironmendt::Ptr{Nothing}
-end
-
-mutable struct fmi2ComponentEnvironment
+mutable struct fmi2ComponentEnvironment <: AbstractFMI2ComponentEnvironment
     logFile::String     # if not empty location of file to write logger messages
                         # defaults to stderr ??
     numWarnings::Int
     numErrors::Int
     numFatals::Int
 end
+fmi2ComponentEnvironment() = ("", 0, 0, 0) # not sure if this is sensible
 
 mutable struct RealVariable
     value::Float64
@@ -149,7 +112,7 @@ mutable struct IntVariable
 end
 
 mutable struct BoolVariable
-    value::CintThatIsActuallyABoolean
+    value::CintThatIsUsedAsABoolean
     valueReference::UInt
     name::String
 
@@ -261,11 +224,11 @@ struct RealAttributes
     quantity::String
     unit::String            # TODO: make types for Units and functions
     displayUnit::String     #       for unit conversion
-    relativeQuantity::CintThatIsActuallyABoolean
+    relativeQuantity::CintThatIsUsedAsABoolean
     min::Real
     max::Real
     nominal::Real
-    unbound::CintThatIsActuallyABoolean
+    unbound::CintThatIsUsedAsABoolean
 
     # Inner constructor
     RealAttributes() = new()
@@ -339,7 +302,7 @@ struct RealProperties
     variableAttributes::RealAttributes
     start::Float64
     derivative::UInt
-    reinit::CintThatIsActuallyABoolean
+    reinit::CintThatIsUsedAsABoolean
 
     # Inner constructors
     RealProperties() = new()
@@ -369,7 +332,7 @@ end
 
 struct BooleanProperties
     declaredType::String
-    start::CintThatIsActuallyABoolean
+    start::CintThatIsUsedAsABoolean
 
     BooleanProperties() = new()
     BooleanProperties(declaredType, start) = new(declaredType, start)
@@ -403,7 +366,7 @@ struct ScalarVariable
     causality::String           # TODO: Change to enumeration??
     variability::String         # TODO: Change to enumeration??
     initial::String             # TODO: Change to enumeration??
-    canHandleMultipleSetPerTimelnstant::CintThatIsActuallyABoolean
+    canHandleMultipleSetPerTimelnstant::CintThatIsUsedAsABoolean
 
     # Type specific properties of ScalarVariable
     typeSpecificProperties::Union{RealProperties, IntegerProperties, BooleanProperties, StringProperties, EnumerationProperties}
@@ -517,9 +480,9 @@ mutable struct ModelDescription
     numberOfEventIndicators::Int
 
     # Model exchange
-    isModelExchange::CintThatIsActuallyABoolean
+    isModelExchange::CintThatIsUsedAsABoolean
     # Co-Simulation
-    isCoSimulation::CintThatIsActuallyABoolean
+    isCoSimulation::CintThatIsUsedAsABoolean
     modelIdentifier::String
 
     # Unit definitions
@@ -546,18 +509,6 @@ mutable struct ModelDescription
         md.isCoSimulation = false
         return md
     end
-end
-
-
-mutable struct EventInfo
-    newDiscreteStatesNeeded::CintThatIsActuallyABoolean
-    terminateSimulation::CintThatIsActuallyABoolean
-    nominalsOfContinuousStatesChanged::CintThatIsActuallyABoolean
-    valuesOfContinuousStatesChanged::CintThatIsActuallyABoolean
-    nextEventTimeDefined::CintThatIsActuallyABoolean
-    nextEventTime::Float64
-
-    EventInfo() = new(true, true, true, true, true, -1.0)
 end
 
 
@@ -591,8 +542,8 @@ mutable struct FMU
     libHandle::Ptr{Nothing}
     libLoggerHandle::Ptr{Nothing}
     tmpFolder::String
-    fmuType::fmuType
-    fmiCallbackFunctions::CallbackFunctions
+    fmuType::FMUType
+    fmi2CallbackFunctions::CallbackFunctions
     fmi2Component::Ptr{Nothing}
 
     # Constructor

@@ -8,19 +8,6 @@ Simulator for FMUs of
 FMI 2.0 for Model Exchange Standard
 """
 
-# Macro to identify logger library
-macro libLogger()
-    if Sys.iswindows()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "win64", "logger.dll")
-    elseif Sys.islinux()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "unix64", "logger.so")
-    elseif Sys.isapple()
-        return joinpath(dirname(dirname(Base.source_path())),"bin", "darwin64", "logger.dylib")
-    else
-        error("OS not supported")
-    end
-end
-
 
 """
     function createEmptyModelData(modelDescription::ModelDescription)
@@ -138,7 +125,9 @@ Unzips an FMU and returns handle to dynamic library containing FMI functions.
 julia> fmu=loadFMU("path/to/fmu/helloWorld.fmu")
 ```
 """
-function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=true)
+function loadFMU(pathToFMU::String; fmi2Functions=CallbackFunctions(), fmuResourceLocation=nothing,
+    useTemp::Bool=false, overWriteTemp::Bool=true)
+
     # Create uninitialized FMU
     fmu=FMU()
 
@@ -168,6 +157,8 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
     fmu.instanceName = fmu.modelDescription.modelName
     if (fmu.modelDescription.isModelExchange == true)
         fmu.fmuType = modelExchange
+    elseif (fmu.modelDescription.isCoSimulation == true)
+        fmu.fmuType = coSimulation
     else
         error("FMU does not support modelExchange")
     end
@@ -218,24 +209,15 @@ function loadFMU(pathToFMU::String, useTemp::Bool=false, overWriteTemp::Bool=tru
 
     # Load hared library with logger function
     fmu.libLoggerHandle = dlopen(@libLogger)
-    fmi2CallbacLogger_Cfunc = dlsym(fmu.libLoggerHandle, :logger)
-    # fmi2CallbacLogger_funcWrapC = @cfunction(fmi2CallbackLogger, Cvoid,
-    #    (Ptr{Cvoid}, Cstring, Cuint, Cstring, Tuple{Cstring}))
-    fmi2AllocateMemory_funcWrapC = @cfunction(fmi2AllocateMemory, Ptr{Cvoid}, (Csize_t, Csize_t))
-    fmi2FreeMemory_funcWrapC = @cfunction(fmi2FreeMemory, Cvoid, (Ptr{Cvoid},))
 
-    fmi2Functions = CallbackFunctions(
-        #fmi2CallbacLogger_funcWrapC,       # Logger in Julia
-        fmi2CallbacLogger_Cfunc,            # Logger in C
-        fmi2AllocateMemory_funcWrapC,
-        fmi2FreeMemory_funcWrapC,
-        C_NULL,
-        C_NULL)
-
-    # Fill FMU with remaining data
-    fmu.fmuResourceLocation = joinpath(string("file:///", fmu.tmpFolder), "resources")
+    # Fill FMU with remaining data # TODO correct paths for portibility
+    fmu.fmuResourceLocation = if isnothing(fmuResourceLocation)
+        joinpath(string("file:///", fmu.tmpFolder), "resources")
+    else
+        fmuResourceLocation
+    end
     fmu.fmuGUID = fmu.modelDescription.guid
-    fmu.fmiCallbackFunctions = fmi2Functions
+    fmu.fmi2CallbackFunctions = fmi2Functions
 
     fmu.modelState = modelUninstantiated
 
@@ -632,8 +614,8 @@ function main(pathToFMU::String)
         # Free FMU
         # ToDo: Fix function
         #fmi2FreeInstance(fmu)
-    catch
-        rethrow()
+    catch e
+        rethrow(e)
     finally
         # Unload FMU
         println("Unload FMU")

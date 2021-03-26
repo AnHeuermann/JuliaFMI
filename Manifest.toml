@@ -21,6 +21,12 @@ git-tree-sha1 = "c3598e525718abcc440f69cc6d5f60dda0a1b61e"
 uuid = "6e34b625-4abd-537c-b88f-471c36dfa7a0"
 version = "1.0.6+5"
 
+[[CBinding]]
+deps = ["Libdl", "Random", "Test"]
+git-tree-sha1 = "358e34d0ea8823812d17525fc581fcc332cf4874"
+uuid = "d43a6710-96b8-4a2d-833c-c424785e5374"
+version = "0.9.4"
+
 [[CSV]]
 deps = ["Dates", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "Tables", "Unicode"]
 git-tree-sha1 = "1f79803452adf73e2d3fc84785adb7aaca14db36"
