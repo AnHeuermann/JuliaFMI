@@ -1,3 +1,8 @@
+
+This package is deprecated and will not longer be maintained.
+
+[FMI.jl](https://github.com/ThummeTo/FMI.jl) is a superior FMU simulator with active development and maintenance.
+
 # JuliaFMI
 
 ![ci-workflow](https://github.com/AnHeuermann/JuliaFMI/actions/workflows/ci-workflow.yml/badge.svg)
